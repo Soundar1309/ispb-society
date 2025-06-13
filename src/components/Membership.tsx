@@ -1,0 +1,264 @@
+
+const Membership = () => {
+  const membershipTypes = [
+    {
+      type: "Student Membership",
+      fee: "₹500",
+      duration: "1 Year",
+      benefits: [
+        "Access to ISPB journals and publications",
+        "Discounted conference registration",
+        "Student networking opportunities",
+        "Career guidance and mentorship"
+      ],
+      eligibility: "Full-time students in plant breeding, genetics, or related fields"
+    },
+    {
+      type: "Regular Membership",
+      fee: "₹1,500",
+      duration: "1 Year",
+      benefits: [
+        "Access to all ISPB publications",
+        "Conference registration discounts",
+        "Voting rights in society matters",
+        "Professional networking opportunities",
+        "Technical training programs"
+      ],
+      eligibility: "Professionals working in plant breeding and related fields"
+    },
+    {
+      type: "Life Membership",
+      fee: "₹15,000",
+      duration: "Lifetime",
+      benefits: [
+        "All benefits of regular membership",
+        "Lifetime access to publications",
+        "Priority registration for events",
+        "Eligibility for society awards",
+        "Committee participation opportunities"
+      ],
+      eligibility: "Established professionals with significant contributions to plant breeding"
+    }
+  ];
+
+  const registrationSteps = [
+    {
+      step: 1,
+      title: "Choose Membership Type",
+      description: "Select the appropriate membership category based on your professional status and requirements."
+    },
+    {
+      step: 2,
+      title: "Fill Application Form",
+      description: "Complete the online membership application form with your personal and professional details."
+    },
+    {
+      step: 3,
+      title: "Upload Documents",
+      description: "Submit required documents including educational certificates and professional experience proof."
+    },
+    {
+      step: 4,
+      title: "Payment via Razorpay",
+      description: "Make secure online payment using Razorpay payment gateway with multiple payment options."
+    },
+    {
+      step: 5,
+      title: "Application Review",
+      description: "Your application will be reviewed by the membership committee within 7-10 working days."
+    },
+    {
+      step: 6,
+      title: "Membership Confirmation",
+      description: "Receive your membership certificate and welcome kit via email and post."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen py-12 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Membership</h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Join the Indian Society of Plant Breeders and be part of India's premier 
+            plant breeding community. Connect, learn, and contribute to agricultural innovation.
+          </p>
+        </div>
+
+        {/* Membership Types */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Membership Categories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {membershipTypes.map((membership, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{membership.type}</h3>
+                  <div className="text-3xl font-bold text-green-600 mb-1">{membership.fee}</div>
+                  <div className="text-gray-600">{membership.duration}</div>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
+                  <ul className="space-y-2">
+                    {membership.benefits.map((benefit, benefitIndex) => (
+                      <li key={benefitIndex} className="flex items-start">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <span className="text-gray-700 text-sm">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-2">Eligibility:</h4>
+                  <p className="text-gray-700 text-sm">{membership.eligibility}</p>
+                </div>
+
+                <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                  Apply Now
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Registration Process */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Registration Process</h2>
+          <div className="bg-white rounded-xl shadow-md p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {registrationSteps.map((step, index) => (
+                <div key={index} className="text-center">
+                  <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+                    {step.step}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Payment Information */}
+        <section className="mb-16">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-8 text-white">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold mb-4">Secure Online Payment</h2>
+              <p className="text-lg opacity-90">
+                We use Razorpay for secure and convenient online payments
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">💳</span>
+                </div>
+                <h3 className="font-semibold mb-2">Credit/Debit Cards</h3>
+                <p className="text-sm opacity-90">All major cards accepted</p>
+              </div>
+              <div>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🏦</span>
+                </div>
+                <h3 className="font-semibold mb-2">Net Banking</h3>
+                <p className="text-sm opacity-90">50+ banks supported</p>
+              </div>
+              <div>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">📱</span>
+                </div>
+                <h3 className="font-semibold mb-2">UPI/Wallets</h3>
+                <p className="text-sm opacity-90">UPI, Paytm, PhonePe</p>
+              </div>
+              <div>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🔒</span>
+                </div>
+                <h3 className="font-semibold mb-2">Secure</h3>
+                <p className="text-sm opacity-90">256-bit SSL encryption</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Required Documents */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Required Documents</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-xl font-bold text-green-600 mb-4">For All Applicants</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700">Recent passport-sized photograph</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700">Government-issued photo ID proof</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700">Educational qualification certificates</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700">Curriculum Vitae (CV)</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h3 className="text-xl font-bold text-green-600 mb-4">Additional Requirements</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700"><strong>Students:</strong> Bonafide student certificate</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700"><strong>Professionals:</strong> Experience certificate</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700"><strong>Life Members:</strong> Research publication list</span>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700">Two professional references</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Information */}
+        <section>
+          <div className="bg-white rounded-xl shadow-md p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help with Membership?</h2>
+            <p className="text-gray-600 mb-6">
+              Our membership team is here to assist you with any questions or concerns.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Email Support</h3>
+                <p className="text-green-600">membership@ispb.org.in</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Phone Support</h3>
+                <p className="text-green-600">+91-11-2584-0000</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Office Hours</h3>
+                <p className="text-gray-600">Mon-Fri: 9:00 AM - 5:00 PM</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default Membership;
