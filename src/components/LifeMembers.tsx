@@ -1,4 +1,3 @@
-
 const LifeMembers = () => {
   const lifeMembers = [
     {
@@ -24,9 +23,7 @@ const LifeMembers = () => {
       name: "Dr. Anil Kumar Patel",
       designation: "Principal Scientist",
       institution: "ICRISAT, Hyderabad",
-      specialization: "Sorghum & M
-
-illet Breeding",
+      specialization: "Sorghum & Millet Breeding",
       memberSince: "2001",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
     },
