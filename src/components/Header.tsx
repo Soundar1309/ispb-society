@@ -1,15 +1,20 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-interface HeaderProps {
-  onLoginClick: () => void;
-}
-
-const Header = ({ onLoginClick }: HeaderProps) => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -24,6 +29,11 @@ const Header = ({ onLoginClick }: HeaderProps) => {
   ];
 
   const isActive = (href: string) => location.pathname === href;
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -59,15 +69,33 @@ const Header = ({ onLoginClick }: HeaderProps) => {
             ))}
           </nav>
 
-          {/* Login Button */}
+          {/* User Menu / Login Button */}
           <div className="hidden lg:flex items-center">
-            <button
-              onClick={onLoginClick}
-              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-            >
-              <User size={16} />
-              <span>Login</span>
-            </button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center space-x-2">
+                    <User size={16} />
+                    <span className="max-w-32 truncate">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild className="bg-green-600 hover:bg-green-700">
+                <Link to="/auth" className="flex items-center space-x-2">
+                  <User size={16} />
+                  <span>Login</span>
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -100,15 +128,22 @@ const Header = ({ onLoginClick }: HeaderProps) => {
                 {item.name}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                onLoginClick();
-                setIsMenuOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-base font-medium text-green-600 hover:bg-green-50 rounded-md"
-            >
-              Login
-            </button>
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-3 py-2 text-base font-medium text-green-600 hover:bg-green-50 rounded-md"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}
