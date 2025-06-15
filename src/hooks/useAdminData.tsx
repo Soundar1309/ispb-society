@@ -94,7 +94,7 @@ export const useAdminData = () => {
         messagesRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
-        supabase.from('memberships').select('*').eq('status', 'active').eq('payment_status', 'paid').order('created_at', { ascending: false }),
+        supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
       ]);
@@ -112,7 +112,7 @@ export const useAdminData = () => {
         setMemberships(membershipsRes.data as Membership[]);
       }
       
-      // Create members with user data for the members tab (only paid memberships)
+      // Create members with user data for the members tab (all active memberships)
       const membersWithUserData: MemberWithUserData[] = [];
       
       if (membershipsRes.data && userRolesRes.data) {
@@ -134,7 +134,10 @@ export const useAdminData = () => {
               membership_status: membership.status,
               payment_status: membership.payment_status,
               valid_from: membership.valid_from || '',
-              valid_until: membership.valid_until || ''
+              valid_until: membership.valid_until || '',
+              is_manual: membership.is_manual || false,
+              membership_id: membership.id,
+              amount: membership.amount || 0
             });
           }
         }
@@ -177,6 +180,77 @@ export const useAdminData = () => {
     }
   };
 
+  const addMembership = async (membershipData: any) => {
+    try {
+      console.log('Adding membership:', membershipData);
+      
+      const { error } = await supabase
+        .from('memberships')
+        .insert(membershipData);
+
+      if (error) {
+        console.error('Error adding membership:', error);
+        throw error;
+      }
+
+      toast.success('Membership added successfully');
+      await fetchAllData();
+      return { success: true };
+    } catch (error) {
+      console.error('Error in addMembership:', error);
+      toast.error('Error adding membership');
+      throw error;
+    }
+  };
+
+  const updateMembership = async (membershipId: string, membershipData: any) => {
+    try {
+      console.log('Updating membership:', { membershipId, membershipData });
+      
+      const { error } = await supabase
+        .from('memberships')
+        .update(membershipData)
+        .eq('id', membershipId);
+
+      if (error) {
+        console.error('Error updating membership:', error);
+        throw error;
+      }
+
+      toast.success('Membership updated successfully');
+      await fetchAllData();
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateMembership:', error);
+      toast.error('Error updating membership');
+      throw error;
+    }
+  };
+
+  const deleteMembership = async (membershipId: string) => {
+    try {
+      console.log('Deleting membership:', membershipId);
+      
+      const { error } = await supabase
+        .from('memberships')
+        .delete()
+        .eq('id', membershipId);
+
+      if (error) {
+        console.error('Error deleting membership:', error);
+        throw error;
+      }
+
+      toast.success('Membership deleted successfully');
+      await fetchAllData();
+      return { success: true };
+    } catch (error) {
+      console.error('Error in deleteMembership:', error);
+      toast.error('Error deleting membership');
+      throw error;
+    }
+  };
+
   const refreshData = () => {
     fetchStats();
     fetchAllData();
@@ -196,6 +270,9 @@ export const useAdminData = () => {
     mandates,
     activities,
     refreshData,
-    updateUserRole
+    updateUserRole,
+    addMembership,
+    updateMembership,
+    deleteMembership
   };
 };

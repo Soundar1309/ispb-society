@@ -182,6 +182,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           id: string
+          is_manual: boolean | null
           membership_type: string
           payment_status: string
           razorpay_order_id: string | null
@@ -197,6 +198,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           id?: string
+          is_manual?: boolean | null
           membership_type: string
           payment_status?: string
           razorpay_order_id?: string | null
@@ -212,6 +214,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           id?: string
+          is_manual?: boolean | null
           membership_type?: string
           payment_status?: string
           razorpay_order_id?: string | null

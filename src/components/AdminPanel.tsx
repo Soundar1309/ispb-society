@@ -13,7 +13,10 @@ const AdminPanel = () => {
     mandates,
     activities,
     refreshData,
-    updateUserRole
+    updateUserRole,
+    addMembership,
+    updateMembership,
+    deleteMembership
   } = useAdminData();
 
   return (
@@ -28,6 +31,9 @@ const AdminPanel = () => {
         activities={activities}
         refreshData={refreshData}
         updateUserRole={updateUserRole}
+        addMembership={addMembership}
+        updateMembership={updateMembership}
+        deleteMembership={deleteMembership}
       />
     </AdminAccessControl>
   );

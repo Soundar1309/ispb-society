@@ -156,8 +156,7 @@ const AdminDashboard = ({
           <TabsContent value="members">
             <AdminMembersTab 
               members={users} 
-              userRoles={userRoles} 
-              onAddMember={handleAddMember}
+              userRoles={userRoles}
             />
           </TabsContent>
 
