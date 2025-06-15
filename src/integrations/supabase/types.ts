@@ -236,6 +236,42 @@ export type Database = {
         }
         Relationships: []
       }
+      membership_plans: {
+        Row: {
+          created_at: string
+          duration_months: number
+          features: Json
+          id: string
+          is_active: boolean
+          plan_type: string
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_months: number
+          features?: Json
+          id?: string
+          is_active?: boolean
+          plan_type: string
+          price: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_months?: number
+          features?: Json
+          id?: string
+          is_active?: boolean
+          plan_type?: string
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           amount: number | null

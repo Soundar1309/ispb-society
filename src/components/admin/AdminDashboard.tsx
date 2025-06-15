@@ -11,6 +11,7 @@ import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminContentTab from './AdminContentTab';
 import AdminPaymentTab from './AdminPaymentTab';
+import AdminMembershipPlansTab from './AdminMembershipPlansTab';
 
 interface AdminDashboardProps {
   stats: any;
@@ -21,6 +22,7 @@ interface AdminDashboardProps {
   mandates: any[];
   activities: any[];
   payments: any[];
+  membershipPlans: any[];
   refreshData: () => void;
   updateUserRole?: (userId: string, newRole: string) => Promise<any>;
   addMembership?: (membershipData: any) => Promise<any>;
@@ -37,6 +39,7 @@ const AdminDashboard = ({
   mandates,
   activities,
   payments,
+  membershipPlans,
   refreshData,
   updateUserRole,
   addMembership,
@@ -220,6 +223,13 @@ const AdminDashboard = ({
               users={users} 
               userRoles={userRoles} 
               onChangeUserRole={handleChangeUserRole} 
+            />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <AdminMembershipPlansTab 
+              plans={membershipPlans}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
