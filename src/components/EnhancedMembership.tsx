@@ -51,10 +51,12 @@ const EnhancedMembership = () => {
   };
 
   const fetchMemberships = async () => {
+    // Only fetch paid or active memberships
     const { data, error } = await supabase
       .from('memberships')
       .select('*')
       .eq('user_id', user?.id)
+      .in('payment_status', ['paid', 'active'])
       .order('created_at', { ascending: false });
 
     if (data) {
@@ -220,7 +222,8 @@ const EnhancedMembership = () => {
             {/* Membership Status */}
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Membership Status</CardTitle>
+                <CardTitle>Active Membership Status</CardTitle>
+                <CardDescription>Only showing paid memberships</CardDescription>
               </CardHeader>
               <CardContent>
                 {memberships.length > 0 ? (
@@ -252,7 +255,7 @@ const EnhancedMembership = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No active memberships</p>
+                  <p className="text-gray-500">No active paid memberships</p>
                 )}
               </CardContent>
             </Card>

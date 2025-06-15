@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,11 +52,12 @@ const UserDashboard = () => {
       });
     }
 
-    // Fetch memberships
+    // Fetch memberships - only show paid or active memberships
     const { data: membershipData } = await supabase
       .from('memberships')
       .select('*')
       .eq('user_id', user.id)
+      .in('payment_status', ['paid', 'active'])
       .order('created_at', { ascending: false });
 
     setMemberships(membershipData || []);
@@ -146,7 +146,7 @@ const UserDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Memberships</CardTitle>
+              <CardTitle className="text-sm font-medium">Active Memberships</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -282,13 +282,13 @@ const UserDashboard = () => {
           <TabsContent value="memberships">
             <Card>
               <CardHeader>
-                <CardTitle>My Memberships</CardTitle>
-                <CardDescription>View and manage your active and past memberships</CardDescription>
+                <CardTitle>My Active Memberships</CardTitle>
+                <CardDescription>View and manage your paid memberships only</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {memberships.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No memberships found</p>
+                    <p className="text-gray-500 text-center py-8">No active paid memberships found</p>
                   ) : (
                     memberships.map((membership: any) => (
                       <div key={membership.id} className="flex items-center justify-between p-4 border rounded-lg">
