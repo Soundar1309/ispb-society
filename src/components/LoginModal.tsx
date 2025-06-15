@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 
 interface LoginModalProps {
@@ -50,7 +51,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Admin Login
+              Admin Access
             </button>
           </div>
         </div>
@@ -173,40 +174,20 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 Admin access for managing life members, tracking payments, and exporting data.
               </p>
               
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Admin Email
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Enter admin email"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Admin Password
-                  </label>
-                  <input
-                    type="password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Enter admin password"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              <div className="text-center">
+                <Link 
+                  to="/admin-login"
+                  onClick={onClose}
+                  className="inline-block w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors text-center"
                 >
-                  Admin Login
-                </button>
-              </form>
+                  Go to Admin Login
+                </Link>
+              </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p className="text-yellow-800 text-xs">
                   <strong>Admin Access:</strong> Only authorized ISPB officials can access the admin dashboard.
+                  You will be redirected to a secure admin login page.
                 </p>
               </div>
             </div>

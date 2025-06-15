@@ -13,6 +13,7 @@ import LifeMembers from '@/components/LifeMembers';
 import Conference from '@/components/Conference';
 import ContactForm from '@/components/ContactForm';
 import AuthPage from '@/components/AuthPage';
+import AdminLogin from '@/components/AdminLogin';
 import AdminPanel from '@/components/AdminPanel';
 import UserDashboard from '@/components/UserDashboard';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -27,6 +28,7 @@ const Index = () => {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/office-bearers" element={<OfficeBearers />} />
               <Route path="/genesis" element={<Genesis />} />
               <Route path="/mandate-activities" element={<MandateActivities />} />
