@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -60,15 +61,15 @@ const AdminDashboard = ({
 
   const tabs = [
     { value: 'dashboard', label: 'Dashboard' },
-    { value: 'users', label: 'Users' },
     { value: 'members', label: 'Members' },
-    { value: 'life-members', label: 'Life Members' },
-    { value: 'conferences', label: 'Conferences' },
+    { value: 'users', label: 'Users' },
     { value: 'messages', label: 'Messages' },
-    { value: 'content', label: 'Content' },
+    { value: 'conferences', label: 'Conferences' },
     { value: 'payments', label: 'Payments' },
     { value: 'orders', label: 'Orders' },
-    { value: 'plans', label: 'Plans' }
+    { value: 'plans', label: 'Plans' },
+    { value: 'life-members', label: 'Life Members' },
+    { value: 'content', label: 'Content' }
   ];
 
   // Conference handlers
