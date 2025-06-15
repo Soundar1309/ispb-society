@@ -22,8 +22,6 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
     { name: 'Office Bearers', href: '/office-bearers' },
     { name: 'Genesis', href: '/genesis' },
     { name: 'Mandate & Activities', href: '/mandate-activities' },
-    { name: 'Publications', href: '/publications' },
-    { name: 'Membership', href: '/membership' },
     { name: 'Life Members', href: '/life-members' },
     { name: 'Conference', href: '/conference' },
     { name: 'Contact Us', href: '/contact' },
@@ -107,7 +105,7 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
                     </Link>
                     
                     <Link
-                      to="/membership"
+                      to="/life-members"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50/50"
                     >
@@ -135,7 +133,7 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
                     >
                       <LogOut className="h-4 w-4" />
                       Sign Out
-                    </button>
+                    </Link>
                   </div>
                 </div>
               )}

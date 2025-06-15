@@ -1,10 +1,13 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
 interface LifeMember {
@@ -20,6 +23,7 @@ interface LifeMember {
 }
 
 const LifeMembers = () => {
+  const { user } = useAuth();
   const [lifeMembers, setLifeMembers] = useState<LifeMember[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<LifeMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,11 +31,15 @@ const LifeMembers = () => {
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [specializationFilter, setSpecializationFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [userMembership, setUserMembership] = useState<any>(null);
   const membersPerPage = 6;
 
   useEffect(() => {
     fetchLifeMembers();
-  }, []);
+    if (user) {
+      fetchUserMembership();
+    }
+  }, [user]);
 
   useEffect(() => {
     filterMembers();
@@ -56,6 +64,25 @@ const LifeMembers = () => {
       toast.error('An unexpected error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserMembership = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('memberships')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('status', 'active')
+        .eq('payment_status', 'paid')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0) {
+        setUserMembership(data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching user membership:', error);
     }
   };
 
@@ -117,12 +144,41 @@ const LifeMembers = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Life Members</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Life Members & Membership</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Honoring our distinguished life members who have made significant contributions 
-            to plant breeding science and the growth of ISPB.
+            Honoring our distinguished life members and providing membership services for ISPB.
           </p>
         </div>
+
+        {/* Membership Status Card for logged in users */}
+        {user && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Your Membership Status</CardTitle>
+              <CardDescription>Current membership information</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {userMembership ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium capitalize">{userMembership.membership_type} Membership</p>
+                    <p className="text-sm text-gray-500">
+                      Valid: {userMembership.valid_from} to {userMembership.valid_until}
+                    </p>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-4">You don't have an active membership</p>
+                  <Button asChild>
+                    <a href="/membership">Join ISPB</a>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">

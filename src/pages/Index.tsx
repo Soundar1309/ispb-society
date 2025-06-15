@@ -7,7 +7,6 @@ import HomePage from '@/components/HomePage';
 import OfficeBearers from '@/components/OfficeBearers';
 import Genesis from '@/components/Genesis';
 import MandateActivities from '@/components/MandateActivities';
-import EnhancedMembership from '@/components/EnhancedMembership';
 import LifeMembers from '@/components/LifeMembers';
 import Conference from '@/components/Conference';
 import ContactForm from '@/components/ContactForm';
@@ -32,14 +31,6 @@ const Index = () => {
               <Route path="/office-bearers" element={<OfficeBearers />} />
               <Route path="/genesis" element={<Genesis />} />
               <Route path="/mandate-activities" element={<MandateActivities />} />
-              <Route 
-                path="/membership" 
-                element={
-                  <ProtectedRoute>
-                    <EnhancedMembership />
-                  </ProtectedRoute>
-                } 
-              />
               <Route path="/life-members" element={<LifeMembers />} />
               <Route path="/conference" element={<Conference />} />
               <Route path="/contact" element={<ContactForm />} />

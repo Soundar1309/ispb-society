@@ -65,9 +65,10 @@ export const useAdminData = () => {
       
       // Set only users with active paid memberships for members tab
       const membersWithUserData = (membershipsRes.data || []).map(membership => {
-        // Ensure user_roles exists and is a valid object with required properties
         const userRoles = membership.user_roles;
-        if (!userRoles || typeof userRoles !== 'object' || Array.isArray(userRoles)) {
+        
+        // Type guard to ensure userRoles is a valid object
+        if (!userRoles || typeof userRoles !== 'object' || Array.isArray(userRoles) || !userRoles.id) {
           console.warn('Invalid user_roles data for membership:', membership.id);
           return {
             id: membership.id,
