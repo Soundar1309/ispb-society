@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import MembershipForm from './MembershipForm';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -66,6 +66,60 @@ const AdminMembersTab = ({
     email: user.email || 'No email'
   }));
 
+  const exportMembersCSV = () => {
+    try {
+      const headers = [
+        'Full Name',
+        'Email', 
+        'Institution',
+        'Phone',
+        'Membership Type',
+        'Status',
+        'Payment Status',
+        'Valid From',
+        'Valid Until',
+        'Amount',
+        'Is Manual'
+      ];
+
+      const csvData = members.map(member => [
+        member.full_name || 'N/A',
+        member.email || 'N/A',
+        member.institution || 'N/A',
+        member.phone || 'N/A',
+        member.membership_type || 'N/A',
+        member.membership_status || 'N/A',
+        member.payment_status || 'N/A',
+        member.valid_from || 'N/A',
+        member.valid_until || 'N/A',
+        member.amount?.toString() || '0',
+        member.is_manual ? 'Yes' : 'No'
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map(row => 
+          row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `members_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Members CSV exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Error exporting CSV file');
+    }
+  };
+
   const handleAddMembership = (membershipData: any) => {
     if (onAddMembership) {
       const newMembership = {
@@ -119,10 +173,16 @@ const AdminMembersTab = ({
               <CardTitle>Enrolled Members</CardTitle>
               <CardDescription>Manage members with active memberships</CardDescription>
             </div>
-            <Button onClick={() => setShowForm(true)} disabled={availableUsers.length === 0}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Membership
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={exportMembersCSV} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              <Button onClick={() => setShowForm(true)} disabled={availableUsers.length === 0}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Membership
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,14 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { User, CreditCard, BookOpen, Calendar, Edit, Save } from 'lucide-react';
+import { User, CreditCard, Calendar, Edit, Save } from 'lucide-react';
 import MembershipCancellation from './MembershipCancellation';
 
 const UserDashboard = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -63,15 +63,6 @@ const UserDashboard = () => {
 
     setMemberships(membershipData || []);
 
-    // Fetch orders
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    setOrders(orderData || []);
-
     // Fetch conference registrations
     const { data: regData } = await supabase
       .from('conference_registrations')
@@ -88,19 +79,26 @@ const UserDashboard = () => {
   const handleUpdateProfile = async () => {
     if (!user) return;
 
-    const { error } = await supabase
-      .from('user_roles')
-      .update({
-        ...editForm,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({
+          ...editForm,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
 
-    if (!error) {
+      if (error) {
+        console.error('Profile update error:', error);
+        toast.error('Error updating profile: ' + error.message);
+        return;
+      }
+
       toast.success('Profile updated successfully');
       setIsEditing(false);
       fetchUserData();
-    } else {
+    } catch (error) {
+      console.error('Profile update error:', error);
       toast.error('Error updating profile');
     }
   };
@@ -148,7 +146,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Memberships</CardTitle>
@@ -156,15 +154,6 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{memberships.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Orders</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{orders.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -194,7 +183,6 @@ const UserDashboard = () => {
           <TabsList>
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="memberships">Memberships</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="conferences">Conferences</TabsTrigger>
           </TabsList>
 
@@ -324,39 +312,6 @@ const UserDashboard = () => {
                             />
                           )}
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order History</CardTitle>
-                <CardDescription>View your payment orders and transaction history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {orders.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No orders found</p>
-                  ) : (
-                    orders.map((order: any) => (
-                      <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Order #{order.id.slice(0, 8)}</h3>
-                          <p className="text-sm text-gray-600">
-                            Amount: ₹{order.amount} - {order.currency}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Created: {new Date(order.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
                       </div>
                     ))
                   )}

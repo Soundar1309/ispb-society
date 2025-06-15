@@ -1,13 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, CreditCard, BookOpen, MessageSquare, TrendingUp, Calendar } from 'lucide-react';
+import { Users, CreditCard, MessageSquare, TrendingUp } from 'lucide-react';
 
 interface AdminStatsProps {
   stats: {
-    totalMembers: number;
-    membershipEnrolled: number;
     totalUsers: number;
-    totalPublications: number;
+    membershipEnrolled: number;
     unreadMessages: number;
   };
 }
@@ -33,15 +31,6 @@ const AdminStats = ({ stats }: AdminStatsProps) => {
       changeType: "increase"
     },
     {
-      title: "Publications",
-      value: stats.totalPublications,
-      icon: BookOpen,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      change: "+5%",
-      changeType: "increase"
-    },
-    {
       title: "Unread Messages",
       value: stats.unreadMessages,
       icon: MessageSquare,
@@ -53,7 +42,7 @@ const AdminStats = ({ stats }: AdminStatsProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
