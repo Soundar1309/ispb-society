@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,12 +51,13 @@ const EnhancedMembership = () => {
   };
 
   const fetchMemberships = async () => {
-    // Only fetch paid or active memberships
+    // Include manual memberships in the query
     const { data, error } = await supabase
       .from('memberships')
       .select('*')
       .eq('user_id', user?.id)
-      .in('payment_status', ['paid', 'active'])
+      .in('payment_status', ['paid', 'active', 'manual'])
+      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (data) {
@@ -93,6 +93,7 @@ const EnhancedMembership = () => {
     switch (status) {
       case 'active':
       case 'paid':
+      case 'manual':
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -227,7 +228,7 @@ const EnhancedMembership = () => {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>Active Membership Status</CardTitle>
-                <CardDescription>Only showing paid memberships</CardDescription>
+                <CardDescription>Your current active memberships</CardDescription>
               </CardHeader>
               <CardContent>
                 {memberships.length > 0 ? (
@@ -242,6 +243,9 @@ const EnhancedMembership = () => {
                               : 'Pending activation'
                             }
                           </p>
+                          {membership.is_manual && (
+                            <p className="text-xs text-blue-600">Admin added membership</p>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <Badge className={getStatusColor(membership.status)}>
@@ -259,7 +263,7 @@ const EnhancedMembership = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No active paid memberships</p>
+                  <p className="text-gray-500">No active memberships</p>
                 )}
               </CardContent>
             </Card>

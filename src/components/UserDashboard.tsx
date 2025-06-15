@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,12 +52,13 @@ const UserDashboard = () => {
       });
     }
 
-    // Fetch memberships - only show paid or active memberships
+    // Fetch memberships - include manual memberships and active ones
     const { data: membershipData } = await supabase
       .from('memberships')
       .select('*')
       .eq('user_id', user.id)
-      .in('payment_status', ['paid', 'active'])
+      .in('payment_status', ['paid', 'active', 'manual'])
+      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     setMemberships(membershipData || []);
@@ -109,6 +109,7 @@ const UserDashboard = () => {
     switch (status) {
       case 'active':
       case 'paid':
+      case 'manual':
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -287,21 +288,24 @@ const UserDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>My Active Memberships</CardTitle>
-                <CardDescription>View and manage your paid memberships only</CardDescription>
+                <CardDescription>View and manage your active memberships</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {memberships.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No active paid memberships found</p>
+                    <p className="text-gray-500 text-center py-8">No active memberships found</p>
                   ) : (
                     memberships.map((membership: any) => (
                       <div key={membership.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                          <h3 className="font-semibold">{membership.membership_type}</h3>
+                          <h3 className="font-semibold capitalize">{membership.membership_type}</h3>
                           <p className="text-sm text-gray-600">
                             Valid: {membership.valid_from} to {membership.valid_until}
                           </p>
                           <p className="text-sm text-gray-500">Amount: ₹{membership.amount}</p>
+                          {membership.is_manual && (
+                            <p className="text-xs text-blue-600">Manual membership</p>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <div className="flex gap-2">
@@ -309,7 +313,7 @@ const UserDashboard = () => {
                               {membership.status}
                             </Badge>
                             <Badge className={getStatusColor(membership.payment_status)}>
-                              {membership.payment_status}
+                              {membership.payment_status === 'manual' ? 'Admin Added' : membership.payment_status}
                             </Badge>
                           </div>
                           {membership.status === 'active' && (

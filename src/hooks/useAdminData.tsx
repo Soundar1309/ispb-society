@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -73,7 +74,7 @@ export const useAdminData = () => {
     try {
       const [usersRes, membershipRes, messagesRes] = await Promise.all([
         supabase.from('user_roles').select('id', { count: 'exact' }),
-        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active').eq('payment_status', 'paid'),
+        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active').in('payment_status', ['paid', 'manual']),
         supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
       ]);
 
@@ -187,6 +188,23 @@ export const useAdminData = () => {
     try {
       console.log('Adding membership:', membershipData);
       
+      // Check if user already has an active membership
+      const { data: existingMemberships, error: checkError } = await supabase
+        .from('memberships')
+        .select('id')
+        .eq('user_id', membershipData.user_id)
+        .eq('status', 'active');
+
+      if (checkError) {
+        console.error('Error checking existing memberships:', checkError);
+        throw checkError;
+      }
+
+      if (existingMemberships && existingMemberships.length > 0) {
+        toast.error('User already has an active membership');
+        return { success: false };
+      }
+      
       const { error } = await supabase
         .from('memberships')
         .insert(membershipData);
@@ -198,6 +216,7 @@ export const useAdminData = () => {
 
       toast.success('Membership added successfully');
       await fetchAllData();
+      await fetchStats();
       return { success: true };
     } catch (error) {
       console.error('Error in addMembership:', error);
@@ -246,6 +265,7 @@ export const useAdminData = () => {
 
       toast.success('Membership deleted successfully');
       await fetchAllData();
+      await fetchStats();
       return { success: true };
     } catch (error) {
       console.error('Error in deleteMembership:', error);
