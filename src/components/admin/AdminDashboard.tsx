@@ -1,3 +1,4 @@
+
 import { TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,6 @@ import UserManagement from './UserManagement';
 import AdminMembersTab from './AdminMembersTab';
 import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
-import AdminPublicationsTab from './AdminPublicationsTab';
 import AdminContentTab from './AdminContentTab';
 
 interface AdminDashboardProps {
@@ -17,7 +17,6 @@ interface AdminDashboardProps {
   userRoles: any[];
   conferences: any[];
   messages: any[];
-  publications: any[];
   mandates: any[];
   activities: any[];
   refreshData: () => void;
@@ -29,7 +28,6 @@ const AdminDashboard = ({
   userRoles,
   conferences,
   messages,
-  publications,
   mandates,
   activities,
   refreshData
@@ -44,47 +42,6 @@ const AdminDashboard = ({
     if (!error) {
       toast.success('Message marked as read');
       refreshData();
-    }
-  };
-
-  const handleAddPublication = async (publicationData: any) => {
-    const { error } = await supabase
-      .from('publications')
-      .insert(publicationData);
-
-    if (!error) {
-      toast.success('Publication added successfully');
-      refreshData();
-    } else {
-      toast.error('Error adding publication');
-    }
-  };
-
-  const handleUpdatePublication = async (id: string, publicationData: any) => {
-    const { error } = await supabase
-      .from('publications')
-      .update(publicationData)
-      .eq('id', id);
-
-    if (!error) {
-      toast.success('Publication updated successfully');
-      refreshData();
-    } else {
-      toast.error('Error updating publication');
-    }
-  };
-
-  const handleDeletePublication = async (id: string) => {
-    const { error } = await supabase
-      .from('publications')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      toast.success('Publication deleted successfully');
-      refreshData();
-    } else {
-      toast.error('Error deleting publication');
     }
   };
 
@@ -223,15 +180,6 @@ const AdminDashboard = ({
             <AdminMessagesTab 
               messages={messages} 
               onMarkMessageRead={handleMarkMessageRead} 
-            />
-          </TabsContent>
-
-          <TabsContent value="publications">
-            <AdminPublicationsTab 
-              publications={publications} 
-              onAddPublication={handleAddPublication}
-              onUpdatePublication={handleUpdatePublication}
-              onDeletePublication={handleDeletePublication}
             />
           </TabsContent>
 

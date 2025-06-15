@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Users, Book, Calendar, Mail } from 'lucide-react';
+import { Users, Calendar, Mail, Book } from 'lucide-react';
 
 const HomePage = () => {
   const features = [
@@ -12,9 +12,9 @@ const HomePage = () => {
     },
     {
       icon: Book,
-      title: 'Publications',
-      description: 'Access our journals, proceedings, and research publications',
-      link: '/publications'
+      title: 'Mandate & Activities',
+      description: 'Learn about our mission, objectives and key activities',
+      link: '/mandate-activities'
     },
     {
       icon: Calendar,
@@ -121,7 +121,7 @@ const HomePage = () => {
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Publish research findings and technical knowledge</span>
+                  <span className="text-gray-700">Support professional development and networking</span>
                 </li>
               </ul>
             </div>
@@ -141,8 +141,8 @@ const HomePage = () => {
                     <div className="text-sm text-gray-600">Conferences Held</div>
                   </div>
                   <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 mb-1">100+</div>
-                    <div className="text-sm text-gray-600">Publications</div>
+                    <div className="text-2xl font-bold text-green-600 mb-1">200+</div>
+                    <div className="text-sm text-gray-600">Research Papers</div>
                   </div>
                 </div>
               </div>

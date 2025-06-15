@@ -7,7 +7,6 @@ import HomePage from '@/components/HomePage';
 import OfficeBearers from '@/components/OfficeBearers';
 import Genesis from '@/components/Genesis';
 import MandateActivities from '@/components/MandateActivities';
-import Publications from '@/components/Publications';
 import EnhancedMembership from '@/components/EnhancedMembership';
 import LifeMembers from '@/components/LifeMembers';
 import Conference from '@/components/Conference';
@@ -33,7 +32,6 @@ const Index = () => {
               <Route path="/office-bearers" element={<OfficeBearers />} />
               <Route path="/genesis" element={<Genesis />} />
               <Route path="/mandate-activities" element={<MandateActivities />} />
-              <Route path="/publications" element={<Publications />} />
               <Route 
                 path="/membership" 
                 element={

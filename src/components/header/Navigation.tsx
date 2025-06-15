@@ -9,7 +9,6 @@ const Navigation = () => {
     { name: 'Office Bearers', href: '/office-bearers' },
     { name: 'Genesis', href: '/genesis' },
     { name: 'Mandate & Activities', href: '/mandate-activities' },
-    { name: 'Publications', href: '/publications' },
     { name: 'Membership', href: '/membership' },
     { name: 'Life Members', href: '/life-members' },
     { name: 'Conference', href: '/conference' },

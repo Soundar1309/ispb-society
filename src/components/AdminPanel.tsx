@@ -10,7 +10,6 @@ const AdminPanel = () => {
     userRoles,
     conferences,
     messages,
-    publications,
     mandates,
     activities,
     refreshData
@@ -24,7 +23,6 @@ const AdminPanel = () => {
         userRoles={userRoles}
         conferences={conferences}
         messages={messages}
-        publications={publications}
         mandates={mandates}
         activities={activities}
         refreshData={refreshData}

@@ -1,6 +1,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageSquare, BookOpen, Settings, Calendar, FileText } from 'lucide-react';
+import { Users, MessageSquare, Settings, Calendar, FileText } from 'lucide-react';
 
 interface AdminTabsProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ interface AdminTabsProps {
 const AdminTabs = ({ children, defaultValue = "members" }: AdminTabsProps) => {
   return (
     <Tabs defaultValue={defaultValue} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+      <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
         <TabsTrigger value="members" className="flex items-center gap-2">
           <Users className="h-4 w-4" />
           <span className="hidden sm:inline">Members</span>
@@ -26,10 +26,6 @@ const AdminTabs = ({ children, defaultValue = "members" }: AdminTabsProps) => {
         <TabsTrigger value="messages" className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
           <span className="hidden sm:inline">Messages</span>
-        </TabsTrigger>
-        <TabsTrigger value="publications" className="flex items-center gap-2">
-          <BookOpen className="h-4 w-4" />
-          <span className="hidden sm:inline">Publications</span>
         </TabsTrigger>
         <TabsTrigger value="content" className="flex items-center gap-2">
           <FileText className="h-4 w-4" />
