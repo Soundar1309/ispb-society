@@ -1,45 +1,35 @@
 
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
 const Membership = () => {
-  const membershipTypes = [
-    {
-      type: "Student Membership",
-      fee: "₹500",
-      duration: "1 Year",
-      benefits: [
-        "Access to ISPB journals and publications",
-        "Discounted conference registration",
-        "Student networking opportunities",
-        "Career guidance and mentorship"
-      ],
-      eligibility: "Full-time students in plant breeding, genetics, or related fields"
-    },
-    {
-      type: "Regular Membership",
-      fee: "₹1,500",
-      duration: "1 Year",
-      benefits: [
-        "Access to all ISPB publications",
-        "Conference registration discounts",
-        "Voting rights in society matters",
-        "Professional networking opportunities",
-        "Technical training programs"
-      ],
-      eligibility: "Professionals working in plant breeding and related fields"
-    },
-    {
-      type: "Life Membership",
-      fee: "₹15,000",
-      duration: "Lifetime",
-      benefits: [
-        "All benefits of regular membership",
-        "Lifetime access to publications",
-        "Priority registration for events",
-        "Eligibility for society awards",
-        "Committee participation opportunities"
-      ],
-      eligibility: "Established professionals with significant contributions to plant breeding"
+  const [membershipPlans, setMembershipPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMembershipPlans();
+  }, []);
+
+  const fetchMembershipPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('membership_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching membership plans:', error);
+        return;
+      }
+
+      setMembershipPlans(data || []);
+    } catch (error) {
+      console.error('Error fetching membership plans:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   const registrationSteps = [
     {
@@ -74,6 +64,19 @@ const Membership = () => {
     }
   ];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen py-8 sm:py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading membership plans...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-8 sm:py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,32 +93,32 @@ const Membership = () => {
         <section className="mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Membership Categories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
-            {membershipTypes.map((membership, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            {membershipPlans.map((plan, index) => (
+              <div key={plan.id} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
                 <div className="text-center mb-4 sm:mb-6">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{membership.type}</h3>
-                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{membership.fee}</div>
-                  <div className="text-sm sm:text-base text-gray-600">{membership.duration}</div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{plan.title}</h3>
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">₹{plan.price}</div>
+                  <div className="text-sm sm:text-base text-gray-600">
+                    {plan.duration_months > 0 ? `${plan.duration_months} months` : 'Lifetime'}
+                  </div>
                 </div>
                 
                 <div className="mb-4 sm:mb-6">
                   <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
                   <ul className="space-y-2">
-                    {membership.benefits.map((benefit, benefitIndex) => (
-                      <li key={benefitIndex} className="flex items-start">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start">
                         <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                        <span className="text-gray-700 text-sm">{benefit}</span>
+                        <span className="text-gray-700 text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="mb-4 sm:mb-6">
-                  <h4 className="font-semibold text-gray-900 mb-2">Eligibility:</h4>
-                  <p className="text-gray-700 text-sm">{membership.eligibility}</p>
-                </div>
-
-                <button className="w-full bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base">
+                <button 
+                  onClick={() => window.location.href = '/member'}
+                  className="w-full bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
+                >
                   Apply Now
                 </button>
               </div>

@@ -15,6 +15,7 @@ import AdminLogin from '@/components/AdminLogin';
 import AdminPanel from '@/components/AdminPanel';
 import UserDashboard from '@/components/UserDashboard';
 import EnhancedMembershipPage from '@/components/EnhancedMembershipPage';
+import Membership from '@/components/Membership';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 
@@ -35,6 +36,7 @@ const Index = () => {
               <Route path="/life-members" element={<LifeMembers />} />
               <Route path="/conference" element={<Conference />} />
               <Route path="/contact" element={<ContactForm />} />
+              <Route path="/membership" element={<Membership />} />
               <Route path="/member" element={<EnhancedMembershipPage />} />
               <Route 
                 path="/dashboard" 
