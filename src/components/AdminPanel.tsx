@@ -15,6 +15,7 @@ const AdminPanel = () => {
     payments,
     membershipPlans,
     lifeMembers,
+    orders,
     refreshData,
     updateUserRole,
     addMembership,
@@ -35,6 +36,7 @@ const AdminPanel = () => {
         payments={payments}
         membershipPlans={membershipPlans}
         lifeMembers={lifeMembers}
+        orders={orders}
         refreshData={refreshData}
         updateUserRole={updateUserRole}
         addMembership={addMembership}

@@ -24,6 +24,7 @@ interface AdminDashboardProps {
   payments: any[];
   membershipPlans: any[];
   lifeMembers?: any[];
+  orders: any[];
   refreshData: () => void;
   updateUserRole: (userId: string, newRole: string) => Promise<void>;
   addMembership: (membershipData: any) => void;
@@ -42,6 +43,7 @@ const AdminDashboard = ({
   payments,
   membershipPlans,
   lifeMembers = [],
+  orders,
   refreshData,
   updateUserRole,
   addMembership,
@@ -79,7 +81,7 @@ const AdminDashboard = ({
 
           <TabsContent value="users">
             <UserManagement 
-              users={users}
+              users={userRoles}
               userRoles={userRoles}
               onChangeUserRole={updateUserRole}
             />
@@ -105,14 +107,12 @@ const AdminDashboard = ({
           <TabsContent value="conferences">
             <AdminConferencesTab 
               conferences={conferences}
-              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="messages">
             <AdminMessagesTab 
               messages={messages}
-              onRefresh={refreshData}
             />
           </TabsContent>
 
@@ -120,33 +120,28 @@ const AdminDashboard = ({
             <AdminContentTab 
               mandates={mandates}
               activities={activities}
-              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="payments">
             <AdminPaymentTab 
               payments={payments}
-              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="orders">
             <AdminOrdersTab 
-              onRefresh={refreshData}
+              orders={orders}
             />
           </TabsContent>
 
           <TabsContent value="publications">
-            <AdminPublicationsTab 
-              onRefresh={refreshData}
-            />
+            <AdminPublicationsTab />
           </TabsContent>
 
           <TabsContent value="plans">
             <AdminMembershipPlansTab 
-              membershipPlans={membershipPlans}
-              onRefresh={refreshData}
+              plans={membershipPlans}
             />
           </TabsContent>
         </Tabs>
