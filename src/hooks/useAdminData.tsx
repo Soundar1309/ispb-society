@@ -99,16 +99,25 @@ export const useAdminData = () => {
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
       ]);
 
-      // Set all users for user management
-      setUserRoles(userRolesRes.data || []);
-      setMemberships(membershipsRes.data || []);
+      console.log('Fetched user roles:', userRolesRes.data);
+      console.log('Fetched memberships:', membershipsRes.data);
+
+      // Set user roles for user management tab
+      if (userRolesRes.data) {
+        setUserRoles(userRolesRes.data as UserRole[]);
+      }
       
-      // Manually join memberships with user_roles data
+      // Set memberships
+      if (membershipsRes.data) {
+        setMemberships(membershipsRes.data as Membership[]);
+      }
+      
+      // Create members with user data for the members tab (only paid memberships)
       const membersWithUserData: MemberWithUserData[] = [];
       
       if (membershipsRes.data && userRolesRes.data) {
-        for (const membership of membershipsRes.data) {
-          const userRole = userRolesRes.data.find(ur => ur.user_id === membership.user_id);
+        for (const membership of membershipsRes.data as Membership[]) {
+          const userRole = (userRolesRes.data as UserRole[]).find(ur => ur.user_id === membership.user_id);
           
           if (userRole) {
             membersWithUserData.push({
@@ -121,20 +130,6 @@ export const useAdminData = () => {
               designation: userRole.designation || undefined,
               specialization: userRole.specialization || undefined,
               phone: userRole.phone || undefined,
-              membership_type: membership.membership_type,
-              membership_status: membership.status,
-              payment_status: membership.payment_status,
-              valid_from: membership.valid_from || '',
-              valid_until: membership.valid_until || ''
-            });
-          } else {
-            // Handle case where user_role is not found
-            membersWithUserData.push({
-              id: membership.id,
-              user_id: membership.user_id || '',
-              full_name: 'Unknown User',
-              email: 'No email',
-              role: 'member',
               membership_type: membership.membership_type,
               membership_status: membership.status,
               payment_status: membership.payment_status,
@@ -158,6 +153,30 @@ export const useAdminData = () => {
     }
   };
 
+  const updateUserRole = async (userId: string, newRole: string) => {
+    try {
+      console.log('Updating user role:', { userId, newRole });
+      
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ role: newRole })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error updating user role:', error);
+        throw error;
+      }
+
+      // Refresh data after successful update
+      await fetchAllData();
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error in updateUserRole:', error);
+      throw error;
+    }
+  };
+
   const refreshData = () => {
     fetchStats();
     fetchAllData();
@@ -176,6 +195,7 @@ export const useAdminData = () => {
     messages,
     mandates,
     activities,
-    refreshData
+    refreshData,
+    updateUserRole
   };
 };

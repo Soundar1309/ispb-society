@@ -12,7 +12,8 @@ const AdminPanel = () => {
     messages,
     mandates,
     activities,
-    refreshData
+    refreshData,
+    updateUserRole
   } = useAdminData();
 
   return (
@@ -26,6 +27,7 @@ const AdminPanel = () => {
         mandates={mandates}
         activities={activities}
         refreshData={refreshData}
+        updateUserRole={updateUserRole}
       />
     </AdminAccessControl>
   );

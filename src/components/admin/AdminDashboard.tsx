@@ -1,4 +1,3 @@
-
 import { TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,7 @@ interface AdminDashboardProps {
   mandates: any[];
   activities: any[];
   refreshData: () => void;
+  updateUserRole?: (userId: string, newRole: string) => Promise<any>;
 }
 
 const AdminDashboard = ({
@@ -30,7 +30,8 @@ const AdminDashboard = ({
   messages,
   mandates,
   activities,
-  refreshData
+  refreshData,
+  updateUserRole
 }: AdminDashboardProps) => {
 
   const handleMarkMessageRead = async (messageId: string) => {
@@ -63,25 +64,26 @@ const AdminDashboard = ({
 
   const handleChangeUserRole = async (userId: string, newRole: string) => {
     try {
-      // First, remove existing roles for this user
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      if (updateUserRole) {
+        await updateUserRole(userId, newRole);
+      } else {
+        // Fallback to direct update
+        const { error } = await supabase
+          .from('user_roles')
+          .update({ role: newRole })
+          .eq('user_id', userId);
 
-      // Then add the new role
-      const { error } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role: newRole });
-
-      if (!error) {
+        if (error) {
+          throw error;
+        }
+        
         toast.success('User role updated successfully');
         refreshData();
-      } else {
-        toast.error('Error updating user role');
       }
     } catch (error) {
+      console.error('Error updating user role:', error);
       toast.error('Error updating user role');
+      throw error;
     }
   };
 

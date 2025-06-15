@@ -13,15 +13,15 @@ interface UserRole {
   id: string;
   user_id: string;
   role: string;
-  full_name: string;
-  email: string;
+  full_name: string | null;
+  email: string | null;
   created_at: string;
-  institution?: string;
-  phone?: string;
+  institution?: string | null;
+  phone?: string | null;
 }
 
 interface UserManagementProps {
-  users: UserRole[];
+  users: any[];
   userRoles: UserRole[];
   onChangeUserRole: (userId: string, newRole: string) => Promise<void>;
 }
@@ -32,18 +32,19 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Debug logging
-  console.log('UserManagement - Total users:', users?.length || 0);
-  console.log('UserManagement - User roles:', userRoles?.length || 0);
-  console.log('UserManagement - Users data:', users);
+  // Use userRoles for the user management table instead of users
+  const displayUsers = userRoles || [];
+
+  console.log('UserManagement - Display users:', displayUsers.length);
+  console.log('UserManagement - User roles data:', displayUsers);
 
   const filteredAndSortedUsers = useMemo(() => {
-    if (!users || users.length === 0) {
+    if (!displayUsers || displayUsers.length === 0) {
       console.log('No users available for filtering');
       return [];
     }
 
-    let filtered = users.filter(user => {
+    let filtered = displayUsers.filter(user => {
       const matchesSearch = searchTerm === '' || 
                            user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,14 +86,14 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
     });
 
     return filtered;
-  }, [users, searchTerm, roleFilter, sortBy, sortOrder]);
+  }, [displayUsers, searchTerm, roleFilter, sortBy, sortOrder]);
 
   const stats = useMemo(() => {
-    if (!users) return { adminCount: 0, memberCount: 0, recentUsers: 0 };
+    if (!displayUsers) return { adminCount: 0, memberCount: 0, recentUsers: 0 };
     
-    const adminCount = users.filter(user => user.role === 'admin').length;
-    const memberCount = users.filter(user => user.role === 'member').length;
-    const recentUsers = users.filter(user => {
+    const adminCount = displayUsers.filter(user => user.role === 'admin').length;
+    const memberCount = displayUsers.filter(user => user.role === 'member').length;
+    const recentUsers = displayUsers.filter(user => {
       const createdDate = new Date(user.created_at);
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -100,13 +101,14 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
     }).length;
 
     return { adminCount, memberCount, recentUsers };
-  }, [users]);
+  }, [displayUsers]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await onChangeUserRole(userId, newRole);
       toast.success(`User role updated to ${newRole}`);
     } catch (error) {
+      console.error('Failed to update user role:', error);
       toast.error('Failed to update user role');
     }
   };
@@ -121,7 +123,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
   };
 
   // Show loading state if no users
-  if (!users) {
+  if (!displayUsers) {
     return (
       <div className="space-y-6">
         <Card>
@@ -144,7 +146,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <div className="text-2xl font-bold">{displayUsers.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -181,7 +183,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <CardDescription>
-            Manage user roles and permissions ({users.length} total users)
+            Manage user roles and permissions ({displayUsers.length} total users)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -258,7 +260,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-muted-foreground" />
-                          {user.email}
+                          {user.email || 'No email'}
                         </div>
                       </TableCell>
                       <TableCell>{user.institution || 'Not specified'}</TableCell>
@@ -271,7 +273,10 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Select onValueChange={(value) => handleRoleChange(user.user_id, value)}>
+                        <Select 
+                          value={user.role} 
+                          onValueChange={(value) => handleRoleChange(user.user_id, value)}
+                        >
                           <SelectTrigger className="w-32">
                             <SelectValue placeholder="Change role" />
                           </SelectTrigger>
@@ -293,7 +298,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      {users.length === 0 ? 'No users found in the system.' : 'No users found matching your criteria.'}
+                      {displayUsers.length === 0 ? 'No users found in the system.' : 'No users found matching your criteria.'}
                     </TableCell>
                   </TableRow>
                 )}
