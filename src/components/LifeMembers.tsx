@@ -24,8 +24,8 @@ const LifeMembers = () => {
   const [filteredMembers, setFilteredMembers] = useState<LifeMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [institutionFilter, setInstitutionFilter] = useState('');
-  const [specializationFilter, setSpecializationFilter] = useState('');
+  const [institutionFilter, setInstitutionFilter] = useState('all');
+  const [specializationFilter, setSpecializationFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const membersPerPage = 6;
 
@@ -68,13 +68,13 @@ const LifeMembers = () => {
       );
     }
 
-    if (institutionFilter) {
+    if (institutionFilter && institutionFilter !== 'all') {
       filtered = filtered.filter(member =>
         member.institution?.toLowerCase().includes(institutionFilter.toLowerCase())
       );
     }
 
-    if (specializationFilter) {
+    if (specializationFilter && specializationFilter !== 'all') {
       filtered = filtered.filter(member =>
         member.specialization?.toLowerCase().includes(specializationFilter.toLowerCase())
       );
@@ -163,7 +163,7 @@ const LifeMembers = () => {
                   <SelectValue placeholder="All Institutions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Institutions</SelectItem>
+                  <SelectItem value="all">All Institutions</SelectItem>
                   {getUniqueInstitutions().map((institution) => (
                     <SelectItem key={institution} value={institution!}>
                       {institution}
@@ -179,7 +179,7 @@ const LifeMembers = () => {
                   <SelectValue placeholder="All Specializations" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Specializations</SelectItem>
+                  <SelectItem value="all">All Specializations</SelectItem>
                   {getUniqueSpecializations().map((specialization) => (
                     <SelectItem key={specialization} value={specialization!}>
                       {specialization}
