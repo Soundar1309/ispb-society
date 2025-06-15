@@ -71,14 +71,33 @@ export const useAdminData = () => {
       setUserRoles(userRolesRes.data || []);
       
       // Set only users with active paid memberships for members tab
-      const membersWithUserData = (membershipsRes.data || []).map(membership => ({
-        ...membership.user_roles,
-        membership_type: membership.membership_type,
-        membership_status: membership.status,
-        payment_status: membership.payment_status,
-        valid_from: membership.valid_from,
-        valid_until: membership.valid_until
-      }));
+      const membersWithUserData = (membershipsRes.data || []).map(membership => {
+        // Add null check for user_roles before spreading
+        const userRoles = membership.user_roles;
+        if (!userRoles || typeof userRoles !== 'object') {
+          console.warn('Invalid user_roles data for membership:', membership.id);
+          return {
+            id: membership.id,
+            full_name: 'Unknown User',
+            email: 'No email',
+            role: 'member',
+            membership_type: membership.membership_type,
+            membership_status: membership.status,
+            payment_status: membership.payment_status,
+            valid_from: membership.valid_from,
+            valid_until: membership.valid_until
+          };
+        }
+        
+        return {
+          ...userRoles,
+          membership_type: membership.membership_type,
+          membership_status: membership.status,
+          payment_status: membership.payment_status,
+          valid_from: membership.valid_from,
+          valid_until: membership.valid_until
+        };
+      });
       
       setUsers(membersWithUserData);
       setMemberships(membershipsRes.data || []);
