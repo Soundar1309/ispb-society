@@ -1,12 +1,8 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, User, MessageSquare } from 'lucide-react';
-import 'mapbox-gl/dist/mapbox-gl.css';
 
 const ContactUs = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -15,46 +11,6 @@ const ContactUs = () => {
     subject: '',
     message: ''
   });
-
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    const loadMapbox = async () => {
-      const mapboxgl = await import('mapbox-gl');
-      
-      mapboxgl.default.accessToken = mapboxToken;
-      
-      map.current = new mapboxgl.default.Map({
-        container: mapContainer.current!,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [77.1739, 28.6396], // Updated coordinates for the new location
-        zoom: 15,
-        pitch: 45,
-      });
-
-      // Add navigation controls
-      map.current.addControl(
-        new mapboxgl.default.NavigationControl(),
-        'top-right'
-      );
-
-      // Add marker for the new location
-      new mapboxgl.default.Marker({ color: '#16a34a' })
-        .setLngLat([77.1739, 28.6396])
-        .setPopup(
-          new mapboxgl.default.Popup().setHTML(
-            '<div class="p-2"><h3 class="font-semibold">Indian Society of Plant Breeders</h3><p class="text-sm">Division of Genetics<br>IARI, Pusa Campus<br>New Delhi - 110012</p></div>'
-          )
-        )
-        .addTo(map.current);
-    };
-
-    loadMapbox();
-
-    return () => {
-      map.current?.remove();
-    };
-  }, [mapboxToken]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -292,31 +248,19 @@ const ContactUs = () => {
             <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, Pusa Campus, New Delhi</p>
           </div>
 
-          {!mapboxToken ? (
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-              <div className="text-center">
-                <MapPin className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Enter Mapbox Token to View Map</h3>
-                <p className="text-gray-600 mb-6">
-                  To display the interactive map, please enter your Mapbox public token below. 
-                  You can get one for free at <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">mapbox.com</a>
-                </p>
-                <div className="max-w-md mx-auto">
-                  <input
-                    type="text"
-                    placeholder="Enter your Mapbox public token"
-                    value={mapboxToken}
-                    onChange={(e) => setMapboxToken(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-              <div ref={mapContainer} className="w-full h-96" />
-            </div>
-          )}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.2769726856707!2d77.17145127549173!3d28.639596475667866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d03d15b62e8f9%3A0x8d5b0d1e1c1b4e8f!2sIndian%20Agricultural%20Research%20Institute%2C%20Pusa%20Campus!5e0!3m2!1sen!2sin!4v1639123456789!5m2!1sen!2sin"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Indian Agricultural Research Institute, Pusa Campus Location"
+              className="w-full h-96"
+            />
+          </div>
         </div>
 
         {/* Department Contacts */}
