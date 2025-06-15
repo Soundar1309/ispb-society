@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminTabs from '@/components/admin/AdminTabs';
@@ -16,8 +16,10 @@ import AdminContentTab from '@/components/admin/AdminContentTab';
 import CSVExport from '@/components/admin/CSVExport';
 
 const AdminPanel = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalMembers: 0,
     membershipEnrolled: 0,
@@ -36,73 +38,100 @@ const AdminPanel = () => {
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
-    checkAdminAccess();
-    if (isAdmin) {
+    if (!authLoading && user) {
+      checkAdminAccess();
+    }
+  }, [user, authLoading]);
+
+  useEffect(() => {
+    if (isAdmin && !loading) {
       fetchStats();
       fetchAllData();
     }
-  }, [user, isAdmin]);
+  }, [isAdmin, loading]);
 
   const checkAdminAccess = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
 
-    if (data && !error) {
-      setIsAdmin(true);
+      if (data && !error) {
+        setIsAdmin(true);
+      } else {
+        setError('You do not have admin privileges');
+      }
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      setError('Error checking admin privileges');
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchStats = async () => {
-    const [membersRes, usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
-      supabase.from('profiles').select('id', { count: 'exact' }),
-      supabase.from('profiles').select('id', { count: 'exact' }),
-      supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
-      supabase.from('publications').select('id', { count: 'exact' }),
-      supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
-    ]);
+    try {
+      const [membersRes, usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('publications').select('id', { count: 'exact' }),
+        supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
+      ]);
 
-    setStats({
-      totalMembers: membersRes.count || 0,
-      totalUsers: usersRes.count || 0,
-      membershipEnrolled: membershipRes.count || 0,
-      totalPublications: publicationsRes.count || 0,
-      unreadMessages: messagesRes.count || 0
-    });
+      setStats({
+        totalMembers: membersRes.count || 0,
+        totalUsers: usersRes.count || 0,
+        membershipEnrolled: membershipRes.count || 0,
+        totalPublications: publicationsRes.count || 0,
+        unreadMessages: messagesRes.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      toast.error('Error loading statistics');
+    }
   };
 
   const fetchAllData = async () => {
-    const [
-      membersRes, 
-      conferencesRes, 
-      messagesRes, 
-      publicationsRes, 
-      usersRes, 
-      userRolesRes
-    ] = await Promise.all([
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-      supabase.from('conferences').select('*').order('created_at', { ascending: false }),
-      supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
-      supabase.from('publications').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
-      supabase.from('user_roles').select('*')
-    ]);
+    try {
+      const [
+        membersRes, 
+        conferencesRes, 
+        messagesRes, 
+        publicationsRes, 
+        usersRes, 
+        userRolesRes
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('conferences').select('*').order('created_at', { ascending: false }),
+        supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+        supabase.from('publications').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
+        supabase.from('user_roles').select('*')
+      ]);
 
-    setMembers(membersRes.data || []);
-    setConferences(conferencesRes.data || []);
-    setMessages(messagesRes.data || []);
-    setPublications(publicationsRes.data || []);
-    setUsers(usersRes.data || []);
-    setUserRoles(userRolesRes.data || []);
-    
-    // Mock data for mandates and activities since these tables don't exist yet
-    setMandates([]);
-    setActivities([]);
+      setMembers(membersRes.data || []);
+      setConferences(conferencesRes.data || []);
+      setMessages(messagesRes.data || []);
+      setPublications(publicationsRes.data || []);
+      setUsers(usersRes.data || []);
+      setUserRoles(userRolesRes.data || []);
+      
+      // Mock data for mandates and activities since these tables don't exist yet
+      setMandates([]);
+      setActivities([]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Error loading admin data');
+    }
   };
 
   const handleMarkMessageRead = async (messageId: string) => {
@@ -212,13 +241,40 @@ const AdminPanel = () => {
     toast.info(`Content management for ${type}s needs database implementation`);
   };
 
-  if (!isAdmin) {
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin || error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
           <CardHeader>
             <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You don't have admin privileges to access this page.</CardDescription>
+            <CardDescription>
+              {error || "You don't have admin privileges to access this page."}
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>

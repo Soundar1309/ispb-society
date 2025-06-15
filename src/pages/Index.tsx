@@ -17,6 +17,7 @@ import AdminLogin from '@/components/AdminLogin';
 import AdminPanel from '@/components/AdminPanel';
 import UserDashboard from '@/components/UserDashboard';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import NotFound from '@/pages/NotFound';
 
 const Index = () => {
   return (
@@ -60,6 +61,8 @@ const Index = () => {
                   </ProtectedRoute>
                 } 
               />
+              {/* Catch all undefined routes */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
