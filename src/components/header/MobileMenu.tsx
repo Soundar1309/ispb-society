@@ -133,7 +133,7 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
                     >
                       <LogOut className="h-4 w-4" />
                       Sign Out
-                    </Link>
+                    </button>
                   </div>
                 </div>
               )}
