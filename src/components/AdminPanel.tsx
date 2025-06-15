@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Users, CreditCard, BookOpen, MessageSquare, Calendar, UserPlus } from 'lucide-react';
+import { Users, CreditCard, BookOpen, MessageSquare, Calendar, UserPlus, Settings } from 'lucide-react';
 
 const AdminPanel = () => {
   const { user } = useAuth();
@@ -22,6 +24,8 @@ const AdminPanel = () => {
   });
 
   const [members, setMembers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [userRoles, setUserRoles] = useState([]);
   const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
   const [publications, setPublications] = useState([]);
@@ -66,7 +70,7 @@ const AdminPanel = () => {
   };
 
   const fetchAllData = async () => {
-    const [membersRes, ordersRes, messagesRes, publicationsRes] = await Promise.all([
+    const [membersRes, ordersRes, messagesRes, publicationsRes, usersRes, userRolesRes] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('orders').select(`
         *,
@@ -74,13 +78,17 @@ const AdminPanel = () => {
         profiles(full_name, email)
       `).order('created_at', { ascending: false }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
-      supabase.from('publications').select('*').order('created_at', { ascending: false })
+      supabase.from('publications').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name, email, created_at').order('created_at', { ascending: false }),
+      supabase.from('user_roles').select('*')
     ]);
 
     setMembers(membersRes.data || []);
     setOrders(ordersRes.data || []);
     setMessages(messagesRes.data || []);
     setPublications(publicationsRes.data || []);
+    setUsers(usersRes.data || []);
+    setUserRoles(userRolesRes.data || []);
   };
 
   const handleMarkMessageRead = async (messageId: string) => {
@@ -108,6 +116,35 @@ const AdminPanel = () => {
     } else {
       toast.error('Error adding publication');
     }
+  };
+
+  const handleChangeUserRole = async (userId: string, newRole: string) => {
+    try {
+      // First, remove existing roles for this user
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      // Then add the new role
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: newRole });
+
+      if (!error) {
+        toast.success('User role updated successfully');
+        fetchAllData();
+      } else {
+        toast.error('Error updating user role');
+      }
+    } catch (error) {
+      toast.error('Error updating user role');
+    }
+  };
+
+  const getUserRole = (userId: string) => {
+    const userRole = userRoles.find(role => role.user_id === userId);
+    return userRole ? userRole.role : 'member';
   };
 
   if (!isAdmin) {
@@ -175,6 +212,7 @@ const AdminPanel = () => {
         <Tabs defaultValue="members" className="space-y-4">
           <TabsList>
             <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="publications">Publications</TabsTrigger>
@@ -199,6 +237,55 @@ const AdminPanel = () => {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage user roles and permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Current Role</TableHead>
+                      <TableHead>Change Role</TableHead>
+                      <TableHead>Member Since</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user: any) => (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.full_name || 'No Name'}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={getUserRole(user.id) === 'admin' ? 'destructive' : 'default'}>
+                            {getUserRole(user.id)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Select onValueChange={(value) => handleChangeUserRole(user.id, value)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Change role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="member">Member</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
