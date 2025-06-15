@@ -59,16 +59,16 @@ const AdminDashboard = ({
   const isMobile = useIsMobile();
 
   const tabs = [
-    { value: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { value: 'users', label: 'Users', icon: '👥' },
-    { value: 'members', label: 'Members', icon: '👤' },
-    { value: 'life-members', label: 'Life Members', icon: '⭐' },
-    { value: 'conferences', label: 'Conferences', icon: '🎯' },
-    { value: 'messages', label: 'Messages', icon: '📧' },
-    { value: 'content', label: 'Content', icon: '📝' },
-    { value: 'payments', label: 'Payments', icon: '💳' },
-    { value: 'orders', label: 'Orders', icon: '📦' },
-    { value: 'plans', label: 'Plans', icon: '📋' }
+    { value: 'dashboard', label: 'Dashboard' },
+    { value: 'users', label: 'Users' },
+    { value: 'members', label: 'Members' },
+    { value: 'life-members', label: 'Life Members' },
+    { value: 'conferences', label: 'Conferences' },
+    { value: 'messages', label: 'Messages' },
+    { value: 'content', label: 'Content' },
+    { value: 'payments', label: 'Payments' },
+    { value: 'orders', label: 'Orders' },
+    { value: 'plans', label: 'Plans' }
   ];
 
   // Conference handlers
@@ -355,7 +355,6 @@ const AdminDashboard = ({
                     value={tab.value}
                     className="text-xs sm:text-sm whitespace-nowrap px-2 py-2 data-[state=active]:bg-white"
                   >
-                    <span className="hidden sm:inline mr-1">{tab.icon}</span>
                     {tab.label}
                   </TabsTrigger>
                 ))}
@@ -388,7 +387,6 @@ const AdminDashboard = ({
                       }}
                       className="justify-start text-xs"
                     >
-                      <span className="mr-2">{tab.icon}</span>
                       {tab.label}
                     </Button>
                   ))}
@@ -399,9 +397,6 @@ const AdminDashboard = ({
             {/* Current Tab Indicator */}
             <div className="bg-white rounded-lg shadow-sm border p-3">
               <div className="flex items-center gap-2">
-                <span className="text-lg">
-                  {tabs.find(tab => tab.value === activeTab)?.icon}
-                </span>
                 <h2 className="font-semibold text-gray-900">
                   {tabs.find(tab => tab.value === activeTab)?.label}
                 </h2>
