@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
 import AdminStats from './AdminStats';
 import AdminMembersTab from './AdminMembersTab';
 import AdminConferencesTab from './AdminConferencesTab';
@@ -12,6 +15,7 @@ import AdminLifeMembersTab from './AdminLifeMembersTab';
 import UserManagement from './UserManagement';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AdminDashboardProps {
   stats: any;
@@ -51,6 +55,21 @@ const AdminDashboard = ({
   deleteMembership
 }: AdminDashboardProps) => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const tabs = [
+    { value: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { value: 'users', label: 'Users', icon: '👥' },
+    { value: 'members', label: 'Members', icon: '👤' },
+    { value: 'life-members', label: 'Life Members', icon: '⭐' },
+    { value: 'conferences', label: 'Conferences', icon: '🎯' },
+    { value: 'messages', label: 'Messages', icon: '📧' },
+    { value: 'content', label: 'Content', icon: '📝' },
+    { value: 'payments', label: 'Payments', icon: '💳' },
+    { value: 'orders', label: 'Orders', icon: '📦' },
+    { value: 'plans', label: 'Plans', icon: '📋' }
+  ];
 
   // Conference handlers
   const handleAddConference = async (conferenceData: any) => {
@@ -216,104 +235,185 @@ const AdminDashboard = ({
     }
   };
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <AdminStats stats={stats} />;
+      case 'users':
+        return (
+          <UserManagement 
+            users={userRoles}
+            userRoles={userRoles}
+            onChangeUserRole={updateUserRole}
+          />
+        );
+      case 'members':
+        return (
+          <AdminMembersTab 
+            members={users}
+            userRoles={userRoles}
+            onAddMembership={addMembership}
+            onUpdateMembership={updateMembership}
+            onDeleteMembership={deleteMembership}
+          />
+        );
+      case 'life-members':
+        return (
+          <AdminLifeMembersTab 
+            lifeMembers={lifeMembers}
+            onRefresh={refreshData}
+          />
+        );
+      case 'conferences':
+        return (
+          <AdminConferencesTab 
+            conferences={conferences}
+            onAddConference={handleAddConference}
+            onUpdateConference={handleUpdateConference}
+            onDeleteConference={handleDeleteConference}
+          />
+        );
+      case 'messages':
+        return (
+          <AdminMessagesTab 
+            messages={messages}
+            onMarkMessageRead={handleMarkMessageRead}
+          />
+        );
+      case 'content':
+        return (
+          <AdminContentTab 
+            mandates={mandates}
+            activities={activities}
+            onAddContent={handleAddContent}
+            onUpdateContent={handleUpdateContent}
+            onDeleteContent={handleDeleteContent}
+          />
+        );
+      case 'payments':
+        return (
+          <AdminPaymentTab 
+            payments={payments}
+            onAddPayment={handleAddPayment}
+            onUpdatePayment={handleUpdatePayment}
+          />
+        );
+      case 'orders':
+        return (
+          <AdminOrdersTab 
+            orders={orders}
+          />
+        );
+      case 'plans':
+        return (
+          <AdminMembershipPlansTab 
+            plans={membershipPlans}
+            onRefresh={refreshData}
+          />
+        );
+      default:
+        return <AdminStats stats={stats} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Comprehensive management of ISPB website and registered users</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="responsive-container py-4 sm:py-8">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="responsive-text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="responsive-text-sm text-gray-600 mt-1">
+                Comprehensive management of ISPB website and registered users
+              </p>
+            </div>
+            
+            {/* Mobile Menu Toggle */}
+            {isMobile && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="self-start"
+              >
+                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                <span className="ml-2">{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
+              </Button>
+            )}
+          </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="life-members">Life Members</TabsTrigger>
-            <TabsTrigger value="conferences">Conferences</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-          </TabsList>
+        {/* Desktop Tabs */}
+        {!isMobile ? (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <ScrollArea className="w-full">
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1 h-auto p-1">
+                {tabs.map((tab) => (
+                  <TabsTrigger 
+                    key={tab.value} 
+                    value={tab.value}
+                    className="text-xs sm:text-sm whitespace-nowrap px-2 py-2 data-[state=active]:bg-white"
+                  >
+                    <span className="hidden sm:inline mr-1">{tab.icon}</span>
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </ScrollArea>
 
-          <TabsContent value="dashboard">
-            <AdminStats stats={stats} />
-          </TabsContent>
+            <div className="mt-6">
+              {tabs.map((tab) => (
+                <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                  {renderTabContent()}
+                </TabsContent>
+              ))}
+            </div>
+          </Tabs>
+        ) : (
+          /* Mobile Layout */
+          <div className="space-y-4">
+            {/* Mobile Navigation */}
+            {isMobileMenuOpen && (
+              <div className="bg-white rounded-lg shadow-sm border p-4">
+                <div className="grid grid-cols-2 gap-2">
+                  {tabs.map((tab) => (
+                    <Button
+                      key={tab.value}
+                      variant={activeTab === tab.value ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setActiveTab(tab.value);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="justify-start text-xs"
+                    >
+                      <span className="mr-2">{tab.icon}</span>
+                      {tab.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          <TabsContent value="users">
-            <UserManagement 
-              users={userRoles}
-              userRoles={userRoles}
-              onChangeUserRole={updateUserRole}
-            />
-          </TabsContent>
+            {/* Current Tab Indicator */}
+            <div className="bg-white rounded-lg shadow-sm border p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">
+                  {tabs.find(tab => tab.value === activeTab)?.icon}
+                </span>
+                <h2 className="font-semibold text-gray-900">
+                  {tabs.find(tab => tab.value === activeTab)?.label}
+                </h2>
+              </div>
+            </div>
 
-          <TabsContent value="members">
-            <AdminMembersTab 
-              members={users}
-              userRoles={userRoles}
-              onAddMembership={addMembership}
-              onUpdateMembership={updateMembership}
-              onDeleteMembership={deleteMembership}
-            />
-          </TabsContent>
-
-          <TabsContent value="life-members">
-            <AdminLifeMembersTab 
-              lifeMembers={lifeMembers}
-              onRefresh={refreshData}
-            />
-          </TabsContent>
-
-          <TabsContent value="conferences">
-            <AdminConferencesTab 
-              conferences={conferences}
-              onAddConference={handleAddConference}
-              onUpdateConference={handleUpdateConference}
-              onDeleteConference={handleDeleteConference}
-            />
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <AdminMessagesTab 
-              messages={messages}
-              onMarkMessageRead={handleMarkMessageRead}
-            />
-          </TabsContent>
-
-          <TabsContent value="content">
-            <AdminContentTab 
-              mandates={mandates}
-              activities={activities}
-              onAddContent={handleAddContent}
-              onUpdateContent={handleUpdateContent}
-              onDeleteContent={handleDeleteContent}
-            />
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <AdminPaymentTab 
-              payments={payments}
-              onAddPayment={handleAddPayment}
-              onUpdatePayment={handleUpdatePayment}
-            />
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <AdminOrdersTab 
-              orders={orders}
-            />
-          </TabsContent>
-
-          <TabsContent value="plans">
-            <AdminMembershipPlansTab 
-              plans={membershipPlans}
-              onRefresh={refreshData}
-            />
-          </TabsContent>
-        </Tabs>
+            {/* Content */}
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              {renderTabContent()}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
