@@ -14,6 +14,7 @@ import Conference from '@/components/Conference';
 import ContactForm from '@/components/ContactForm';
 import AuthPage from '@/components/AuthPage';
 import AdminPanel from '@/components/AdminPanel';
+import UserDashboard from '@/components/UserDashboard';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const Index = () => {
@@ -41,6 +42,14 @@ const Index = () => {
               <Route path="/life-members" element={<LifeMembers />} />
               <Route path="/conference" element={<Conference />} />
               <Route path="/contact" element={<ContactForm />} />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                } 
+              />
               <Route 
                 path="/admin" 
                 element={
