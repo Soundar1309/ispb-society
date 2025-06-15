@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Users, CreditCard, BookOpen, MessageSquare, Calendar, UserPlus, Settings } from 'lucide-react';
+import AdminStats from '@/components/admin/AdminStats';
+import AdminTabs from '@/components/admin/AdminTabs';
+import UserManagement from '@/components/admin/UserManagement';
 
 const AdminPanel = () => {
   const { user } = useAuth();
@@ -79,7 +78,7 @@ const AdminPanel = () => {
       `).order('created_at', { ascending: false }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('publications').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('id, full_name, email, created_at').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
       supabase.from('user_roles').select('*')
     ]);
 
@@ -164,76 +163,42 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-gray-600">Manage ISPB website and members</p>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600">Comprehensive management of ISPB website and members</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMembers}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalOrders}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Publications</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalPublications}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.unreadMessages}</div>
-            </CardContent>
-          </Card>
+        {/* Enhanced Stats Section */}
+        <div className="mb-8">
+          <AdminStats stats={stats} />
         </div>
 
-        {/* Admin Tabs */}
-        <Tabs defaultValue="members" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="publications">Publications</TabsTrigger>
-          </TabsList>
-
+        {/* Enhanced Admin Tabs */}
+        <AdminTabs>
           <TabsContent value="members">
             <Card>
               <CardHeader>
-                <CardTitle>Members Management</CardTitle>
+                <CardTitle>Members Overview</CardTitle>
                 <CardDescription>View and manage all registered members</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {members.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-semibold">{member.full_name || 'No Name'}</h3>
-                        <p className="text-sm text-gray-600">{member.email}</p>
-                        <p className="text-sm text-gray-500">{member.institution}</p>
+                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                          <span className="text-white font-semibold">
+                            {member.full_name ? member.full_name.charAt(0).toUpperCase() : 'U'}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{member.full_name || 'No Name'}</h3>
+                          <p className="text-sm text-gray-600">{member.email}</p>
+                          <p className="text-sm text-gray-500">{member.institution || 'No institution'}</p>
+                        </div>
                       </div>
-                      <Badge variant="outline">Member</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {getUserRole(member.id)}
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -242,52 +207,11 @@ const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Manage user roles and permissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Current Role</TableHead>
-                      <TableHead>Change Role</TableHead>
-                      <TableHead>Member Since</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user: any) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.full_name || 'No Name'}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={getUserRole(user.id) === 'admin' ? 'destructive' : 'default'}>
-                            {getUserRole(user.id)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Select onValueChange={(value) => handleChangeUserRole(user.id, value)}>
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Change role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <UserManagement 
+              users={users} 
+              userRoles={userRoles} 
+              onChangeUserRole={handleChangeUserRole} 
+            />
           </TabsContent>
 
           <TabsContent value="orders">
@@ -371,7 +295,7 @@ const AdminPanel = () => {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+        </AdminTabs>
       </div>
     </div>
   );
