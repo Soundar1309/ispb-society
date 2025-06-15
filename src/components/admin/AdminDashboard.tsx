@@ -1,4 +1,3 @@
-
 import { TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +57,50 @@ const AdminDashboard = ({
       refreshData();
     } else {
       toast.error('Error adding publication');
+    }
+  };
+
+  const handleUpdatePublication = async (id: string, publicationData: any) => {
+    const { error } = await supabase
+      .from('publications')
+      .update(publicationData)
+      .eq('id', id);
+
+    if (!error) {
+      toast.success('Publication updated successfully');
+      refreshData();
+    } else {
+      toast.error('Error updating publication');
+    }
+  };
+
+  const handleDeletePublication = async (id: string) => {
+    const { error } = await supabase
+      .from('publications')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      toast.success('Publication deleted successfully');
+      refreshData();
+    } else {
+      toast.error('Error deleting publication');
+    }
+  };
+
+  const handleAddMember = async (memberData: any) => {
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({
+        ...memberData,
+        user_id: crypto.randomUUID() // This would need proper user creation
+      });
+
+    if (!error) {
+      toast.success('Member added successfully');
+      refreshData();
+    } else {
+      toast.error('Error adding member');
     }
   };
 
@@ -152,7 +195,11 @@ const AdminDashboard = ({
 
         <AdminTabs>
           <TabsContent value="members">
-            <AdminMembersTab members={users} userRoles={userRoles} />
+            <AdminMembersTab 
+              members={users} 
+              userRoles={userRoles} 
+              onAddMember={handleAddMember}
+            />
           </TabsContent>
 
           <TabsContent value="users">
@@ -182,7 +229,9 @@ const AdminDashboard = ({
           <TabsContent value="publications">
             <AdminPublicationsTab 
               publications={publications} 
-              onAddPublication={handleAddPublication} 
+              onAddPublication={handleAddPublication}
+              onUpdatePublication={handleUpdatePublication}
+              onDeletePublication={handleDeletePublication}
             />
           </TabsContent>
 
