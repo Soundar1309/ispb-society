@@ -35,12 +35,8 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
     role: 'member'
   });
 
-  // Filter to show only users with active memberships
-  const enrolledMembers = members.filter(member => {
-    // This would need to be updated to check actual membership status
-    // For now, showing all members as enrolled
-    return true;
-  });
+  // Show only users with active paid memberships
+  const enrolledMembers = members;
 
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +61,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Enrolled Members</CardTitle>
-            <CardDescription>View and manage members with active memberships</CardDescription>
+            <CardDescription>View and manage members with active paid memberships</CardDescription>
           </div>
           <Button onClick={() => setShowAddForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -158,7 +154,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
         )}
 
         <div className="space-y-4">
-          {enrolledMembers.map((member: UserRole) => (
+          {enrolledMembers.map((member: any) => (
             <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -170,6 +166,14 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
                   <h3 className="font-semibold">{member.full_name || 'No Name'}</h3>
                   <p className="text-sm text-gray-600">{member.email}</p>
                   <p className="text-sm text-gray-500">{member.institution || 'No institution'}</p>
+                  <div className="flex gap-2 mt-1">
+                    <Badge variant="outline" className="capitalize text-xs">
+                      {member.membership_type}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Valid until: {member.valid_until ? new Date(member.valid_until).toLocaleDateString() : 'N/A'}
+                    </Badge>
+                  </div>
                 </div>
               </div>
               <Badge variant="outline" className="capitalize">
@@ -178,7 +182,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
             </div>
           ))}
           {enrolledMembers.length === 0 && (
-            <p className="text-center text-gray-500 py-8">No enrolled members found</p>
+            <p className="text-center text-gray-500 py-8">No enrolled members with active paid memberships found</p>
           )}
         </div>
       </CardContent>

@@ -20,6 +20,7 @@ export const useAdminData = () => {
 
   const [users, setUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
+  const [memberships, setMemberships] = useState([]);
   const [conferences, setConferences] = useState([]);
   const [messages, setMessages] = useState([]);
   const [publications, setPublications] = useState([]);
@@ -30,7 +31,7 @@ export const useAdminData = () => {
     try {
       const [usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
         supabase.from('user_roles').select('id', { count: 'exact' }),
-        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active').eq('payment_status', 'paid'),
         supabase.from('publications').select('id', { count: 'exact' }),
         supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
       ]);
@@ -51,19 +52,36 @@ export const useAdminData = () => {
     try {
       const [
         userRolesRes, 
+        membershipsRes,
         conferencesRes, 
         messagesRes, 
         publicationsRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
+        supabase.from('memberships').select(`
+          *,
+          user_roles!inner(*)
+        `).eq('status', 'active').eq('payment_status', 'paid').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('publications').select('*').order('created_at', { ascending: false })
       ]);
 
-      // user_roles now contains all user data, so we use it for both users and userRoles
-      setUsers(userRolesRes.data || []);
+      // Set all users for user management
       setUserRoles(userRolesRes.data || []);
+      
+      // Set only users with active paid memberships for members tab
+      const membersWithUserData = (membershipsRes.data || []).map(membership => ({
+        ...membership.user_roles,
+        membership_type: membership.membership_type,
+        membership_status: membership.status,
+        payment_status: membership.payment_status,
+        valid_from: membership.valid_from,
+        valid_until: membership.valid_until
+      }));
+      
+      setUsers(membersWithUserData);
+      setMemberships(membershipsRes.data || []);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       setPublications(publicationsRes.data || []);
@@ -90,6 +108,7 @@ export const useAdminData = () => {
     stats,
     users,
     userRoles,
+    memberships,
     conferences,
     messages,
     publications,
