@@ -32,37 +32,47 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-green-50 via-white to-orange-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-4xl">I</span>
-              </div>
+      {/* Hero Section with Background Image */}
+      <section className="relative min-h-screen flex items-center justify-center">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80)'
+          }}
+        />
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/50" />
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <div className="flex justify-center mb-8">
+            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">
+              <span className="text-white font-bold text-4xl">I</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Indian Society of
-              <span className="block text-green-600">Plant Breeders</span>
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Advancing plant breeding science for sustainable agriculture and food security through research, 
-              education, and collaboration among scientists, researchers, and professionals.
-            </p>
-            <div className="space-x-4">
-              <Link
-                to="/membership"
-                className="inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-              >
-                Join ISPB
-              </Link>
-              <Link
-                to="/genesis"
-                className="inline-block border-2 border-green-600 text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"
-              >
-                Learn More
-              </Link>
-            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
+            Indian Society of
+            <span className="block text-green-400">Plant Breeders</span>
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto drop-shadow-md">
+            Advancing plant breeding science for sustainable agriculture and food security through research, 
+            education, and collaboration among scientists, researchers, and professionals.
+          </p>
+          <div className="space-x-4">
+            <Link
+              to="/membership"
+              className="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Join ISPB
+            </Link>
+            <Link
+              to="/genesis"
+              className="inline-block border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Learn More
+            </Link>
           </div>
         </div>
       </section>
