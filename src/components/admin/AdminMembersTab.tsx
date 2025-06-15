@@ -8,6 +8,23 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 
+interface MemberWithUserData {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  institution?: string;
+  designation?: string;
+  specialization?: string;
+  phone?: string;
+  membership_type: string;
+  membership_status: string;
+  payment_status: string;
+  valid_from: string;
+  valid_until: string;
+}
+
 interface UserRole {
   id: string;
   user_id: string;
@@ -18,7 +35,7 @@ interface UserRole {
 }
 
 interface AdminMembersTabProps {
-  members: UserRole[];
+  members: MemberWithUserData[];
   userRoles: UserRole[];
   onAddMember?: (memberData: any) => void;
 }
@@ -34,9 +51,6 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
     specialization: '',
     role: 'member'
   });
-
-  // Show only users with active paid memberships
-  const enrolledMembers = members;
 
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +168,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
         )}
 
         <div className="space-y-4">
-          {enrolledMembers.map((member: any) => (
+          {members.map((member) => (
             <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -163,7 +177,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-semibold">{member.full_name || 'No Name'}</h3>
+                  <h3 className="font-semibold">{member.full_name}</h3>
                   <p className="text-sm text-gray-600">{member.email}</p>
                   <p className="text-sm text-gray-500">{member.institution || 'No institution'}</p>
                   <div className="flex gap-2 mt-1">
@@ -181,7 +195,7 @@ const AdminMembersTab = ({ members, userRoles, onAddMember }: AdminMembersTabPro
               </Badge>
             </div>
           ))}
-          {enrolledMembers.length === 0 && (
+          {members.length === 0 && (
             <p className="text-center text-gray-500 py-8">No enrolled members with active paid memberships found</p>
           )}
         </div>

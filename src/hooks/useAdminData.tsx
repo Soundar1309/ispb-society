@@ -32,7 +32,23 @@ interface Membership {
   valid_from: string;
   valid_until: string;
   created_at: string;
-  user_roles: UserRole | UserRole[] | null;
+}
+
+interface MemberWithUserData {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  institution?: string;
+  designation?: string;
+  specialization?: string;
+  phone?: string;
+  membership_type: string;
+  membership_status: string;
+  payment_status: string;
+  valid_from: string;
+  valid_until: string;
 }
 
 export const useAdminData = () => {
@@ -42,9 +58,9 @@ export const useAdminData = () => {
     unreadMessages: 0
   });
 
-  const [users, setUsers] = useState([]);
-  const [userRoles, setUserRoles] = useState([]);
-  const [memberships, setMemberships] = useState([]);
+  const [users, setUsers] = useState<MemberWithUserData[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [conferences, setConferences] = useState([]);
   const [messages, setMessages] = useState([]);
   const [mandates, setMandates] = useState([]);
@@ -78,66 +94,58 @@ export const useAdminData = () => {
         messagesRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
-        supabase.from('memberships').select(`
-          *,
-          user_roles!inner(*)
-        `).eq('status', 'active').eq('payment_status', 'paid').order('created_at', { ascending: false }),
+        supabase.from('memberships').select('*').eq('status', 'active').eq('payment_status', 'paid').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
       ]);
 
       // Set all users for user management
       setUserRoles(userRolesRes.data || []);
+      setMemberships(membershipsRes.data || []);
       
-      // Set only users with active paid memberships for members tab
-      const membersWithUserData = (membershipsRes.data as Membership[] || []).map(membership => {
-        // Handle the user_roles data which could be an object or array
-        let userRoles: UserRole | null = null;
-        
-        if (membership.user_roles) {
-          // If it's an array, take the first item, otherwise use it directly
-          userRoles = Array.isArray(membership.user_roles) 
-            ? membership.user_roles[0] 
-            : membership.user_roles as UserRole;
+      // Manually join memberships with user_roles data
+      const membersWithUserData: MemberWithUserData[] = [];
+      
+      if (membershipsRes.data && userRolesRes.data) {
+        for (const membership of membershipsRes.data) {
+          const userRole = userRolesRes.data.find(ur => ur.user_id === membership.user_id);
+          
+          if (userRole) {
+            membersWithUserData.push({
+              id: userRole.id,
+              user_id: userRole.user_id,
+              full_name: userRole.full_name || 'Unknown User',
+              email: userRole.email || 'No email',
+              role: userRole.role || 'member',
+              institution: userRole.institution || undefined,
+              designation: userRole.designation || undefined,
+              specialization: userRole.specialization || undefined,
+              phone: userRole.phone || undefined,
+              membership_type: membership.membership_type,
+              membership_status: membership.status,
+              payment_status: membership.payment_status,
+              valid_from: membership.valid_from || '',
+              valid_until: membership.valid_until || ''
+            });
+          } else {
+            // Handle case where user_role is not found
+            membersWithUserData.push({
+              id: membership.id,
+              user_id: membership.user_id || '',
+              full_name: 'Unknown User',
+              email: 'No email',
+              role: 'member',
+              membership_type: membership.membership_type,
+              membership_status: membership.status,
+              payment_status: membership.payment_status,
+              valid_from: membership.valid_from || '',
+              valid_until: membership.valid_until || ''
+            });
+          }
         }
-        
-        // Type guard to ensure userRoles is a valid object
-        if (!userRoles || typeof userRoles !== 'object' || !userRoles.id) {
-          console.warn('Invalid user_roles data for membership:', membership.id);
-          return {
-            id: membership.id,
-            user_id: membership.user_id,
-            full_name: 'Unknown User',
-            email: 'No email',
-            role: 'member',
-            membership_type: membership.membership_type,
-            membership_status: membership.status,
-            payment_status: membership.payment_status,
-            valid_from: membership.valid_from,
-            valid_until: membership.valid_until
-          };
-        }
-        
-        return {
-          id: userRoles.id,
-          user_id: userRoles.user_id,
-          full_name: userRoles.full_name || 'Unknown User',
-          email: userRoles.email || 'No email',
-          role: userRoles.role || 'member',
-          institution: userRoles.institution,
-          designation: userRoles.designation,
-          specialization: userRoles.specialization,
-          phone: userRoles.phone,
-          membership_type: membership.membership_type,
-          membership_status: membership.status,
-          payment_status: membership.payment_status,
-          valid_from: membership.valid_from,
-          valid_until: membership.valid_until
-        };
-      });
+      }
       
       setUsers(membersWithUserData);
-      setMemberships(membershipsRes.data || []);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       
