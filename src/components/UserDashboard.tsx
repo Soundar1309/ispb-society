@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +16,7 @@ const UserDashboard = () => {
   const [memberships, setMemberships] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '',
     phone: '',
@@ -34,14 +34,21 @@ const UserDashboard = () => {
   const fetchUserData = async () => {
     if (!user) return;
 
+    console.log('Fetching user data for:', user.id);
+
     // Fetch user role data (which now contains profile info)
-    const { data: userRoleData } = await supabase
+    const { data: userRoleData, error: userRoleError } = await supabase
       .from('user_roles')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
+    if (userRoleError) {
+      console.error('Error fetching user role:', userRoleError);
+    }
+
     if (userRoleData) {
+      console.log('Fetched user role data:', userRoleData);
       setUserRole(userRoleData);
       setEditForm({
         full_name: userRoleData.full_name || '',
@@ -79,27 +86,71 @@ const UserDashboard = () => {
   const handleUpdateProfile = async () => {
     if (!user) return;
 
+    setIsUpdating(true);
+    
     try {
-      const { error } = await supabase
+      console.log('Updating profile with data:', editForm);
+      
+      // First check if user_roles record exists
+      const { data: existingRole } = await supabase
         .from('user_roles')
-        .update({
-          ...editForm,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Profile update error:', error);
-        toast.error('Error updating profile: ' + error.message);
+      let updateResult;
+      
+      if (existingRole) {
+        // Update existing record
+        updateResult = await supabase
+          .from('user_roles')
+          .update({
+            ...editForm,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .select()
+          .single();
+      } else {
+        // Insert new record if doesn't exist
+        updateResult = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.id,
+            role: 'member',
+            email: user.email,
+            ...editForm,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+      }
+
+      if (updateResult.error) {
+        console.error('Profile update error:', updateResult.error);
+        toast.error('Error updating profile: ' + updateResult.error.message);
         return;
       }
 
+      console.log('Profile updated successfully:', updateResult.data);
+      
+      // Update local state immediately
+      setUserRole(updateResult.data);
+      
       toast.success('Profile updated successfully');
       setIsEditing(false);
-      fetchUserData();
+      
+      // Refresh data to ensure consistency
+      setTimeout(() => {
+        fetchUserData();
+      }, 500);
+      
     } catch (error) {
       console.error('Profile update error:', error);
       toast.error('Error updating profile');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -195,10 +246,25 @@ const UserDashboard = () => {
                 </div>
                 <Button
                   variant="outline"
+                  disabled={isUpdating}
                   onClick={() => isEditing ? handleUpdateProfile() : setIsEditing(true)}
                 >
-                  {isEditing ? <Save className="w-4 h-4 mr-2" /> : <Edit className="w-4 h-4 mr-2" />}
-                  {isEditing ? 'Save' : 'Edit'}
+                  {isUpdating ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 animate-spin border-2 border-gray-300 border-t-gray-600 rounded-full"></div>
+                      Saving...
+                    </>
+                  ) : isEditing ? (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </>
+                  )}
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
