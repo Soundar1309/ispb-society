@@ -186,7 +186,7 @@ const AdminConferencesTab = ({
                 Add Conference
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Conference</DialogTitle>
                 <DialogDescription>Create a new conference event</DialogDescription>
@@ -197,60 +197,67 @@ const AdminConferencesTab = ({
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Venue</TableHead>
-              <TableHead>Dates</TableHead>
-              <TableHead>Fees</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {conferences.map((conference) => (
-              <TableRow key={conference.id}>
-                <TableCell className="font-medium">{conference.title}</TableCell>
-                <TableCell>{conference.venue}</TableCell>
-                <TableCell>
-                  {conference.date_from} to {conference.date_to}
-                </TableCell>
-                <TableCell>
-                  Regular: ₹{conference.registration_fee}<br />
-                  Early Bird: ₹{conference.early_bird_fee}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={conference.is_active ? "default" : "secondary"}>
-                    {conference.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(conference)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(conference.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        {conferences.length === 0 ? (
+          <div className="text-center py-8">
+            <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-gray-500">No conferences found. Add your first conference!</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Venue</TableHead>
+                <TableHead>Dates</TableHead>
+                <TableHead>Fees</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {conferences.map((conference) => (
+                <TableRow key={conference.id}>
+                  <TableCell className="font-medium">{conference.title}</TableCell>
+                  <TableCell>{conference.venue}</TableCell>
+                  <TableCell>
+                    {conference.date_from} to {conference.date_to}
+                  </TableCell>
+                  <TableCell>
+                    Regular: ₹{conference.registration_fee}<br />
+                    Early Bird: ₹{conference.early_bird_fee}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={conference.is_active ? "default" : "secondary"}>
+                      {conference.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(conference)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(conference.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
 
         {editingConference && (
           <Dialog open={!!editingConference} onOpenChange={() => setEditingConference(null)}>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Edit Conference</DialogTitle>
                 <DialogDescription>Update conference details</DialogDescription>
