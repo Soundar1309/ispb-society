@@ -1,0 +1,110 @@
+
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface AdminStats {
+  totalMembers: number;
+  membershipEnrolled: number;
+  totalUsers: number;
+  totalPublications: number;
+  unreadMessages: number;
+}
+
+export const useAdminData = () => {
+  const [stats, setStats] = useState<AdminStats>({
+    totalMembers: 0,
+    membershipEnrolled: 0,
+    totalUsers: 0,
+    totalPublications: 0,
+    unreadMessages: 0
+  });
+
+  const [members, setMembers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [userRoles, setUserRoles] = useState([]);
+  const [conferences, setConferences] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [publications, setPublications] = useState([]);
+  const [mandates, setMandates] = useState([]);
+  const [activities, setActivities] = useState([]);
+
+  const fetchStats = async () => {
+    try {
+      const [membersRes, usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('publications').select('id', { count: 'exact' }),
+        supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
+      ]);
+
+      setStats({
+        totalMembers: membersRes.count || 0,
+        totalUsers: usersRes.count || 0,
+        membershipEnrolled: membershipRes.count || 0,
+        totalPublications: publicationsRes.count || 0,
+        unreadMessages: messagesRes.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      toast.error('Error loading statistics');
+    }
+  };
+
+  const fetchAllData = async () => {
+    try {
+      const [
+        membersRes, 
+        conferencesRes, 
+        messagesRes, 
+        publicationsRes, 
+        usersRes, 
+        userRolesRes
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('conferences').select('*').order('created_at', { ascending: false }),
+        supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+        supabase.from('publications').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
+        supabase.from('user_roles').select('*')
+      ]);
+
+      setMembers(membersRes.data || []);
+      setConferences(conferencesRes.data || []);
+      setMessages(messagesRes.data || []);
+      setPublications(publicationsRes.data || []);
+      setUsers(usersRes.data || []);
+      setUserRoles(userRolesRes.data || []);
+      
+      // Mock data for mandates and activities since these tables don't exist yet
+      setMandates([]);
+      setActivities([]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Error loading admin data');
+    }
+  };
+
+  const refreshData = () => {
+    fetchStats();
+    fetchAllData();
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  return {
+    stats,
+    members,
+    users,
+    userRoles,
+    conferences,
+    messages,
+    publications,
+    mandates,
+    activities,
+    refreshData
+  };
+};
