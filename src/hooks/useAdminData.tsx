@@ -9,6 +9,32 @@ interface AdminStats {
   unreadMessages: number;
 }
 
+interface UserRole {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  role: string;
+  institution: string | null;
+  designation: string | null;
+  specialization: string | null;
+  phone: string | null;
+  created_at: string;
+}
+
+interface Membership {
+  id: string;
+  user_id: string;
+  membership_type: string;
+  status: string;
+  payment_status: string;
+  amount: number;
+  valid_from: string;
+  valid_until: string;
+  created_at: string;
+  user_roles: UserRole | UserRole[] | null;
+}
+
 export const useAdminData = () => {
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -64,11 +90,19 @@ export const useAdminData = () => {
       setUserRoles(userRolesRes.data || []);
       
       // Set only users with active paid memberships for members tab
-      const membersWithUserData = (membershipsRes.data || []).map(membership => {
-        const userRoles = membership.user_roles;
+      const membersWithUserData = (membershipsRes.data as Membership[] || []).map(membership => {
+        // Handle the user_roles data which could be an object or array
+        let userRoles: UserRole | null = null;
+        
+        if (membership.user_roles) {
+          // If it's an array, take the first item, otherwise use it directly
+          userRoles = Array.isArray(membership.user_roles) 
+            ? membership.user_roles[0] 
+            : membership.user_roles as UserRole;
+        }
         
         // Type guard to ensure userRoles is a valid object
-        if (!userRoles || typeof userRoles !== 'object' || Array.isArray(userRoles) || !userRoles.id) {
+        if (!userRoles || typeof userRoles !== 'object' || !userRoles.id) {
           console.warn('Invalid user_roles data for membership:', membership.id);
           return {
             id: membership.id,
