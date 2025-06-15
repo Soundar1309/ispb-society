@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminStats from './AdminStats';
@@ -8,7 +7,6 @@ import AdminMessagesTab from './AdminMessagesTab';
 import AdminContentTab from './AdminContentTab';
 import AdminPaymentTab from './AdminPaymentTab';
 import AdminOrdersTab from './AdminOrdersTab';
-import AdminPublicationsTab from './AdminPublicationsTab';
 import AdminMembershipPlansTab from './AdminMembershipPlansTab';
 import AdminLifeMembersTab from './AdminLifeMembersTab';
 import UserManagement from './UserManagement';
@@ -227,7 +225,7 @@ const AdminDashboard = ({
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
@@ -237,7 +235,6 @@ const AdminDashboard = ({
             <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="publications">Publications</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
           </TabsList>
 
@@ -307,13 +304,6 @@ const AdminDashboard = ({
           <TabsContent value="orders">
             <AdminOrdersTab 
               orders={orders}
-            />
-          </TabsContent>
-
-          <TabsContent value="publications">
-            <AdminPublicationsTab 
-              publications={[]}
-              onAddPublication={handleAddPublication}
             />
           </TabsContent>
 
