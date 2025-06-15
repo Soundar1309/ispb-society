@@ -35,14 +35,25 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
+  // Debug logging
+  console.log('UserManagement - Total users:', users?.length || 0);
+  console.log('UserManagement - User roles:', userRoles?.length || 0);
+  console.log('UserManagement - Users data:', users);
+
   const getUserRole = (userId: string) => {
-    const userRole = userRoles.find(role => role.user_id === userId);
+    const userRole = userRoles?.find(role => role.user_id === userId);
     return userRole ? userRole.role : 'member';
   };
 
   const filteredAndSortedUsers = useMemo(() => {
+    if (!users || users.length === 0) {
+      console.log('No users available for filtering');
+      return [];
+    }
+
     let filtered = users.filter(user => {
-      const matchesSearch = user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = searchTerm === '' || 
+                           user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            user.institution?.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -51,6 +62,8 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
       
       return matchesSearch && matchesRole;
     });
+
+    console.log('Filtered users count:', filtered.length);
 
     filtered.sort((a, b) => {
       let aValue, bValue;
@@ -84,6 +97,8 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
   }, [users, userRoles, searchTerm, roleFilter, sortBy, sortOrder]);
 
   const stats = useMemo(() => {
+    if (!users || !userRoles) return { adminCount: 0, memberCount: 0, recentUsers: 0 };
+    
     const adminCount = users.filter(user => getUserRole(user.id) === 'admin').length;
     const memberCount = users.filter(user => getUserRole(user.id) === 'member').length;
     const recentUsers = users.filter(user => {
@@ -113,6 +128,20 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
       setSortOrder('asc');
     }
   };
+
+  // Show loading state if no users
+  if (!users) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>Loading users...</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -160,7 +189,9 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
-          <CardDescription>Manage user roles and permissions</CardDescription>
+          <CardDescription>
+            Manage user roles and permissions ({users.length} total users)
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -220,62 +251,64 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAndSortedUsers.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-semibold">
-                            {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-                          </span>
+                {filteredAndSortedUsers.length > 0 ? (
+                  filteredAndSortedUsers.map((user) => (
+                    <TableRow key={user.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-semibold">
+                              {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                            </span>
+                          </div>
+                          {user.full_name || 'No Name'}
                         </div>
-                        {user.full_name || 'No Name'}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        {user.email}
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.institution || 'Not specified'}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={getUserRole(user.id) === 'admin' ? 'destructive' : 'default'}
-                        className="capitalize"
-                      >
-                        {getUserRole(user.id)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Select onValueChange={(value) => handleRoleChange(user.id, value)}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue placeholder="Change role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="member">Member</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      }) : 'Unknown'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          {user.email}
+                        </div>
+                      </TableCell>
+                      <TableCell>{user.institution || 'Not specified'}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={getUserRole(user.id) === 'admin' ? 'destructive' : 'default'}
+                          className="capitalize"
+                        >
+                          {getUserRole(user.id)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Select onValueChange={(value) => handleRoleChange(user.id, value)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Change role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="member">Member</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : 'Unknown'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      {users.length === 0 ? 'No users found in the system.' : 'No users found matching your criteria.'}
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
-
-          {filteredAndSortedUsers.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No users found matching your criteria.
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
