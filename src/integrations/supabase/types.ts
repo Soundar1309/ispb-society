@@ -9,6 +9,128 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      conference_registrations: {
+        Row: {
+          amount_paid: number | null
+          conference_id: string | null
+          created_at: string | null
+          id: string
+          payment_status: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          registration_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_paid?: number | null
+          conference_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_status?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          registration_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_paid?: number | null
+          conference_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_status?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          registration_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conference_registrations_conference_id_fkey"
+            columns: ["conference_id"]
+            isOneToOne: false
+            referencedRelation: "conferences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conferences: {
+        Row: {
+          created_at: string | null
+          date_from: string | null
+          date_to: string | null
+          description: string | null
+          early_bird_deadline: string | null
+          early_bird_fee: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          registration_fee: number | null
+          title: string
+          updated_at: string | null
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          description?: string | null
+          early_bird_deadline?: string | null
+          early_bird_fee?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          registration_fee?: number | null
+          title: string
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          description?: string | null
+          early_bird_deadline?: string | null
+          early_bird_fee?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          registration_fee?: number | null
+          title?: string
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: []
+      }
       life_members: {
         Row: {
           created_at: string | null
@@ -102,6 +224,56 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          membership_id: string | null
+          payment_method: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          status: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          membership_id?: string | null
+          payment_method?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          membership_id?: string | null
+          payment_method?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -135,6 +307,54 @@ export type Database = {
           phone?: string | null
           specialization?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      publications: {
+        Row: {
+          authors: string | null
+          created_at: string | null
+          doi: string | null
+          id: string
+          is_featured: boolean | null
+          issue: string | null
+          journal: string | null
+          pages: string | null
+          pdf_url: string | null
+          title: string
+          updated_at: string | null
+          volume: string | null
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          created_at?: string | null
+          doi?: string | null
+          id?: string
+          is_featured?: boolean | null
+          issue?: string | null
+          journal?: string | null
+          pages?: string | null
+          pdf_url?: string | null
+          title: string
+          updated_at?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          created_at?: string | null
+          doi?: string | null
+          id?: string
+          is_featured?: boolean | null
+          issue?: string | null
+          journal?: string | null
+          pages?: string | null
+          pdf_url?: string | null
+          title?: string
+          updated_at?: string | null
+          volume?: string | null
+          year?: number | null
         }
         Relationships: []
       }

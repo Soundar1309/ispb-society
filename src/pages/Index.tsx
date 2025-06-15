@@ -8,11 +8,12 @@ import OfficeBearers from '@/components/OfficeBearers';
 import Genesis from '@/components/Genesis';
 import MandateActivities from '@/components/MandateActivities';
 import Publications from '@/components/Publications';
-import Membership from '@/components/Membership';
+import EnhancedMembership from '@/components/EnhancedMembership';
 import LifeMembers from '@/components/LifeMembers';
 import Conference from '@/components/Conference';
-import ContactUs from '@/components/ContactUs';
+import ContactForm from '@/components/ContactForm';
 import AuthPage from '@/components/AuthPage';
+import AdminPanel from '@/components/AdminPanel';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 const Index = () => {
@@ -33,13 +34,21 @@ const Index = () => {
                 path="/membership" 
                 element={
                   <ProtectedRoute>
-                    <Membership />
+                    <EnhancedMembership />
                   </ProtectedRoute>
                 } 
               />
               <Route path="/life-members" element={<LifeMembers />} />
               <Route path="/conference" element={<Conference />} />
-              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/contact" element={<ContactForm />} />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute>
+                    <AdminPanel />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </main>
           <Footer />

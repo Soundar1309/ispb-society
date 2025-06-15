@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,13 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin (you can implement this check based on your user_roles table)
+  const checkAdminStatus = async () => {
+    // This should be implemented to check user roles from the database
+    // For now, we'll assume first user is admin for demo purposes
+  };
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -82,6 +89,12 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin" className="flex items-center">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Admin Panel
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
@@ -129,12 +142,21 @@ const Header = () => {
               </Link>
             ))}
             {user ? (
-              <button
-                onClick={handleSignOut}
-                className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
-              >
-                Sign Out
-              </button>
+              <>
+                <Link
+                  to="/admin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-3 py-2 text-base font-medium text-green-600 hover:bg-green-50 rounded-md"
+                >
+                  Admin Panel
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
+                >
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link
                 to="/auth"
