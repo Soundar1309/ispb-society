@@ -9,8 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Search, Filter, UserCheck, UserX, Calendar, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface User {
+interface UserRole {
   id: string;
+  user_id: string;
+  role: string;
   full_name: string;
   email: string;
   created_at: string;
@@ -18,13 +20,8 @@ interface User {
   phone?: string;
 }
 
-interface UserRole {
-  user_id: string;
-  role: string;
-}
-
 interface UserManagementProps {
-  users: User[];
+  users: UserRole[];
   userRoles: UserRole[];
   onChangeUserRole: (userId: string, newRole: string) => Promise<void>;
 }
@@ -40,11 +37,6 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
   console.log('UserManagement - User roles:', userRoles?.length || 0);
   console.log('UserManagement - Users data:', users);
 
-  const getUserRole = (userId: string) => {
-    const userRole = userRoles?.find(role => role.user_id === userId);
-    return userRole ? userRole.role : 'member';
-  };
-
   const filteredAndSortedUsers = useMemo(() => {
     if (!users || users.length === 0) {
       console.log('No users available for filtering');
@@ -57,8 +49,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            user.institution?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const userRole = getUserRole(user.id);
-      const matchesRole = roleFilter === 'all' || userRole === roleFilter;
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
       
       return matchesSearch && matchesRole;
     });
@@ -78,8 +69,8 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
           bValue = b.email || '';
           break;
         case 'role':
-          aValue = getUserRole(a.id);
-          bValue = getUserRole(b.id);
+          aValue = a.role;
+          bValue = b.role;
           break;
         default:
           aValue = a.created_at;
@@ -94,13 +85,13 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
     });
 
     return filtered;
-  }, [users, userRoles, searchTerm, roleFilter, sortBy, sortOrder]);
+  }, [users, searchTerm, roleFilter, sortBy, sortOrder]);
 
   const stats = useMemo(() => {
-    if (!users || !userRoles) return { adminCount: 0, memberCount: 0, recentUsers: 0 };
+    if (!users) return { adminCount: 0, memberCount: 0, recentUsers: 0 };
     
-    const adminCount = users.filter(user => getUserRole(user.id) === 'admin').length;
-    const memberCount = users.filter(user => getUserRole(user.id) === 'member').length;
+    const adminCount = users.filter(user => user.role === 'admin').length;
+    const memberCount = users.filter(user => user.role === 'member').length;
     const recentUsers = users.filter(user => {
       const createdDate = new Date(user.created_at);
       const weekAgo = new Date();
@@ -109,7 +100,7 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
     }).length;
 
     return { adminCount, memberCount, recentUsers };
-  }, [users, userRoles]);
+  }, [users]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -273,14 +264,14 @@ const UserManagement = ({ users, userRoles, onChangeUserRole }: UserManagementPr
                       <TableCell>{user.institution || 'Not specified'}</TableCell>
                       <TableCell>
                         <Badge 
-                          variant={getUserRole(user.id) === 'admin' ? 'destructive' : 'default'}
+                          variant={user.role === 'admin' ? 'destructive' : 'default'}
                           className="capitalize"
                         >
-                          {getUserRole(user.id)}
+                          {user.role}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Select onValueChange={(value) => handleRoleChange(user.id, value)}>
+                        <Select onValueChange={(value) => handleRoleChange(user.user_id, value)}>
                           <SelectTrigger className="w-32">
                             <SelectValue placeholder="Change role" />
                           </SelectTrigger>

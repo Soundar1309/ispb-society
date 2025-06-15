@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +13,7 @@ import MembershipCancellation from './MembershipCancellation';
 
 const UserDashboard = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState([]);
   const [orders, setOrders] = useState([]);
   const [registrations, setRegistrations] = useState([]);
@@ -34,21 +35,21 @@ const UserDashboard = () => {
   const fetchUserData = async () => {
     if (!user) return;
 
-    // Fetch profile
-    const { data: profileData } = await supabase
-      .from('profiles')
+    // Fetch user role data (which now contains profile info)
+    const { data: userRoleData } = await supabase
+      .from('user_roles')
       .select('*')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
-    if (profileData) {
-      setProfile(profileData);
+    if (userRoleData) {
+      setUserRole(userRoleData);
       setEditForm({
-        full_name: profileData.full_name || '',
-        phone: profileData.phone || '',
-        institution: profileData.institution || '',
-        designation: profileData.designation || '',
-        specialization: profileData.specialization || ''
+        full_name: userRoleData.full_name || '',
+        phone: userRoleData.phone || '',
+        institution: userRoleData.institution || '',
+        designation: userRoleData.designation || '',
+        specialization: userRoleData.specialization || ''
       });
     }
 
@@ -88,9 +89,12 @@ const UserDashboard = () => {
     if (!user) return;
 
     const { error } = await supabase
-      .from('profiles')
-      .update(editForm)
-      .eq('id', user.id);
+      .from('user_roles')
+      .update({
+        ...editForm,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
 
     if (!error) {
       toast.success('Profile updated successfully');
@@ -178,7 +182,7 @@ const UserDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-sm font-bold text-green-600">
-                {profile?.full_name ? 'Complete' : 'Incomplete'}
+                {userRole?.full_name ? 'Complete' : 'Incomplete'}
               </div>
             </CardContent>
           </Card>
@@ -219,7 +223,7 @@ const UserDashboard = () => {
                         placeholder="Enter your full name"
                       />
                     ) : (
-                      <p className="text-gray-700">{profile?.full_name || 'Not provided'}</p>
+                      <p className="text-gray-700">{userRole?.full_name || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
@@ -235,7 +239,7 @@ const UserDashboard = () => {
                         placeholder="Enter your phone number"
                       />
                     ) : (
-                      <p className="text-gray-700">{profile?.phone || 'Not provided'}</p>
+                      <p className="text-gray-700">{userRole?.phone || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
@@ -247,7 +251,7 @@ const UserDashboard = () => {
                         placeholder="Enter your institution"
                       />
                     ) : (
-                      <p className="text-gray-700">{profile?.institution || 'Not provided'}</p>
+                      <p className="text-gray-700">{userRole?.institution || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
@@ -259,7 +263,7 @@ const UserDashboard = () => {
                         placeholder="Enter your designation"
                       />
                     ) : (
-                      <p className="text-gray-700">{profile?.designation || 'Not provided'}</p>
+                      <p className="text-gray-700">{userRole?.designation || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
@@ -271,7 +275,7 @@ const UserDashboard = () => {
                         placeholder="Enter your specialization"
                       />
                     ) : (
-                      <p className="text-gray-700">{profile?.specialization || 'Not provided'}</p>
+                      <p className="text-gray-700">{userRole?.specialization || 'Not provided'}</p>
                     )}
                   </div>
                 </div>

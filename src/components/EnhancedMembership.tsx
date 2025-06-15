@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +14,7 @@ import MembershipCancellation from './MembershipCancellation';
 
 const EnhancedMembership = () => {
   const { user } = useAuth();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -26,20 +27,20 @@ const EnhancedMembership = () => {
 
   useEffect(() => {
     if (user) {
-      fetchUserProfile();
+      fetchUserRole();
       fetchMemberships();
     }
   }, [user]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserRole = async () => {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('user_roles')
       .select('*')
-      .eq('id', user?.id)
+      .eq('user_id', user?.id)
       .single();
 
     if (data) {
-      setUserProfile(data);
+      setUserRole(data);
       setProfileData({
         full_name: data.full_name || '',
         phone: data.phone || '',
@@ -68,16 +69,19 @@ const EnhancedMembership = () => {
     e.preventDefault();
     
     const { error } = await supabase
-      .from('profiles')
-      .update(profileData)
-      .eq('id', user?.id);
+      .from('user_roles')
+      .update({
+        ...profileData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user?.id);
 
     if (error) {
       toast.error('Error updating profile');
     } else {
       toast.success('Profile updated successfully');
       setIsEditing(false);
-      fetchUserProfile();
+      fetchUserRole();
     }
   };
 
@@ -140,7 +144,7 @@ const EnhancedMembership = () => {
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Name</Label>
-                      <p className="text-gray-900">{userProfile?.full_name || 'Not provided'}</p>
+                      <p className="text-gray-900">{userRole?.full_name || 'Not provided'}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Email</Label>
@@ -148,19 +152,19 @@ const EnhancedMembership = () => {
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                      <p className="text-gray-900">{userProfile?.phone || 'Not provided'}</p>
+                      <p className="text-gray-900">{userRole?.phone || 'Not provided'}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Institution</Label>
-                      <p className="text-gray-900">{userProfile?.institution || 'Not provided'}</p>
+                      <p className="text-gray-900">{userRole?.institution || 'Not provided'}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Designation</Label>
-                      <p className="text-gray-900">{userProfile?.designation || 'Not provided'}</p>
+                      <p className="text-gray-900">{userRole?.designation || 'Not provided'}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Specialization</Label>
-                      <p className="text-gray-900">{userProfile?.specialization || 'Not provided'}</p>
+                      <p className="text-gray-900">{userRole?.specialization || 'Not provided'}</p>
                     </div>
                     <Button onClick={() => setIsEditing(true)} className="w-full">
                       Edit Profile

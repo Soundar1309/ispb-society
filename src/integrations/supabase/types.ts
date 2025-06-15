@@ -274,42 +274,6 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          created_at: string | null
-          designation: string | null
-          email: string | null
-          full_name: string | null
-          id: string
-          institution: string | null
-          phone: string | null
-          specialization: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          designation?: string | null
-          email?: string | null
-          full_name?: string | null
-          id: string
-          institution?: string | null
-          phone?: string | null
-          specialization?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          designation?: string | null
-          email?: string | null
-          full_name?: string | null
-          id?: string
-          institution?: string | null
-          phone?: string | null
-          specialization?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       publications: {
         Row: {
           authors: string | null
@@ -361,20 +325,41 @@ export type Database = {
       user_roles: {
         Row: {
           created_at: string | null
+          designation: string | null
+          email: string | null
+          full_name: string | null
           id: string
+          institution: string | null
+          phone: string | null
           role: string
+          specialization: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
+          designation?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
+          institution?: string | null
+          phone?: string | null
           role: string
+          specialization?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
+          designation?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
+          institution?: string | null
+          phone?: string | null
           role?: string
+          specialization?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []

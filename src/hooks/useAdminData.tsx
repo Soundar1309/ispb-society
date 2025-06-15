@@ -29,7 +29,7 @@ export const useAdminData = () => {
   const fetchStats = async () => {
     try {
       const [usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }),
+        supabase.from('user_roles').select('id', { count: 'exact' }),
         supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
         supabase.from('publications').select('id', { count: 'exact' }),
         supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
@@ -50,24 +50,23 @@ export const useAdminData = () => {
   const fetchAllData = async () => {
     try {
       const [
-        usersRes, 
+        userRolesRes, 
         conferencesRes, 
         messagesRes, 
-        publicationsRes, 
-        userRolesRes
+        publicationsRes
       ] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
-        supabase.from('publications').select('*').order('created_at', { ascending: false }),
-        supabase.from('user_roles').select('*')
+        supabase.from('publications').select('*').order('created_at', { ascending: false })
       ]);
 
-      setUsers(usersRes.data || []);
+      // user_roles now contains all user data, so we use it for both users and userRoles
+      setUsers(userRolesRes.data || []);
+      setUserRoles(userRolesRes.data || []);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       setPublications(publicationsRes.data || []);
-      setUserRoles(userRolesRes.data || []);
       
       // Mock data for mandates and activities since these tables don't exist yet
       setMandates([]);

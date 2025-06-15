@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface User {
+interface UserRole {
   id: string;
+  user_id: string;
+  role: string;
   full_name: string;
   email: string;
   created_at: string;
@@ -13,7 +15,7 @@ interface User {
 }
 
 interface CSVExportProps {
-  users: User[];
+  users: UserRole[];
 }
 
 const CSVExport = ({ users }: CSVExportProps) => {
@@ -47,12 +49,13 @@ const CSVExport = ({ users }: CSVExportProps) => {
   };
 
   const exportUsers = () => {
-    const headers = ['Full Name', 'Email', 'Institution', 'Phone', 'Created At'];
+    const headers = ['Full Name', 'Email', 'Institution', 'Phone', 'Role', 'Created At'];
     const userData = users.map(user => ({
       'full_name': user.full_name || 'N/A',
       'email': user.email,
       'institution': user.institution || 'N/A',
       'phone': user.phone || 'N/A',
+      'role': user.role,
       'created_at': new Date(user.created_at).toLocaleDateString()
     }));
     
