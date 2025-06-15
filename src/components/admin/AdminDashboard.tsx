@@ -1,3 +1,4 @@
+
 import { TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,7 @@ import AdminMembersTab from './AdminMembersTab';
 import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminContentTab from './AdminContentTab';
+import AdminPaymentTab from './AdminPaymentTab';
 
 interface AdminDashboardProps {
   stats: any;
@@ -18,6 +20,7 @@ interface AdminDashboardProps {
   messages: any[];
   mandates: any[];
   activities: any[];
+  payments: any[];
   refreshData: () => void;
   updateUserRole?: (userId: string, newRole: string) => Promise<any>;
   addMembership?: (membershipData: any) => Promise<any>;
@@ -33,6 +36,7 @@ const AdminDashboard = ({
   messages,
   mandates,
   activities,
+  payments,
   refreshData,
   updateUserRole,
   addMembership,
@@ -52,28 +56,11 @@ const AdminDashboard = ({
     }
   };
 
-  const handleAddMember = async (memberData: any) => {
-    const { error } = await supabase
-      .from('user_roles')
-      .insert({
-        ...memberData,
-        user_id: crypto.randomUUID() // This would need proper user creation
-      });
-
-    if (!error) {
-      toast.success('Member added successfully');
-      refreshData();
-    } else {
-      toast.error('Error adding member');
-    }
-  };
-
   const handleChangeUserRole = async (userId: string, newRole: string) => {
     try {
       if (updateUserRole) {
         await updateUserRole(userId, newRole);
       } else {
-        // Fallback to direct update
         const { error } = await supabase
           .from('user_roles')
           .update({ role: newRole })
@@ -135,18 +122,77 @@ const AdminDashboard = ({
     }
   };
 
-  // Content management handlers (placeholder - would need database tables)
+  // Content management handlers
   const handleAddContent = async (contentData: any, type: 'mandate' | 'activity') => {
-    // This would need a proper database table for mandates/activities
-    toast.info(`Content management for ${type}s needs database implementation`);
+    const tableName = type === 'mandate' ? 'mandates' : 'activities';
+    const { error } = await supabase
+      .from(tableName)
+      .insert(contentData);
+
+    if (!error) {
+      toast.success(`${type} added successfully`);
+      refreshData();
+    } else {
+      toast.error(`Error adding ${type}`);
+    }
   };
 
   const handleUpdateContent = async (id: string, contentData: any, type: 'mandate' | 'activity') => {
-    toast.info(`Content management for ${type}s needs database implementation`);
+    const tableName = type === 'mandate' ? 'mandates' : 'activities';
+    const { error } = await supabase
+      .from(tableName)
+      .update(contentData)
+      .eq('id', id);
+
+    if (!error) {
+      toast.success(`${type} updated successfully`);
+      refreshData();
+    } else {
+      toast.error(`Error updating ${type}`);
+    }
   };
 
   const handleDeleteContent = async (id: string, type: 'mandate' | 'activity') => {
-    toast.info(`Content management for ${type}s needs database implementation`);
+    const tableName = type === 'mandate' ? 'mandates' : 'activities';
+    const { error } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      toast.success(`${type} deleted successfully`);
+      refreshData();
+    } else {
+      toast.error(`Error deleting ${type}`);
+    }
+  };
+
+  // Payment tracking handlers
+  const handleAddPayment = async (paymentData: any) => {
+    const { error } = await supabase
+      .from('payment_tracking')
+      .insert(paymentData);
+
+    if (!error) {
+      toast.success('Payment record added successfully');
+      refreshData();
+    } else {
+      toast.error('Error adding payment record');
+    }
+  };
+
+  const handleUpdatePayment = async (paymentId: string, paymentData: any) => {
+    const { error } = await supabase
+      .from('payment_tracking')
+      .update(paymentData)
+      .eq('id', paymentId);
+
+    if (!error) {
+      toast.success('Payment record updated successfully');
+      refreshData();
+    } else {
+      toast.error('Error updating payment record');
+    }
   };
 
   return (
@@ -200,6 +246,14 @@ const AdminDashboard = ({
               onAddContent={handleAddContent}
               onUpdateContent={handleUpdateContent}
               onDeleteContent={handleDeleteContent}
+            />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <AdminPaymentTab 
+              payments={payments}
+              onAddPayment={handleAddPayment}
+              onUpdatePayment={handleUpdatePayment}
             />
           </TabsContent>
         </AdminTabs>

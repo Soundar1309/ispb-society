@@ -69,6 +69,7 @@ export const useAdminData = () => {
   const [messages, setMessages] = useState([]);
   const [mandates, setMandates] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [payments, setPayments] = useState([]);
 
   const fetchStats = async () => {
     try {
@@ -95,12 +96,22 @@ export const useAdminData = () => {
         userRolesRes, 
         membershipsRes,
         conferencesRes, 
-        messagesRes
+        messagesRes,
+        mandatesRes,
+        activitiesRes,
+        paymentsRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
-        supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
+        supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
+        supabase.from('mandates').select('*').order('display_order', { ascending: true }),
+        supabase.from('activities').select('*').order('display_order', { ascending: true }),
+        supabase.from('payment_tracking').select(`
+          *,
+          user_roles!payment_tracking_user_id_fkey(full_name),
+          memberships(membership_type)
+        `).order('created_at', { ascending: false })
       ]);
 
       console.log('Fetched user roles:', userRolesRes.data);
@@ -150,10 +161,9 @@ export const useAdminData = () => {
       setUsers(membersWithUserData);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
-      
-      // Mock data for mandates and activities since these tables don't exist yet
-      setMandates([]);
-      setActivities([]);
+      setMandates(mandatesRes.data || []);
+      setActivities(activitiesRes.data || []);
+      setPayments(paymentsRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error loading admin data');
@@ -174,9 +184,7 @@ export const useAdminData = () => {
         throw error;
       }
 
-      // Refresh data after successful update
       await fetchAllData();
-      
       return { success: true };
     } catch (error) {
       console.error('Error in updateUserRole:', error);
@@ -188,7 +196,6 @@ export const useAdminData = () => {
     try {
       console.log('Adding membership:', membershipData);
       
-      // Check if user already has an active membership
       const { data: existingMemberships, error: checkError } = await supabase
         .from('memberships')
         .select('id')
@@ -292,6 +299,7 @@ export const useAdminData = () => {
     messages,
     mandates,
     activities,
+    payments,
     refreshData,
     updateUserRole,
     addMembership,

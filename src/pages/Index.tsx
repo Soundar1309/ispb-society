@@ -14,6 +14,7 @@ import AuthPage from '@/components/AuthPage';
 import AdminLogin from '@/components/AdminLogin';
 import AdminPanel from '@/components/AdminPanel';
 import UserDashboard from '@/components/UserDashboard';
+import MemberPage from '@/components/MemberPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 
@@ -34,6 +35,7 @@ const Index = () => {
               <Route path="/life-members" element={<LifeMembers />} />
               <Route path="/conference" element={<Conference />} />
               <Route path="/contact" element={<ContactForm />} />
+              <Route path="/member" element={<MemberPage />} />
               <Route 
                 path="/dashboard" 
                 element={
@@ -50,7 +52,6 @@ const Index = () => {
                   </ProtectedRoute>
                 } 
               />
-              {/* Catch all undefined routes */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

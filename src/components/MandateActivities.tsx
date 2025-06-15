@@ -1,23 +1,55 @@
 
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface ContentItem {
+  id: string;
+  title: string;
+  content: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 const MandateActivities = () => {
-  const mandates = [
-    {
-      title: "Research Excellence",
-      description: "Promote cutting-edge research in plant breeding, genetics, and biotechnology to address agricultural challenges and enhance crop productivity."
-    },
-    {
-      title: "Knowledge Dissemination",
-      description: "Facilitate the exchange of scientific knowledge through conferences, publications, workshops, and training programs."
-    },
-    {
-      title: "Professional Development",
-      description: "Support the professional growth of plant breeders and geneticists through continuing education and career advancement opportunities."
-    },
-    {
-      title: "Industry Collaboration",
-      description: "Foster partnerships between academic institutions, research organizations, and the agricultural industry to accelerate technology transfer."
+  const [mandates, setMandates] = useState<ContentItem[]>([]);
+  const [activities, setActivities] = useState<ContentItem[]>([]);
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  const fetchContent = async () => {
+    try {
+      // Fetch mandates
+      const { data: mandatesData, error: mandatesError } = await supabase
+        .from('mandates')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (mandatesError) {
+        console.error('Error fetching mandates:', mandatesError);
+      } else {
+        setMandates(mandatesData || []);
+      }
+
+      // Fetch activities
+      const { data: activitiesData, error: activitiesError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (activitiesError) {
+        console.error('Error fetching activities:', activitiesError);
+      } else {
+        setActivities(activitiesData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching content:', error);
     }
-  ];
+  };
 
   const congresses = [
     {
@@ -64,45 +96,6 @@ const MandateActivities = () => {
     }
   ];
 
-  const activities = [
-    {
-      category: "Annual Conferences",
-      items: [
-        "National Plant Breeding Congress",
-        "Technical Sessions and Workshops",
-        "Poster Presentations and Exhibitions",
-        "Keynote Lectures by Eminent Scientists"
-      ]
-    },
-    {
-      category: "Training Programs",
-      items: [
-        "Molecular Breeding Techniques",
-        "Statistical Methods in Plant Breeding",
-        "Biotechnology Applications",
-        "Intellectual Property Rights"
-      ]
-    },
-    {
-      category: "Publications",
-      items: [
-        "Journal of Plant Breeding and Genetics",
-        "Conference Proceedings",
-        "Technical Bulletins",
-        "Newsletter and Updates"
-      ]
-    },
-    {
-      category: "Awards & Recognition",
-      items: [
-        "ISPB Excellence Award",
-        "Young Scientist Award",
-        "Best Research Paper Award",
-        "Lifetime Achievement Award"
-      ]
-    }
-  ];
-
   return (
     <div className="min-h-screen py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -119,11 +112,15 @@ const MandateActivities = () => {
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Mandate</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {mandates.map((mandate, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 className="text-xl font-bold text-green-600 mb-3">{mandate.title}</h3>
-                <p className="text-gray-700 leading-relaxed">{mandate.description}</p>
-              </div>
+            {mandates.map((mandate) => (
+              <Card key={mandate.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl text-green-600">{mandate.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 leading-relaxed">{mandate.content}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
@@ -156,18 +153,15 @@ const MandateActivities = () => {
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Activities</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {activities.map((activity, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="text-xl font-bold text-green-600 mb-4">{activity.category}</h3>
-                <ul className="space-y-2">
-                  {activity.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            {activities.map((activity) => (
+              <Card key={activity.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl text-green-600">{activity.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 leading-relaxed">{activity.content}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
