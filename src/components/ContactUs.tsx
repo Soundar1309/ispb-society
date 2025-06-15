@@ -27,7 +27,7 @@ const ContactUs = () => {
       map.current = new mapboxgl.default.Map({
         container: mapContainer.current!,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [77.2090, 28.6139], // New Delhi coordinates
+        center: [77.1739, 28.6396], // Updated coordinates for the new location
         zoom: 15,
         pitch: 45,
       });
@@ -38,12 +38,12 @@ const ContactUs = () => {
         'top-right'
       );
 
-      // Add marker for IARI location
+      // Add marker for the new location
       new mapboxgl.default.Marker({ color: '#16a34a' })
-        .setLngLat([77.2090, 28.6139])
+        .setLngLat([77.1739, 28.6396])
         .setPopup(
           new mapboxgl.default.Popup().setHTML(
-            '<div class="p-2"><h3 class="font-semibold">Indian Agricultural Research Institute</h3><p class="text-sm">Division of Genetics<br>New Delhi - 110012</p></div>'
+            '<div class="p-2"><h3 class="font-semibold">Indian Society of Plant Breeders</h3><p class="text-sm">Division of Genetics<br>IARI, Pusa Campus<br>New Delhi - 110012</p></div>'
           )
         )
         .addTo(map.current);
@@ -232,7 +232,8 @@ const ContactUs = () => {
                 <p className="text-gray-700 leading-relaxed">
                   Division of Genetics<br />
                   Indian Agricultural Research Institute<br />
-                  New Delhi - 110012, India
+                  Pusa Campus, New Delhi - 110012<br />
+                  India
                 </p>
               </div>
 
@@ -288,7 +289,7 @@ const ContactUs = () => {
         <div className="mt-16">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Us on Map</h2>
-            <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, New Delhi</p>
+            <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, Pusa Campus, New Delhi</p>
           </div>
 
           {!mapboxToken ? (
