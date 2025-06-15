@@ -7,13 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { CreditCard, Calendar, CheckCircle } from 'lucide-react';
-import PaymentIntegration from './PaymentIntegration';
 
 const MemberPage = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState([]);
-  const [showPayment, setShowPayment] = useState(false);
   const [selectedMembershipType, setSelectedMembershipType] = useState('');
 
   const membershipPlans = [
@@ -83,14 +81,7 @@ const MemberPage = () => {
     }
 
     setSelectedMembershipType(membershipType);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setSelectedMembershipType('');
-    fetchUserData();
-    toast.success('Membership activated successfully!');
+    toast.info('Payment integration coming soon! Please contact admin for manual membership activation.');
   };
 
   const getStatusColor = (status: string) => {
@@ -119,22 +110,6 @@ const MemberPage = () => {
             <CardDescription>Please log in to access membership details.</CardDescription>
           </CardHeader>
         </Card>
-      </div>
-    );
-  }
-
-  if (showPayment) {
-    const selectedPlan = membershipPlans.find(plan => plan.type === selectedMembershipType);
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PaymentIntegration
-            membershipType={selectedMembershipType}
-            amount={selectedPlan?.price || 0}
-            onSuccess={handlePaymentSuccess}
-            onCancel={() => setShowPayment(false)}
-          />
-        </div>
       </div>
     );
   }

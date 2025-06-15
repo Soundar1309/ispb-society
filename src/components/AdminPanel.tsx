@@ -12,6 +12,7 @@ const AdminPanel = () => {
     messages,
     mandates,
     activities,
+    payments,
     refreshData,
     updateUserRole,
     addMembership,
@@ -29,6 +30,7 @@ const AdminPanel = () => {
         messages={messages}
         mandates={mandates}
         activities={activities}
+        payments={payments}
         refreshData={refreshData}
         updateUserRole={updateUserRole}
         addMembership={addMembership}
