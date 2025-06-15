@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { User, CreditCard, BookOpen, Calendar, Edit, Save } from 'lucide-react';
+import MembershipCancellation from './MembershipCancellation';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -109,10 +110,15 @@ const UserDashboard = () => {
         return 'bg-yellow-100 text-yellow-800';
       case 'failed':
       case 'expired':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleMembershipCancellation = () => {
+    fetchUserData(); // Refresh data after cancellation
   };
 
   if (!user) {
@@ -277,7 +283,7 @@ const UserDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>My Memberships</CardTitle>
-                <CardDescription>View your active and past memberships</CardDescription>
+                <CardDescription>View and manage your active and past memberships</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -294,12 +300,21 @@ const UserDashboard = () => {
                           <p className="text-sm text-gray-500">Amount: ₹{membership.amount}</p>
                         </div>
                         <div className="flex flex-col items-end gap-2">
-                          <Badge className={getStatusColor(membership.status)}>
-                            {membership.status}
-                          </Badge>
-                          <Badge className={getStatusColor(membership.payment_status)}>
-                            {membership.payment_status}
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge className={getStatusColor(membership.status)}>
+                              {membership.status}
+                            </Badge>
+                            <Badge className={getStatusColor(membership.payment_status)}>
+                              {membership.payment_status}
+                            </Badge>
+                          </div>
+                          {membership.status === 'active' && (
+                            <MembershipCancellation
+                              membershipId={membership.id}
+                              membershipType={membership.membership_type}
+                              onCancellationSuccess={handleMembershipCancellation}
+                            />
+                          )}
                         </div>
                       </div>
                     ))
