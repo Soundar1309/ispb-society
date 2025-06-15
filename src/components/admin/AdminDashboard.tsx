@@ -1,17 +1,17 @@
 
-import { TabsContent } from '@/components/ui/tabs';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import AdminHeader from './AdminHeader';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminStats from './AdminStats';
-import AdminTabs from './AdminTabs';
-import UserManagement from './UserManagement';
 import AdminMembersTab from './AdminMembersTab';
 import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminContentTab from './AdminContentTab';
 import AdminPaymentTab from './AdminPaymentTab';
+import AdminOrdersTab from './AdminOrdersTab';
+import AdminPublicationsTab from './AdminPublicationsTab';
 import AdminMembershipPlansTab from './AdminMembershipPlansTab';
+import AdminLifeMembersTab from './AdminLifeMembersTab';
+import UserManagement from './UserManagement';
 
 interface AdminDashboardProps {
   stats: any;
@@ -23,11 +23,12 @@ interface AdminDashboardProps {
   activities: any[];
   payments: any[];
   membershipPlans: any[];
+  lifeMembers?: any[];
   refreshData: () => void;
-  updateUserRole?: (userId: string, newRole: string) => Promise<any>;
-  addMembership?: (membershipData: any) => Promise<any>;
-  updateMembership?: (membershipId: string, membershipData: any) => Promise<any>;
-  deleteMembership?: (membershipId: string) => Promise<any>;
+  updateUserRole: (userId: string, newRole: string) => Promise<void>;
+  addMembership: (membershipData: any) => void;
+  updateMembership: (membershipId: string, membershipData: any) => void;
+  deleteMembership: (membershipId: string) => void;
 }
 
 const AdminDashboard = ({
@@ -40,177 +41,53 @@ const AdminDashboard = ({
   activities,
   payments,
   membershipPlans,
+  lifeMembers = [],
   refreshData,
   updateUserRole,
   addMembership,
   updateMembership,
   deleteMembership
 }: AdminDashboardProps) => {
-
-  const handleMarkMessageRead = async (messageId: string) => {
-    const { error } = await supabase
-      .from('contact_messages')
-      .update({ status: 'read' })
-      .eq('id', messageId);
-
-    if (!error) {
-      toast.success('Message marked as read');
-      refreshData();
-    }
-  };
-
-  const handleChangeUserRole = async (userId: string, newRole: string) => {
-    try {
-      if (updateUserRole) {
-        await updateUserRole(userId, newRole);
-      } else {
-        const { error } = await supabase
-          .from('user_roles')
-          .update({ role: newRole })
-          .eq('user_id', userId);
-
-        if (error) {
-          throw error;
-        }
-        
-        toast.success('User role updated successfully');
-        refreshData();
-      }
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      toast.error('Error updating user role');
-      throw error;
-    }
-  };
-
-  // Conference management handlers
-  const handleAddConference = async (conferenceData: any) => {
-    const { error } = await supabase
-      .from('conferences')
-      .insert(conferenceData);
-
-    if (!error) {
-      toast.success('Conference added successfully');
-      refreshData();
-    } else {
-      toast.error('Error adding conference');
-    }
-  };
-
-  const handleUpdateConference = async (id: string, conferenceData: any) => {
-    const { error } = await supabase
-      .from('conferences')
-      .update(conferenceData)
-      .eq('id', id);
-
-    if (!error) {
-      toast.success('Conference updated successfully');
-      refreshData();
-    } else {
-      toast.error('Error updating conference');
-    }
-  };
-
-  const handleDeleteConference = async (id: string) => {
-    const { error } = await supabase
-      .from('conferences')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      toast.success('Conference deleted successfully');
-      refreshData();
-    } else {
-      toast.error('Error deleting conference');
-    }
-  };
-
-  // Content management handlers
-  const handleAddContent = async (contentData: any, type: 'mandate' | 'activity') => {
-    const tableName = type === 'mandate' ? 'mandates' : 'activities';
-    const { error } = await supabase
-      .from(tableName)
-      .insert(contentData);
-
-    if (!error) {
-      toast.success(`${type} added successfully`);
-      refreshData();
-    } else {
-      toast.error(`Error adding ${type}`);
-    }
-  };
-
-  const handleUpdateContent = async (id: string, contentData: any, type: 'mandate' | 'activity') => {
-    const tableName = type === 'mandate' ? 'mandates' : 'activities';
-    const { error } = await supabase
-      .from(tableName)
-      .update(contentData)
-      .eq('id', id);
-
-    if (!error) {
-      toast.success(`${type} updated successfully`);
-      refreshData();
-    } else {
-      toast.error(`Error updating ${type}`);
-    }
-  };
-
-  const handleDeleteContent = async (id: string, type: 'mandate' | 'activity') => {
-    const tableName = type === 'mandate' ? 'mandates' : 'activities';
-    const { error } = await supabase
-      .from(tableName)
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      toast.success(`${type} deleted successfully`);
-      refreshData();
-    } else {
-      toast.error(`Error deleting ${type}`);
-    }
-  };
-
-  // Payment tracking handlers
-  const handleAddPayment = async (paymentData: any) => {
-    const { error } = await supabase
-      .from('payment_tracking')
-      .insert(paymentData);
-
-    if (!error) {
-      toast.success('Payment record added successfully');
-      refreshData();
-    } else {
-      toast.error('Error adding payment record');
-    }
-  };
-
-  const handleUpdatePayment = async (paymentId: string, paymentData: any) => {
-    const { error } = await supabase
-      .from('payment_tracking')
-      .update(paymentData)
-      .eq('id', paymentId);
-
-    if (!error) {
-      toast.success('Payment record updated successfully');
-      refreshData();
-    } else {
-      toast.error('Error updating payment record');
-    }
-  };
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AdminHeader users={users} />
-
         <div className="mb-8">
-          <AdminStats stats={stats} />
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-600">Comprehensive management of ISPB website and registered users</p>
         </div>
 
-        <AdminTabs>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-10">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="life-members">Life Members</TabsTrigger>
+            <TabsTrigger value="conferences">Conferences</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="content">Content</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="publications">Publications</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard">
+            <AdminStats stats={stats} />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement 
+              users={users}
+              userRoles={userRoles}
+              onChangeUserRole={updateUserRole}
+            />
+          </TabsContent>
+
           <TabsContent value="members">
             <AdminMembersTab 
-              members={users} 
+              members={users}
               userRoles={userRoles}
               onAddMembership={addMembership}
               onUpdateMembership={updateMembership}
@@ -218,17 +95,9 @@ const AdminDashboard = ({
             />
           </TabsContent>
 
-          <TabsContent value="users">
-            <UserManagement 
-              users={users} 
-              userRoles={userRoles} 
-              onChangeUserRole={handleChangeUserRole} 
-            />
-          </TabsContent>
-
-          <TabsContent value="plans">
-            <AdminMembershipPlansTab 
-              plans={membershipPlans}
+          <TabsContent value="life-members">
+            <AdminLifeMembersTab 
+              lifeMembers={lifeMembers}
               onRefresh={refreshData}
             />
           </TabsContent>
@@ -236,16 +105,14 @@ const AdminDashboard = ({
           <TabsContent value="conferences">
             <AdminConferencesTab 
               conferences={conferences}
-              onAddConference={handleAddConference}
-              onUpdateConference={handleUpdateConference}
-              onDeleteConference={handleDeleteConference}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="messages">
             <AdminMessagesTab 
-              messages={messages} 
-              onMarkMessageRead={handleMarkMessageRead} 
+              messages={messages}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
@@ -253,20 +120,36 @@ const AdminDashboard = ({
             <AdminContentTab 
               mandates={mandates}
               activities={activities}
-              onAddContent={handleAddContent}
-              onUpdateContent={handleUpdateContent}
-              onDeleteContent={handleDeleteContent}
+              onRefresh={refreshData}
             />
           </TabsContent>
 
           <TabsContent value="payments">
             <AdminPaymentTab 
               payments={payments}
-              onAddPayment={handleAddPayment}
-              onUpdatePayment={handleUpdatePayment}
+              onRefresh={refreshData}
             />
           </TabsContent>
-        </AdminTabs>
+
+          <TabsContent value="orders">
+            <AdminOrdersTab 
+              onRefresh={refreshData}
+            />
+          </TabsContent>
+
+          <TabsContent value="publications">
+            <AdminPublicationsTab 
+              onRefresh={refreshData}
+            />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <AdminMembershipPlansTab 
+              membershipPlans={membershipPlans}
+              onRefresh={refreshData}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

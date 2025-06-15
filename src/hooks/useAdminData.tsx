@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -70,6 +71,7 @@ export const useAdminData = () => {
   const [activities, setActivities] = useState([]);
   const [payments, setPayments] = useState([]);
   const [membershipPlans, setMembershipPlans] = useState([]);
+  const [lifeMembers, setLifeMembers] = useState([]);
 
   const fetchStats = async () => {
     try {
@@ -100,7 +102,8 @@ export const useAdminData = () => {
         mandatesRes,
         activitiesRes,
         paymentsRes,
-        membershipPlansRes
+        membershipPlansRes,
+        lifeMembersRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
@@ -113,7 +116,8 @@ export const useAdminData = () => {
           user_roles!payment_tracking_user_id_fkey(full_name),
           memberships(membership_type)
         `).order('created_at', { ascending: false }),
-        supabase.from('membership_plans').select('*').order('price', { ascending: true })
+        supabase.from('membership_plans').select('*').order('price', { ascending: true }),
+        supabase.from('life_members').select('*').order('created_at', { ascending: false })
       ]);
 
       console.log('Fetched user roles:', userRolesRes.data);
@@ -167,6 +171,7 @@ export const useAdminData = () => {
       setActivities(activitiesRes.data || []);
       setPayments(paymentsRes.data || []);
       setMembershipPlans(membershipPlansRes.data || []);
+      setLifeMembers(lifeMembersRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error loading admin data');
@@ -304,6 +309,7 @@ export const useAdminData = () => {
     activities,
     payments,
     membershipPlans,
+    lifeMembers,
     refreshData,
     updateUserRole,
     addMembership,
