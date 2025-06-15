@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,6 +31,7 @@ interface Membership {
   valid_from: string;
   valid_until: string;
   created_at: string;
+  is_manual?: boolean;
 }
 
 interface MemberWithUserData {
@@ -49,6 +49,9 @@ interface MemberWithUserData {
   payment_status: string;
   valid_from: string;
   valid_until: string;
+  is_manual?: boolean;
+  membership_id?: string;
+  amount?: number;
 }
 
 export const useAdminData = () => {

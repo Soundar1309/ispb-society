@@ -20,6 +20,9 @@ interface AdminDashboardProps {
   activities: any[];
   refreshData: () => void;
   updateUserRole?: (userId: string, newRole: string) => Promise<any>;
+  addMembership?: (membershipData: any) => Promise<any>;
+  updateMembership?: (membershipId: string, membershipData: any) => Promise<any>;
+  deleteMembership?: (membershipId: string) => Promise<any>;
 }
 
 const AdminDashboard = ({
@@ -31,7 +34,10 @@ const AdminDashboard = ({
   mandates,
   activities,
   refreshData,
-  updateUserRole
+  updateUserRole,
+  addMembership,
+  updateMembership,
+  deleteMembership
 }: AdminDashboardProps) => {
 
   const handleMarkMessageRead = async (messageId: string) => {
@@ -157,6 +163,9 @@ const AdminDashboard = ({
             <AdminMembersTab 
               members={users} 
               userRoles={userRoles}
+              onAddMembership={addMembership}
+              onUpdateMembership={updateMembership}
+              onDeleteMembership={deleteMembership}
             />
           </TabsContent>
 
