@@ -14,7 +14,6 @@ import AdminContentTab from './AdminContentTab';
 
 interface AdminDashboardProps {
   stats: any;
-  members: any[];
   users: any[];
   userRoles: any[];
   conferences: any[];
@@ -27,7 +26,6 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({
   stats,
-  members,
   users,
   userRoles,
   conferences,
@@ -146,7 +144,7 @@ const AdminDashboard = ({
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AdminHeader users={users} members={members} />
+        <AdminHeader users={users} />
 
         <div className="mb-8">
           <AdminStats stats={stats} />
@@ -154,7 +152,7 @@ const AdminDashboard = ({
 
         <AdminTabs>
           <TabsContent value="members">
-            <AdminMembersTab members={members} userRoles={userRoles} />
+            <AdminMembersTab members={users} userRoles={userRoles} />
           </TabsContent>
 
           <TabsContent value="users">

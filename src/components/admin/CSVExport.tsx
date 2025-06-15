@@ -12,21 +12,11 @@ interface User {
   phone?: string;
 }
 
-interface Member {
-  id: string;
-  full_name: string;
-  email: string;
-  institution?: string;
-  phone?: string;
-  created_at: string;
-}
-
 interface CSVExportProps {
   users: User[];
-  members: Member[];
 }
 
-const CSVExport = ({ users, members }: CSVExportProps) => {
+const CSVExport = ({ users }: CSVExportProps) => {
   const downloadCSV = (data: any[], filename: string, headers: string[]) => {
     try {
       const csvContent = [
@@ -66,20 +56,7 @@ const CSVExport = ({ users, members }: CSVExportProps) => {
       'created_at': new Date(user.created_at).toLocaleDateString()
     }));
     
-    downloadCSV(userData, `users_list_${new Date().toISOString().split('T')[0]}.csv`, headers);
-  };
-
-  const exportMembers = () => {
-    const headers = ['Full Name', 'Email', 'Institution', 'Phone', 'Member Since'];
-    const memberData = members.map(member => ({
-      'full_name': member.full_name || 'N/A',
-      'email': member.email,
-      'institution': member.institution || 'N/A',
-      'phone': member.phone || 'N/A',
-      'created_at': new Date(member.created_at).toLocaleDateString()
-    }));
-    
-    downloadCSV(memberData, `members_list_${new Date().toISOString().split('T')[0]}.csv`, headers);
+    downloadCSV(userData, `registered_users_${new Date().toISOString().split('T')[0]}.csv`, headers);
   };
 
   return (
@@ -87,10 +64,6 @@ const CSVExport = ({ users, members }: CSVExportProps) => {
       <Button onClick={exportUsers} variant="outline">
         <Download className="h-4 w-4 mr-2" />
         Export Users CSV
-      </Button>
-      <Button onClick={exportMembers} variant="outline">
-        <Download className="h-4 w-4 mr-2" />
-        Export Members CSV
       </Button>
     </div>
   );

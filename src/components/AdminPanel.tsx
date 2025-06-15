@@ -6,7 +6,6 @@ import { useAdminData } from '@/hooks/useAdminData';
 const AdminPanel = () => {
   const {
     stats,
-    members,
     users,
     userRoles,
     conferences,
@@ -21,7 +20,6 @@ const AdminPanel = () => {
     <AdminAccessControl>
       <AdminDashboard
         stats={stats}
-        members={members}
         users={users}
         userRoles={userRoles}
         conferences={conferences}

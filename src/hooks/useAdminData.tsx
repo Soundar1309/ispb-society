@@ -4,23 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface AdminStats {
-  totalMembers: number;
-  membershipEnrolled: number;
   totalUsers: number;
+  membershipEnrolled: number;
   totalPublications: number;
   unreadMessages: number;
 }
 
 export const useAdminData = () => {
   const [stats, setStats] = useState<AdminStats>({
-    totalMembers: 0,
-    membershipEnrolled: 0,
     totalUsers: 0,
+    membershipEnrolled: 0,
     totalPublications: 0,
     unreadMessages: 0
   });
 
-  const [members, setMembers] = useState([]);
   const [users, setUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [conferences, setConferences] = useState([]);
@@ -31,8 +28,7 @@ export const useAdminData = () => {
 
   const fetchStats = async () => {
     try {
-      const [membersRes, usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
-        supabase.from('profiles').select('id', { count: 'exact' }),
+      const [usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact' }),
         supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
         supabase.from('publications').select('id', { count: 'exact' }),
@@ -40,7 +36,6 @@ export const useAdminData = () => {
       ]);
 
       setStats({
-        totalMembers: membersRes.count || 0,
         totalUsers: usersRes.count || 0,
         membershipEnrolled: membershipRes.count || 0,
         totalPublications: publicationsRes.count || 0,
@@ -55,26 +50,23 @@ export const useAdminData = () => {
   const fetchAllData = async () => {
     try {
       const [
-        membersRes, 
+        usersRes, 
         conferencesRes, 
         messagesRes, 
         publicationsRes, 
-        usersRes, 
         userRolesRes
       ] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('publications').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*')
       ]);
 
-      setMembers(membersRes.data || []);
+      setUsers(usersRes.data || []);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       setPublications(publicationsRes.data || []);
-      setUsers(usersRes.data || []);
       setUserRoles(userRolesRes.data || []);
       
       // Mock data for mandates and activities since these tables don't exist yet
@@ -97,7 +89,6 @@ export const useAdminData = () => {
 
   return {
     stats,
-    members,
     users,
     userRoles,
     conferences,
