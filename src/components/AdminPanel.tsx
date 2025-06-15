@@ -9,16 +9,19 @@ import AdminStats from '@/components/admin/AdminStats';
 import AdminTabs from '@/components/admin/AdminTabs';
 import UserManagement from '@/components/admin/UserManagement';
 import AdminMembersTab from '@/components/admin/AdminMembersTab';
-import AdminOrdersTab from '@/components/admin/AdminOrdersTab';
+import AdminConferencesTab from '@/components/admin/AdminConferencesTab';
 import AdminMessagesTab from '@/components/admin/AdminMessagesTab';
 import AdminPublicationsTab from '@/components/admin/AdminPublicationsTab';
+import AdminContentTab from '@/components/admin/AdminContentTab';
+import CSVExport from '@/components/admin/CSVExport';
 
 const AdminPanel = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState({
     totalMembers: 0,
-    totalOrders: 0,
+    membershipEnrolled: 0,
+    totalUsers: 0,
     totalPublications: 0,
     unreadMessages: 0
   });
@@ -26,9 +29,11 @@ const AdminPanel = () => {
   const [members, setMembers] = useState([]);
   const [users, setUsers] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
-  const [orders, setOrders] = useState([]);
+  const [conferences, setConferences] = useState([]);
   const [messages, setMessages] = useState([]);
   const [publications, setPublications] = useState([]);
+  const [mandates, setMandates] = useState([]);
+  const [activities, setActivities] = useState([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -54,29 +59,34 @@ const AdminPanel = () => {
   };
 
   const fetchStats = async () => {
-    const [membersRes, ordersRes, publicationsRes, messagesRes] = await Promise.all([
+    const [membersRes, usersRes, membershipRes, publicationsRes, messagesRes] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact' }),
-      supabase.from('orders').select('id', { count: 'exact' }),
+      supabase.from('profiles').select('id', { count: 'exact' }),
+      supabase.from('memberships').select('id', { count: 'exact' }).eq('status', 'active'),
       supabase.from('publications').select('id', { count: 'exact' }),
       supabase.from('contact_messages').select('id', { count: 'exact' }).eq('status', 'unread')
     ]);
 
     setStats({
       totalMembers: membersRes.count || 0,
-      totalOrders: ordersRes.count || 0,
+      totalUsers: usersRes.count || 0,
+      membershipEnrolled: membershipRes.count || 0,
       totalPublications: publicationsRes.count || 0,
       unreadMessages: messagesRes.count || 0
     });
   };
 
   const fetchAllData = async () => {
-    const [membersRes, ordersRes, messagesRes, publicationsRes, usersRes, userRolesRes] = await Promise.all([
+    const [
+      membersRes, 
+      conferencesRes, 
+      messagesRes, 
+      publicationsRes, 
+      usersRes, 
+      userRolesRes
+    ] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-      supabase.from('orders').select(`
-        *,
-        memberships(membership_type, status),
-        profiles(full_name, email)
-      `).order('created_at', { ascending: false }),
+      supabase.from('conferences').select('*').order('created_at', { ascending: false }),
       supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
       supabase.from('publications').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('id, full_name, email, created_at, institution, phone').order('created_at', { ascending: false }),
@@ -84,11 +94,15 @@ const AdminPanel = () => {
     ]);
 
     setMembers(membersRes.data || []);
-    setOrders(ordersRes.data || []);
+    setConferences(conferencesRes.data || []);
     setMessages(messagesRes.data || []);
     setPublications(publicationsRes.data || []);
     setUsers(usersRes.data || []);
     setUserRoles(userRolesRes.data || []);
+    
+    // Mock data for mandates and activities since these tables don't exist yet
+    setMandates([]);
+    setActivities([]);
   };
 
   const handleMarkMessageRead = async (messageId: string) => {
@@ -142,6 +156,62 @@ const AdminPanel = () => {
     }
   };
 
+  // Conference management handlers
+  const handleAddConference = async (conferenceData: any) => {
+    const { error } = await supabase
+      .from('conferences')
+      .insert(conferenceData);
+
+    if (!error) {
+      toast.success('Conference added successfully');
+      fetchAllData();
+    } else {
+      toast.error('Error adding conference');
+    }
+  };
+
+  const handleUpdateConference = async (id: string, conferenceData: any) => {
+    const { error } = await supabase
+      .from('conferences')
+      .update(conferenceData)
+      .eq('id', id);
+
+    if (!error) {
+      toast.success('Conference updated successfully');
+      fetchAllData();
+    } else {
+      toast.error('Error updating conference');
+    }
+  };
+
+  const handleDeleteConference = async (id: string) => {
+    const { error } = await supabase
+      .from('conferences')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      toast.success('Conference deleted successfully');
+      fetchAllData();
+    } else {
+      toast.error('Error deleting conference');
+    }
+  };
+
+  // Content management handlers (placeholder - would need database tables)
+  const handleAddContent = async (contentData: any, type: 'mandate' | 'activity') => {
+    // This would need a proper database table for mandates/activities
+    toast.info(`Content management for ${type}s needs database implementation`);
+  };
+
+  const handleUpdateContent = async (id: string, contentData: any, type: 'mandate' | 'activity') => {
+    toast.info(`Content management for ${type}s needs database implementation`);
+  };
+
+  const handleDeleteContent = async (id: string, type: 'mandate' | 'activity') => {
+    toast.info(`Content management for ${type}s needs database implementation`);
+  };
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -159,8 +229,13 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Comprehensive management of ISPB website and members</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600">Comprehensive management of ISPB website and members</p>
+            </div>
+            <CSVExport users={users} members={members} />
+          </div>
         </div>
 
         <div className="mb-8">
@@ -180,8 +255,13 @@ const AdminPanel = () => {
             />
           </TabsContent>
 
-          <TabsContent value="orders">
-            <AdminOrdersTab orders={orders} />
+          <TabsContent value="conferences">
+            <AdminConferencesTab 
+              conferences={conferences}
+              onAddConference={handleAddConference}
+              onUpdateConference={handleUpdateConference}
+              onDeleteConference={handleDeleteConference}
+            />
           </TabsContent>
 
           <TabsContent value="messages">
@@ -195,6 +275,16 @@ const AdminPanel = () => {
             <AdminPublicationsTab 
               publications={publications} 
               onAddPublication={handleAddPublication} 
+            />
+          </TabsContent>
+
+          <TabsContent value="content">
+            <AdminContentTab 
+              mandates={mandates}
+              activities={activities}
+              onAddContent={handleAddContent}
+              onUpdateContent={handleUpdateContent}
+              onDeleteContent={handleDeleteContent}
             />
           </TabsContent>
         </AdminTabs>

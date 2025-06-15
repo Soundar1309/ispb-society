@@ -5,7 +5,8 @@ import { Users, CreditCard, BookOpen, MessageSquare, TrendingUp, Calendar } from
 interface AdminStatsProps {
   stats: {
     totalMembers: number;
-    totalOrders: number;
+    membershipEnrolled: number;
+    totalUsers: number;
     totalPublications: number;
     unreadMessages: number;
   };
@@ -14,8 +15,8 @@ interface AdminStatsProps {
 const AdminStats = ({ stats }: AdminStatsProps) => {
   const statCards = [
     {
-      title: "Total Members",
-      value: stats.totalMembers,
+      title: "Total Users",
+      value: stats.totalUsers,
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
@@ -23,8 +24,8 @@ const AdminStats = ({ stats }: AdminStatsProps) => {
       changeType: "increase"
     },
     {
-      title: "Total Orders",
-      value: stats.totalOrders,
+      title: "Membership Enrolled",
+      value: stats.membershipEnrolled,
       icon: CreditCard,
       color: "text-green-600",
       bgColor: "bg-green-50",
