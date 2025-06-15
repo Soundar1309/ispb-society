@@ -75,30 +75,30 @@ const Membership = () => {
   ];
 
   return (
-    <div className="min-h-screen py-12 bg-gray-50">
+    <div className="min-h-screen py-8 sm:py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Membership</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Membership</h1>
+          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto px-4">
             Join the Indian Society of Plant Breeders and be part of India's premier 
             plant breeding community. Connect, learn, and contribute to agricultural innovation.
           </p>
         </div>
 
         {/* Membership Types */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Membership Categories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Membership Categories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
             {membershipTypes.map((membership, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{membership.type}</h3>
-                  <div className="text-3xl font-bold text-green-600 mb-1">{membership.fee}</div>
-                  <div className="text-gray-600">{membership.duration}</div>
+              <div key={index} className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+                <div className="text-center mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{membership.type}</h3>
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">{membership.fee}</div>
+                  <div className="text-sm sm:text-base text-gray-600">{membership.duration}</div>
                 </div>
                 
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
                   <ul className="space-y-2">
                     {membership.benefits.map((benefit, benefitIndex) => (
@@ -110,12 +110,12 @@ const Membership = () => {
                   </ul>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">Eligibility:</h4>
                   <p className="text-gray-700 text-sm">{membership.eligibility}</p>
                 </div>
 
-                <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                <button className="w-full bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base">
                   Apply Now
                 </button>
               </div>
@@ -124,16 +124,16 @@ const Membership = () => {
         </section>
 
         {/* Registration Process */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Registration Process</h2>
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Registration Process</h2>
+          <div className="bg-white rounded-xl shadow-md p-4 sm:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {registrationSteps.map((step, index) => (
                 <div key={index} className="text-center">
-                  <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-base sm:text-lg">
                     {step.step}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
                 </div>
               ))}
@@ -142,91 +142,91 @@ const Membership = () => {
         </section>
 
         {/* Payment Information */}
-        <section className="mb-16">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-8 text-white">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-4">Secure Online Payment</h2>
-              <p className="text-lg opacity-90">
+        <section className="mb-12 sm:mb-16">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 sm:p-8 text-white">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">Secure Online Payment</h2>
+              <p className="text-base sm:text-lg opacity-90">
                 We use Razorpay for secure and convenient online payments
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
               <div>
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">💳</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl sm:text-2xl">💳</span>
                 </div>
-                <h3 className="font-semibold mb-2">Credit/Debit Cards</h3>
-                <p className="text-sm opacity-90">All major cards accepted</p>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">Credit/Debit Cards</h3>
+                <p className="text-xs sm:text-sm opacity-90">All major cards accepted</p>
               </div>
               <div>
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🏦</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl sm:text-2xl">🏦</span>
                 </div>
-                <h3 className="font-semibold mb-2">Net Banking</h3>
-                <p className="text-sm opacity-90">50+ banks supported</p>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">Net Banking</h3>
+                <p className="text-xs sm:text-sm opacity-90">50+ banks supported</p>
               </div>
               <div>
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">📱</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl sm:text-2xl">📱</span>
                 </div>
-                <h3 className="font-semibold mb-2">UPI/Wallets</h3>
-                <p className="text-sm opacity-90">UPI, Paytm, PhonePe</p>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">UPI/Wallets</h3>
+                <p className="text-xs sm:text-sm opacity-90">UPI, Paytm, PhonePe</p>
               </div>
               <div>
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🔒</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <span className="text-xl sm:text-2xl">🔒</span>
                 </div>
-                <h3 className="font-semibold mb-2">Secure</h3>
-                <p className="text-sm opacity-90">256-bit SSL encryption</p>
+                <h3 className="font-semibold mb-2 text-sm sm:text-base">Secure</h3>
+                <p className="text-xs sm:text-sm opacity-90">256-bit SSL encryption</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* Required Documents */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Required Documents</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-green-600 mb-4">For All Applicants</h3>
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Required Documents</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4">For All Applicants</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Recent passport-sized photograph</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Recent passport-sized photograph</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Government-issued photo ID proof</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Government-issued photo ID proof</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Educational qualification certificates</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Educational qualification certificates</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Curriculum Vitae (CV)</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Curriculum Vitae (CV)</span>
                 </li>
               </ul>
             </div>
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-green-600 mb-4">Additional Requirements</h3>
+            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4">Additional Requirements</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700"><strong>Students:</strong> Bonafide student certificate</span>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Students:</strong> Bonafide student certificate</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700"><strong>Professionals:</strong> Experience certificate</span>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Professionals:</strong> Experience certificate</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700"><strong>Life Members:</strong> Research publication list</span>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Life Members:</strong> Research publication list</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700">Two professional references</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Two professional references</span>
                 </li>
               </ul>
             </div>
@@ -235,23 +235,23 @@ const Membership = () => {
 
         {/* Contact Information */}
         <section>
-          <div className="bg-white rounded-xl shadow-md p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help with Membership?</h2>
+          <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Need Help with Membership?</h2>
             <p className="text-gray-600 mb-6">
               Our membership team is here to assist you with any questions or concerns.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Email Support</h3>
-                <p className="text-green-600">membership@ispb.org.in</p>
+                <p className="text-green-600 text-sm sm:text-base">membership@ispb.org.in</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Phone Support</h3>
-                <p className="text-green-600">+91-11-2584-0000</p>
+                <p className="text-green-600 text-sm sm:text-base">+91-11-2584-0000</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Office Hours</h3>
-                <p className="text-gray-600">Mon-Fri: 9:00 AM - 5:00 PM</p>
+                <p className="text-gray-600 text-sm sm:text-base">Mon-Fri: 9:00 AM - 5:00 PM</p>
               </div>
             </div>
           </div>

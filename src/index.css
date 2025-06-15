@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,19 +38,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -100,4 +94,60 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Responsive text sizes */
+  .responsive-text-xs { @apply text-xs sm:text-sm; }
+  .responsive-text-sm { @apply text-sm sm:text-base; }
+  .responsive-text-base { @apply text-base sm:text-lg; }
+  .responsive-text-lg { @apply text-lg sm:text-xl; }
+  .responsive-text-xl { @apply text-xl sm:text-2xl; }
+  .responsive-text-2xl { @apply text-2xl sm:text-3xl; }
+  .responsive-text-3xl { @apply text-3xl sm:text-4xl; }
+}
+
+@layer utilities {
+  /* Responsive spacing utilities */
+  .responsive-padding { @apply p-4 sm:p-6 lg:p-8; }
+  .responsive-margin { @apply m-4 sm:m-6 lg:m-8; }
+  .responsive-gap { @apply gap-4 sm:gap-6 lg:gap-8; }
+  
+  /* Responsive grid utilities */
+  .responsive-grid-1-2 { @apply grid-cols-1 sm:grid-cols-2; }
+  .responsive-grid-1-2-3 { @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3; }
+  .responsive-grid-1-2-4 { @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4; }
+  
+  /* Container responsive */
+  .responsive-container { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+}
+
+/* Enhanced mobile support */
+@media (max-width: 640px) {
+  .mobile-hide { display: none !important; }
+  .mobile-show { display: block !important; }
+  
+  /* Ensure touch targets are large enough */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  /* Better mobile typography */
+  h1 { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+  h2 { font-size: 1.5rem !important; line-height: 2rem !important; }
+  h3 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-hide { display: none !important; }
+  .tablet-show { display: block !important; }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1025px) {
+  .desktop-hide { display: none !important; }
+  .desktop-show { display: block !important; }
 }

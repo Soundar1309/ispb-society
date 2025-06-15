@@ -21,9 +21,9 @@ const Index = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background w-full">
           <Header />
-          <main className="pt-16">
+          <main className="pt-14 sm:pt-16 w-full">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/auth" element={<AuthPage />} />
