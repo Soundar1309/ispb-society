@@ -9,17 +9,14 @@ const Footer = () => {
     about: [
       { name: 'Genesis', href: '/genesis' },
       { name: 'Office Bearers', href: '/office-bearers' },
-      { name: 'Mandate & Activities', href: '/mandate-activities' },
       { name: 'Contact Us', href: '/contact' }
     ],
     resources: [
-      { name: 'Publications', href: '/publications' },
       { name: 'Conferences', href: '/conference' },
       { name: 'Life Members', href: '/life-members' },
       { name: 'Membership', href: '/membership' }
     ],
     support: [
-      { name: 'Help Center', href: '#' },
       { name: 'Privacy Policy', href: '#' },
       { name: 'Terms of Service', href: '#' },
       { name: 'Sitemap', href: '#' }
@@ -65,9 +62,9 @@ const Footer = () => {
               <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-blue-700 transition-all duration-300 transform hover:scale-110">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-300 transform hover:scale-110">
+              {/* <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-300 transform hover:scale-110">
                 <Youtube className="w-5 h-5" />
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -112,9 +109,9 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-gray-300">
-                  <p>Division of Genetics</p>
-                  <p>Indian Agricultural Research Institute</p>
-                  <p>New Delhi - 110012, India</p>
+                  <p>Division of Plant Breeding</p>
+                  <p>Agricultural Research Institute</p>
+                  <p>Coimbatore - 641030, India</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -130,7 +127,7 @@ const Footer = () => {
         </div>
 
         {/* Newsletter Section */}
-        <div className="border-t border-gray-700 mt-12 pt-8">
+        {/* <div className="border-t border-gray-700 mt-12 pt-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
               <h4 className="text-lg font-semibold mb-2 text-green-400">Stay Updated</h4>
@@ -147,7 +144,7 @@ const Footer = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">

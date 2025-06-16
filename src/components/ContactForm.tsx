@@ -156,7 +156,6 @@ const ContactForm = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
                     <p className="text-gray-600">info@ispb.org.in</p>
-                    <p className="text-gray-600">secretary@ispb.org.in</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
@@ -164,7 +163,6 @@ const ContactForm = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
                     <p className="text-gray-600">+91-11-2584-2983</p>
-                    <p className="text-gray-600">+91-11-2584-2984</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
@@ -173,7 +171,7 @@ const ContactForm = () => {
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
                       Indian Agricultural Research Institute<br />
-                      New Delhi - 110012<br />
+                      Coimbatore - 641030<br />
                       India
                     </p>
                   </div>
@@ -188,12 +186,8 @@ const ContactForm = () => {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Monday - Friday</span>
+                    <span className="text-gray-600">Monday - Saturday</span>
                     <span className="font-medium">9:00 AM - 5:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Saturday</span>
-                    <span className="font-medium">9:00 AM - 1:00 PM</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sunday</span>
@@ -203,7 +197,7 @@ const ContactForm = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Quick Links</CardTitle>
               </CardHeader>
@@ -223,7 +217,28 @@ const ContactForm = () => {
                   </a>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
+          </div>
+        </div>
+          {/* Map Section */}
+        <div className="mt-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Us on Map</h2>
+            <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, Pusa Campus, New Delhi</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.352320254036!2d76.9354212!3d11.012170599999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8592754d00001%3A0x58af4a04bdda7a1f!2sTamil%20Nadu%20Agricultural%20University!5e0!3m2!1sen!2sin!4v1750054465930!5m2!1sen!2sin"
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Indian Agricultural Research Institute, Pusa Campus Location"
+              className="w-full h-96"
+            />
           </div>
         </div>
       </div>
