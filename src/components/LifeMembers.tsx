@@ -156,36 +156,17 @@ const LifeMembers = () => {
   };
 
   const getMembershipStatusBadge = (membership: UserMembership) => {
-    if (membership.is_manual) {
-      return <Badge className="bg-purple-100 text-purple-800 border-purple-200">Admin Added</Badge>;
-    }
+    // Check if membership is active based on status and payment
+    const isActive = membership.status === 'active' && 
+      (membership.payment_status === 'paid' || 
+       membership.payment_status === 'manual' || 
+       membership.is_manual);
 
-    if (membership.status === 'active' && membership.payment_status === 'paid') {
+    if (isActive) {
       return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
+    } else {
+      return <Badge className="bg-red-100 text-red-800 border-red-200">Inactive</Badge>;
     }
-    
-    if (membership.payment_status === 'manual') {
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Verified</Badge>;
-    }
-    
-    if (membership.payment_status === 'pending') {
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Payment Pending</Badge>;
-    }
-    
-    if (membership.payment_status === 'failed') {
-      return <Badge className="bg-red-100 text-red-800 border-red-200">Payment Failed</Badge>;
-    }
-    
-    if (membership.status === 'expired') {
-      return <Badge className="bg-orange-100 text-orange-800 border-orange-200">Expired</Badge>;
-    }
-    
-    if (membership.status === 'cancelled') {
-      return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Cancelled</Badge>;
-    }
-    
-    const statusText = `${membership.status} (${membership.payment_status})`;
-    return <Badge className="bg-gray-100 text-gray-800 border-gray-200">{statusText}</Badge>;
   };
 
   const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
