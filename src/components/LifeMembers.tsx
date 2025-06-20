@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +30,7 @@ interface UserMembership {
   valid_from: string;
   valid_until: string;
   amount: number;
+  is_manual: boolean;
 }
 
 const LifeMembers = () => {
@@ -156,15 +156,36 @@ const LifeMembers = () => {
   };
 
   const getMembershipStatusBadge = (membership: UserMembership) => {
+    if (membership.is_manual) {
+      return <Badge className="bg-purple-100 text-purple-800 border-purple-200">Admin Added</Badge>;
+    }
+
     if (membership.status === 'active' && membership.payment_status === 'paid') {
       return <Badge className="bg-green-100 text-green-800 border-green-200">Active</Badge>;
-    } else if (membership.payment_status === 'pending') {
-      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Payment Pending</Badge>;
-    } else if (membership.status === 'expired') {
-      return <Badge className="bg-red-100 text-red-800 border-red-200">Expired</Badge>;
-    } else {
-      return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Inactive</Badge>;
     }
+    
+    if (membership.payment_status === 'manual') {
+      return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Verified</Badge>;
+    }
+    
+    if (membership.payment_status === 'pending') {
+      return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Payment Pending</Badge>;
+    }
+    
+    if (membership.payment_status === 'failed') {
+      return <Badge className="bg-red-100 text-red-800 border-red-200">Payment Failed</Badge>;
+    }
+    
+    if (membership.status === 'expired') {
+      return <Badge className="bg-orange-100 text-orange-800 border-orange-200">Expired</Badge>;
+    }
+    
+    if (membership.status === 'cancelled') {
+      return <Badge className="bg-gray-100 text-gray-800 border-gray-200">Cancelled</Badge>;
+    }
+    
+    const statusText = `${membership.status} (${membership.payment_status})`;
+    return <Badge className="bg-gray-100 text-gray-800 border-gray-200">{statusText}</Badge>;
   };
 
   const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
@@ -219,9 +240,24 @@ const LifeMembers = () => {
                     <p className="text-sm text-gray-500">
                       Amount: ₹{userMembership.amount}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      Valid: {new Date(userMembership.valid_from).toLocaleDateString()} to {new Date(userMembership.valid_until).toLocaleDateString()}
-                    </p>
+                    {userMembership.valid_from && userMembership.valid_until ? (
+                      <p className="text-sm text-gray-500">
+                        Valid: {new Date(userMembership.valid_from).toLocaleDateString()} to {new Date(userMembership.valid_until).toLocaleDateString()}
+                      </p>
+                    ) : userMembership.valid_from ? (
+                      <p className="text-sm text-gray-500">
+                        Valid from: {new Date(userMembership.valid_from).toLocaleDateString()}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        Lifetime membership
+                      </p>
+                    )}
+                    {userMembership.is_manual && (
+                      <p className="text-sm text-blue-600">
+                        Admin verified membership
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-col items-start sm:items-end gap-2">
                     {getMembershipStatusBadge(userMembership)}
