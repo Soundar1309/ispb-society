@@ -1,67 +1,178 @@
-# Welcome to your Codeficorp project
 
-## Project info
+# ISPB - Indian Society of Plant Breeders Website
 
-**URL**: https://Codeficorp.dev/projects/5c8e149b-6212-4e3f-930e-d28239bbd91a
+A modern, responsive website for the Indian Society of Plant Breeders built with React, TypeScript, and Tailwind CSS.
 
-## How can I edit this code?
+**Built by**: [Codeficorp](https://codeficorp.dev)
 
-There are several ways of editing your application.
+## About This Project
 
-**Use your preferred IDE**
+This website serves the Indian Society of Plant Breeders (ISPB), providing a comprehensive platform for:
+- Member registration and management
+- Conference information and registration
+- Life members directory
+- Contact and communication
+- Administrative tools
+- Payment processing for memberships
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Codeficorp.
+## Features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Modern Design**: Clean, responsive interface with Tailwind CSS
+- **User Authentication**: Secure member registration and login
+- **Payment Integration**: Razorpay integration for membership fees
+- **Admin Panel**: Comprehensive admin tools for content management
+- **Real-time Updates**: Live data synchronization
+- **Mobile Responsive**: Optimized for all devices
 
-Follow these steps:
+## Tech Stack
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Frontend
+- **React 18** - Modern React with hooks
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and development server
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - High-quality component library
+- **React Router DOM** - Client-side routing
+- **React Hook Form** - Efficient form handling
+- **Lucide React** - Beautiful icon library
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Backend & Database
+- **Supabase** - Backend-as-a-Service
+- **PostgreSQL** - Robust relational database
+- **Row Level Security** - Database-level security
+- **Real-time subscriptions** - Live data updates
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Payment & Communication
+- **Razorpay** - Payment gateway integration
+- **Email notifications** - Automated communication
+- **Toast notifications** - User feedback system
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Installation & Setup
+
+### Prerequisites
+- Node.js 18+ and npm
+- Git
+
+### Steps
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd ispb-website
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Configure your Supabase and Razorpay credentials
+
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+## Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env.local` file with the following variables:
 
-**Use GitHub Codespaces**
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui components
+│   ├── admin/          # Admin panel components
+│   └── header/         # Header-specific components
+├── hooks/              # Custom React hooks
+├── integrations/       # Third-party integrations
+├── lib/                # Utility functions
+└── pages/              # Page components
+```
 
-This project is built with:
+## Key Features
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Public Features
+- Homepage with ISPB information
+- Genesis and history of the organization
+- Office bearers directory
+- Conference listings and information
+- Contact form
+- Life members directory
 
-## How can I deploy this project?
+### Member Features
+- Secure user registration and authentication
+- Membership purchase and management
+- Profile management
+- Payment history
 
-Simply open [Codeficorp](https://Codeficorp.dev/projects/5c8e149b-6212-4e3f-930e-d28239bbd91a) and click on Share -> Publish.
+### Admin Features
+- Content management system
+- User and membership management
+- Payment tracking and verification
+- Conference management
+- Message management
+- Analytics dashboard
 
-## Can I connect a custom domain to my Codeficorp project?
+## Database Schema
 
-Yes, you can!
+The application uses PostgreSQL with the following main tables:
+- `users` - User accounts and profiles
+- `memberships` - Membership records and payments
+- `contact_messages` - Contact form submissions
+- `life_members` - Life members directory
+- `conferences` - Conference information
+- `user_roles` - Role-based access control
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Security Features
 
-Read more here: [Setting up a custom domain](https://docs.Codeficorp.dev/tips-tricks/custom-domain#step-by-step-guide)
+- Row Level Security (RLS) policies
+- JWT-based authentication
+- Role-based access control
+- Input validation and sanitization
+- Secure payment processing
+
+## Performance Optimizations
+
+- Code splitting and lazy loading
+- Image optimization
+- Responsive design patterns
+- Efficient state management
+- Tree-shaking for minimal bundle size
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Contributing
+
+This project is maintained by Codeficorp. For any issues or feature requests, please contact us through our official channels.
+
+## License
+
+This project is proprietary software developed by Codeficorp for the Indian Society of Plant Breeders.
+
+## Support
+
+For technical support or questions about this website, please contact:
+- **Developer**: Codeficorp
+- **Website**: https://codeficorp.dev
+- **Client**: Indian Society of Plant Breeders
+
+---
+
+**Developed with ❤️ by [Codeficorp](https://codeficorp.dev)**

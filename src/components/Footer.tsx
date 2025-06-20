@@ -148,9 +148,22 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-gray-400 text-sm">
-            © {currentYear} Indian Society of Plant Breeders. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-start space-y-2">
+            <p className="text-gray-400 text-sm">
+              © {currentYear} Indian Society of Plant Breeders. All rights reserved.
+            </p>
+            <p className="text-gray-500 text-xs">
+              Developed with ❤️ by{' '}
+              <a 
+                href="https://codeficorp.dev" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-green-400 hover:text-green-300 transition-colors"
+              >
+                Codeficorp
+              </a>
+            </p>
+          </div>
           <div className="flex flex-wrap justify-center md:justify-end space-x-6">
             <a href="#" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
               Privacy Policy
