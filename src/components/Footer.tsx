@@ -150,11 +150,8 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="flex flex-col items-center md:items-start space-y-2">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Indian Society of Plant Breeders. All rights reserved.
-            </p>
-            <p className="text-gray-500 text-xs">
-              Developed with ❤️ by{' '}
-              <a 
+              © {currentYear} ISPB. All rights reserved. | 
+              Developed by <a
                 href="https://codeficorp.dev" 
                 target="_blank" 
                 rel="noopener noreferrer"
