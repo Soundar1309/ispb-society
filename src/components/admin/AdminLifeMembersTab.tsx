@@ -258,8 +258,12 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   />
                   <div>
                     <h3 className="font-semibold text-lg">{member.name}</h3>
-                    <p className="text-green-600 font-medium">{member.designation}</p>
-                    <p className="text-gray-600">{member.institution}</p>
+                    {member.designation && (
+                      <p className="text-green-600 font-medium">{member.designation}</p>
+                    )}
+                    {member.institution && (
+                      <p className="text-gray-600">{member.institution}</p>
+                    )}
                     <div className="flex gap-2 mt-1">
                       {member.specialization && (
                         <Badge variant="outline" className="text-xs">
@@ -268,9 +272,12 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       )}
                       {member.member_since && (
                         <Badge variant="outline" className="text-xs">
-                          Since {member.member_since}
+                          Member since {member.member_since}
                         </Badge>
                       )}
+                      <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                        Active
+                      </Badge>
                     </div>
                     {(member.email || member.phone) && (
                       <div className="text-sm text-gray-500 mt-1">
