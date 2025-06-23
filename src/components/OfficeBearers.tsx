@@ -1,55 +1,138 @@
+import President from "../assets/president.jpg";
+import ChiefEditor from '../assets/ChiefEditor.jpg';
+import Editor from '../assets/Editor.jpg';
+import Editor1 from '../assets/Editor1.jpg';
+import Secretary from '../assets/secretary.jpg';
+import Treasurer from '../assets/treasurer.jpg';
+import User from '../assets/user.png';
+import Vicepresident from '../assets/Vicepresident.jpg';
+
 
 const OfficeBearers = () => {
   const officeBearers = [
     {
-      name: "Dr. Rajesh Kumar",
+      name: "Dr. R. Ravikesavan",
       designation: "President",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face",
-      institution: "Indian Agricultural Research Institute, New Delhi"
+      image: President,
+      institution: ""
     },
     {
-      name: "Dr. Priya Sharma",
+      name: "Dr. S. Manickam",
       designation: "Vice President",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b6fa1b1e?w=300&h=300&fit=crop&crop=face",
-      institution: "Punjab Agricultural University, Ludhiana"
+      image: Vicepresident,
+      institution: ""
     },
     {
-      name: "Dr. Anil Patel",
+      name: "Dr. R. Pushpam",
       designation: "Secretary",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
+      image: Secretary,
       institution: "Tamil Nadu Agricultural University, Coimbatore"
     },
     {
-      name: "Dr. Meera Singh",
-      designation: "Treasurer",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face",
+      name: "Dr. A. Subramanian	",
+      designation: "Chief Editor",
+      image: ChiefEditor,
       institution: "University of Agricultural Sciences, Bangalore"
     },
     {
-      name: "Dr. Suresh Gupta",
-      designation: "Joint Secretary",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=face",
+      name: "Dr. A. Manivannan",
+      designation: "Editor",
+      image: Editor,
       institution: "Chaudhary Charan Singh University, Meerut"
     },
     {
-      name: "Dr. Kavita Reddy",
-      designation: "Executive Member",
-      image: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=300&h=300&fit=crop&crop=face",
+      name: "Dr. R. Suresh",
+      designation: "Editor",
+      image: Editor1,
       institution: "Acharya N.G. Ranga Agricultural University, Hyderabad"
     },
     {
-      name: "Dr. Vikram Joshi",
-      designation: "Executive Member",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&crop=face",
+      name: "Dr. P. Shanthi",
+      designation: "Treasurer",
+      image: Treasurer,
       institution: "Maharana Pratap University of Agriculture, Udaipur"
     },
     {
-      name: "Dr. Sunita Yadav",
-      designation: "Executive Member",
-      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=300&fit=crop&crop=face",
-      institution: "G.B. Pant University, Pantnagar"
-    }
+      name: "Dr. S.R.Sreerangasamy",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. S. Sivakumar",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. N. Manivannan",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. R. Saraswathi",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. R. Kalaiyarasi",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. D. Kumaresan",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. K. Iyanar",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. S. Sheelamary",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. N. Premalatha",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. D. Kavithamani",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. Asish K Binodh",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    },
+    {
+      name: "Dr. A.Thanga Hemavathy",
+      designation: "Executive Committee Member",
+      image: User,
+      institution: ""
+    }  
   ];
+
+  // Split office bearers
+  const mainBearers = officeBearers.filter(
+    member => member.designation !== "Executive Committee Member"
+  );
+  const executiveCommittee = officeBearers.filter(
+    member => member.designation === "Executive Committee Member"
+  );
 
   return (
     <div className="min-h-screen py-12 bg-gray-50">
@@ -63,27 +146,55 @@ const OfficeBearers = () => {
           </p>
         </div>
 
-        {/* Office Bearers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {officeBearers.map((member, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-            >
-              <div className="aspect-square">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-full object-cover"
-                />
+        {/* Main Office Bearers Grid */}
+        <div className="mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {mainBearers.map((member, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="aspect-square">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                  <p className="text-green-600 font-semibold mb-2">{member.designation}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{member.institution}</p>
+                </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                <p className="text-green-600 font-semibold mb-2">{member.designation}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{member.institution}</p>
+            ))}
+          </div>
+        </div>
+
+        {/* Executive Committee Section */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Executive Committee Members</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {executiveCommittee.map((member, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
+              >
+                <div className="aspect-square">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                  <p className="text-green-600 font-semibold mb-2">{member.designation}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{member.institution}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Contact Information */}

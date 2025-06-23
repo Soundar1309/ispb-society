@@ -155,14 +155,14 @@ const ContactForm = () => {
                   <Mail className="w-6 h-6 text-green-600 mt-1" />
                   <div>
                     <h3 className="font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600">info@ispb.org.in</p>
-                  </div>
+                    <a href="mailto:ispbtnau@gmail.com" className="text-sm text-gray-900 hover:text-green-400 transition-colors">ispbtnau@gmail.com</a>
+                    </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <Phone className="w-6 h-6 text-green-600 mt-1" />
                   <div>
                     <h3 className="font-semibold text-gray-900">Phone</h3>
-                    <p className="text-gray-600">+91-11-2584-2983</p>
+                    <p className="text-gray-600">+91 94886 17091</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
@@ -170,9 +170,8 @@ const ContactForm = () => {
                   <div>
                     <h3 className="font-semibold text-gray-900">Address</h3>
                     <p className="text-gray-600">
-                      Indian Agricultural Research Institute<br />
-                      Coimbatore - 641030<br />
-                      India
+                      Indian Society of Plant Breeders <br /> Centre for Plant Breeding and Genetics <br />
+                     Tamil Nadu Agricultural University <br /> Coimbatore, Tamil Nadu-03, India.
                     </p>
                   </div>
                 </div>

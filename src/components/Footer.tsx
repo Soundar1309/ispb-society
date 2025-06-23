@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Youtube } from 'lucide-react';
 
@@ -109,18 +108,17 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-gray-300">
-                  <p>Division of Plant Breeding</p>
-                  <p>Agricultural Research Institute</p>
-                  <p>Coimbatore - 641030, India</p>
+                  <p>Indian Society of Plant Breeders <br />Centre for Plant Breeding & Genetics <br />
+                  Tamil Nadu Agricultural University <br />Coimbatore, Tamil Nadu-03, India.</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <span className="text-sm text-gray-300">+91-11-2584-0000</span>
+                <span className="text-sm text-gray-300">+91 94886 17091</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <span className="text-sm text-gray-300">info@ispb.org.in</span>
+                <a href="mailto:ispbtnau@gmail.com" className="text-sm text-gray-300 hover:text-green-400 transition-colors">ispbtnau@gmail.com</a>
               </div>
             </div>
           </div>
@@ -152,7 +150,7 @@ const Footer = () => {
             <p className="text-gray-400 text-sm">
               © {currentYear} ISPB. All rights reserved. | 
               Developed by <a
-                href="https://codeficorp.dev" 
+                href="https://www.codeficorp.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-green-400 hover:text-green-300 transition-colors"
