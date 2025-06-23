@@ -16,6 +16,9 @@ import AdminPanel from '@/components/AdminPanel';
 import UserDashboard from '@/components/UserDashboard';
 import EnhancedMembershipPage from '@/components/EnhancedMembershipPage';
 import Membership from '@/components/Membership';
+import PrivacyPolicy from '@/components/PrivacyPolicy';
+import TermsOfService from '@/components/TermsOfService';
+import CookiePolicy from '@/components/CookiePolicy';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 
@@ -38,6 +41,9 @@ const Index = () => {
               <Route path="/contact" element={<ContactForm />} />
               <Route path="/membership" element={<Membership />} />
               <Route path="/member" element={<EnhancedMembershipPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route 
                 path="/dashboard" 
                 element={

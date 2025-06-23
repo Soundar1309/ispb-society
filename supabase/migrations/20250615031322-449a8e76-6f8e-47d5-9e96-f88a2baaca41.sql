@@ -27,12 +27,16 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   -- Insert into user_roles with default member role and user info
-  INSERT INTO public.user_roles (user_id, role, full_name, email)
+  INSERT INTO public.user_roles (user_id, role, full_name, email, phone, institution, designation, specialization)
   VALUES (
     NEW.id,
     'member',
     NEW.raw_user_meta_data->>'full_name',
-    NEW.email
+    NEW.email,
+    NEW.raw_user_meta_data->>'phone',
+    NEW.raw_user_meta_data->>'institution',
+    NEW.raw_user_meta_data->>'designation',
+    NEW.raw_user_meta_data->>'specialization'
   );
   
   RETURN NEW;

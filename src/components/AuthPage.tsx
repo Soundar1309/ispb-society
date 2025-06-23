@@ -20,6 +20,10 @@ const AuthPage = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
+    const phone = formData.get('phone') as string;
+    const institution = formData.get('institution') as string;
+    const designation = formData.get('designation') as string;
+    const specialization = formData.get('specialization') as string;
 
     try {
       const { error } = await supabase.auth.signUp({
@@ -28,8 +32,11 @@ const AuthPage = () => {
         options: {
           data: {
             full_name: fullName,
+            phone: phone,
+            institution: institution,
+            designation: designation,
+            specialization: specialization,
           },
-          // Remove emailRedirectTo to skip email confirmation
         },
       });
 
@@ -157,6 +164,46 @@ const AuthPage = () => {
                       name="email"
                       type="email"
                       placeholder="Email address"
+                      required
+                      disabled={isLoading}
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      name="phone"
+                      type="tel"
+                      placeholder="Phone Number"
+                      required
+                      disabled={isLoading}
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      name="institution"
+                      type="text"
+                      placeholder="Institution/Organization"
+                      required
+                      disabled={isLoading}
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      name="designation"
+                      type="text"
+                      placeholder="Designation/Position"
+                      required
+                      disabled={isLoading}
+                      className="text-sm sm:text-base"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      name="specialization"
+                      type="text"
+                      placeholder="Specialization/Field of Study"
                       required
                       disabled={isLoading}
                       className="text-sm sm:text-base"

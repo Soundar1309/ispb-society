@@ -18,7 +18,6 @@ const UserDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({
-    full_name: '',
     phone: '',
     institution: '',
     designation: '',
@@ -51,7 +50,6 @@ const UserDashboard = () => {
       console.log('Fetched user role data:', userRoleData);
       setUserRole(userRoleData);
       setEditForm({
-        full_name: userRoleData.full_name || '',
         phone: userRoleData.phone || '',
         institution: userRoleData.institution || '',
         designation: userRoleData.designation || '',
@@ -119,6 +117,7 @@ const UserDashboard = () => {
             user_id: user.id,
             role: 'member',
             email: user.email,
+            full_name: userRole?.full_name || '',
             ...editForm,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -271,19 +270,13 @@ const UserDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium">Full Name</label>
-                    {isEditing ? (
-                      <Input
-                        value={editForm.full_name}
-                        onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                        placeholder="Enter your full name"
-                      />
-                    ) : (
-                      <p className="text-gray-700">{userRole?.full_name || 'Not provided'}</p>
-                    )}
+                    <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{userRole?.full_name || 'Not provided'}</p>
+                    <p className="text-xs text-gray-500 mt-1">Contact support to change your name</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Email</label>
-                    <p className="text-gray-700">{user.email}</p>
+                    <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{user.email}</p>
+                    <p className="text-xs text-gray-500 mt-1">Contact support to change your email</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Phone</label>

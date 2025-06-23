@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Youtube } from 'lucide-react';
 
@@ -16,9 +17,9 @@ const Footer = () => {
       { name: 'Membership', href: '/membership' }
     ],
     support: [
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Terms of Service', href: '#' },
-      { name: 'Sitemap', href: '#' }
+      { name: 'Privacy Policy', href: '/privacy-policy' },
+      { name: 'Terms of Service', href: '/terms-of-service' },
+      { name: 'Cookie Policy', href: '/cookie-policy' }
     ]
   };
 
@@ -160,15 +161,15 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex flex-wrap justify-center md:justify-end space-x-6">
-            <a href="#" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
+            </Link>
+            <Link to="/terms-of-service" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
               Terms of Service
-            </a>
-            <a href="#" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
+            </Link>
+            <Link to="/cookie-policy" className="text-gray-400 hover:text-green-400 text-sm transition-colors">
               Cookie Policy
-            </a>
+            </Link>
           </div>
         </div>
       </div>
