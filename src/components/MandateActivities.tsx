@@ -111,17 +111,20 @@ const MandateActivities = () => {
         {/* Mandate Section */}
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Mandate</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {mandates.map((mandate) => (
-              <Card key={mandate.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-xl text-green-600">{mandate.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
+          <div className="bg-white rounded-xl shadow-md p-8">
+            <div className="space-y-6">
+              {mandates.map((mandate, index) => (
+                <div key={mandate.id} className="border-l-4 border-green-500 pl-6 py-4">
+                  <div className="flex flex-wrap items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">{mandate.title}</h3>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      #{mandate.display_order}
+                    </span>
+                  </div>
                   <p className="text-gray-700 leading-relaxed">{mandate.content}</p>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -152,17 +155,20 @@ const MandateActivities = () => {
         {/* Activities Section */}
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Activities</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {activities.map((activity) => (
-              <Card key={activity.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-xl text-green-600">{activity.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
+          <div className="bg-white rounded-xl shadow-md p-8">
+            <div className="space-y-6">
+              {activities.map((activity, index) => (
+                <div key={activity.id} className="border-l-4 border-green-500 pl-6 py-4">
+                  <div className="flex flex-wrap items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">{activity.title}</h3>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      #{activity.display_order}
+                    </span>
+                  </div>
                   <p className="text-gray-700 leading-relaxed">{activity.content}</p>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
