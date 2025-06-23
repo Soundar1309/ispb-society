@@ -32,6 +32,7 @@ interface Membership {
   valid_until: string;
   created_at: string;
   is_manual?: boolean;
+  member_code?: string;
 }
 
 interface MemberWithUserData {
@@ -52,6 +53,7 @@ interface MemberWithUserData {
   is_manual?: boolean;
   membership_id?: string;
   amount?: number;
+  member_code?: string;
 }
 
 export const useAdminData = () => {
@@ -164,7 +166,8 @@ export const useAdminData = () => {
               valid_until: membership.valid_until || '',
               is_manual: membership.is_manual || false,
               membership_id: membership.id,
-              amount: membership.amount || 0
+              amount: membership.amount || 0,
+              member_code: membership.member_code
             });
           }
         }
@@ -225,6 +228,25 @@ export const useAdminData = () => {
         toast.error('User already has an active membership');
         return { success: false };
       }
+
+      // Check if member code already exists
+      if (membershipData.member_code) {
+        const { data: existingCode, error: codeError } = await supabase
+          .from('memberships')
+          .select('id')
+          .eq('member_code', membershipData.member_code)
+          .single();
+
+        if (codeError && codeError.code !== 'PGRST116') {
+          console.error('Error checking member code:', codeError);
+          throw codeError;
+        }
+
+        if (existingCode) {
+          toast.error('Member code already exists. Please use a unique code.');
+          return { success: false };
+        }
+      }
       
       const { error } = await supabase
         .from('memberships')
@@ -249,6 +271,26 @@ export const useAdminData = () => {
   const updateMembership = async (membershipId: string, membershipData: any) => {
     try {
       console.log('Updating membership:', { membershipId, membershipData });
+      
+      // Check if member code already exists (excluding current membership)
+      if (membershipData.member_code) {
+        const { data: existingCode, error: codeError } = await supabase
+          .from('memberships')
+          .select('id')
+          .eq('member_code', membershipData.member_code)
+          .neq('id', membershipId)
+          .single();
+
+        if (codeError && codeError.code !== 'PGRST116') {
+          console.error('Error checking member code:', codeError);
+          throw codeError;
+        }
+
+        if (existingCode) {
+          toast.error('Member code already exists. Please use a unique code.');
+          return { success: false };
+        }
+      }
       
       const { error } = await supabase
         .from('memberships')

@@ -279,6 +279,7 @@ export type Database = {
           currency: string | null
           id: string
           is_manual: boolean | null
+          member_code: string | null
           membership_type: string
           payment_status: string
           razorpay_order_id: string | null
@@ -295,6 +296,7 @@ export type Database = {
           currency?: string | null
           id?: string
           is_manual?: boolean | null
+          member_code?: string | null
           membership_type: string
           payment_status?: string
           razorpay_order_id?: string | null
@@ -311,6 +313,7 @@ export type Database = {
           currency?: string | null
           id?: string
           is_manual?: boolean | null
+          member_code?: string | null
           membership_type?: string
           payment_status?: string
           razorpay_order_id?: string | null
@@ -524,6 +527,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_expired_memberships: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      generate_member_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
         Args: { user_uuid?: string }
         Returns: boolean

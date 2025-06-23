@@ -17,6 +17,7 @@ interface MembershipFormData {
   valid_from: Date;
   valid_until: Date;
   amount: number;
+  member_code?: string;
 }
 
 interface MembershipFormProps {
@@ -33,7 +34,8 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
     membership_type: initialData?.membership_type || 'annual',
     valid_from: initialData?.valid_from || new Date(),
     valid_until: initialData?.valid_until || new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-    amount: initialData?.amount || 0
+    amount: initialData?.amount || 0,
+    member_code: initialData?.member_code || ''
   });
 
   const [validFromOpen, setValidFromOpen] = useState(false);
@@ -42,6 +44,15 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+  };
+
+  // Generate suggested member code format
+  const generateSuggestedMemberCode = () => {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear().toString().slice(-2);
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const randomNum = Math.floor(Math.random() * 999) + 1;
+    return `LM-${randomNum.toString().padStart(3, '0')}`;
   };
 
   return (
@@ -93,6 +104,35 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
                   <SelectItem value="institutional">Institutional</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="member_code">
+                Member Code * 
+                <span className="text-xs text-gray-500 ml-1">(e.g., LM-001)</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="member_code"
+                  value={formData.member_code}
+                  onChange={(e) => setFormData({ ...formData, member_code: e.target.value })}
+                  placeholder="LM-001"
+                  pattern="^LM-[0-9]{3}$"
+                  title="Member code should be in format LM-XXX (e.g., LM-001)"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFormData({ ...formData, member_code: generateSuggestedMemberCode() })}
+                  className="whitespace-nowrap"
+                >
+                  Generate
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Manual member codes are required for manual memberships
+              </p>
             </div>
 
             <div>
@@ -172,7 +212,7 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit" disabled={!formData.user_id}>
+            <Button type="submit" disabled={!formData.user_id || !formData.member_code}>
               {isEditing ? 'Update Membership' : 'Add Membership'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>

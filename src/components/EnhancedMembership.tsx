@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Hash } from 'lucide-react';
 import { toast } from 'sonner';
 import PaymentIntegration from './PaymentIntegration';
 import MembershipCancellation from './MembershipCancellation';
@@ -51,7 +52,7 @@ const EnhancedMembership = () => {
   };
 
   const fetchMemberships = async () => {
-    // Include manual memberships in the query
+    // Include manual memberships in the query and fetch member_code
     const { data, error } = await supabase
       .from('memberships')
       .select('*')
@@ -236,7 +237,15 @@ const EnhancedMembership = () => {
                     {memberships.map((membership) => (
                       <div key={membership.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <p className="font-medium capitalize">{membership.membership_type}</p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="font-medium capitalize">{membership.membership_type}</p>
+                            {membership.member_code && (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-mono">
+                                <Hash className="h-3 w-3" />
+                                {membership.member_code}
+                              </div>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500">
                             {membership.valid_from && membership.valid_until 
                               ? `${membership.valid_from} to ${membership.valid_until}`
@@ -245,6 +254,9 @@ const EnhancedMembership = () => {
                           </p>
                           {membership.is_manual && (
                             <p className="text-xs text-blue-600">Admin added membership</p>
+                          )}
+                          {membership.membership_type === 'lifetime' && (
+                            <p className="text-xs text-yellow-600">Lifetime membership - Valid until auto-renewed annually</p>
                           )}
                         </div>
                         <div className="flex flex-col items-end gap-2">

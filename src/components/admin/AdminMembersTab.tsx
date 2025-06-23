@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Hash } from 'lucide-react';
 import { toast } from 'sonner';
 import MembershipForm from './MembershipForm';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,6 +26,7 @@ interface MemberWithUserData {
   is_manual?: boolean;
   membership_id?: string;
   amount?: number;
+  member_code?: string;
 }
 
 interface UserRole {
@@ -69,6 +70,7 @@ const AdminMembersTab = ({
   const exportMembersCSV = () => {
     try {
       const headers = [
+        'Member Code',
         'Full Name',
         'Email', 
         'Institution',
@@ -83,6 +85,7 @@ const AdminMembersTab = ({
       ];
 
       const csvData = members.map(member => [
+        member.member_code || 'N/A',
         member.full_name || 'N/A',
         member.email || 'N/A',
         member.institution || 'N/A',
@@ -171,7 +174,7 @@ const AdminMembersTab = ({
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Enrolled Members</CardTitle>
-              <CardDescription>Manage members with active memberships</CardDescription>
+              <CardDescription>Manage members with active memberships and member codes</CardDescription>
             </div>
             <div className="flex gap-2">
               <Button onClick={exportMembersCSV} variant="outline">
@@ -204,7 +207,8 @@ const AdminMembersTab = ({
                   membership_type: editingMember.membership_type,
                   valid_from: new Date(editingMember.valid_from),
                   valid_until: new Date(editingMember.valid_until),
-                  amount: editingMember.amount || 0
+                  amount: editingMember.amount || 0,
+                  member_code: editingMember.member_code
                 }}
                 availableUsers={[{
                   user_id: editingMember.user_id,
@@ -228,7 +232,15 @@ const AdminMembersTab = ({
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold">{member.full_name}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold">{member.full_name}</h3>
+                      {member.member_code && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-mono">
+                          <Hash className="h-3 w-3" />
+                          {member.member_code}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600">{member.email}</p>
                     <p className="text-sm text-gray-500">{member.institution || 'No institution'}</p>
                     <div className="flex gap-2 mt-1">
@@ -241,6 +253,11 @@ const AdminMembersTab = ({
                       {member.is_manual && (
                         <Badge variant="secondary" className="text-xs">
                           Manual
+                        </Badge>
+                      )}
+                      {member.membership_type === 'lifetime' && (
+                        <Badge variant="default" className="text-xs bg-yellow-100 text-yellow-800">
+                          Lifetime
                         </Badge>
                       )}
                     </div>
