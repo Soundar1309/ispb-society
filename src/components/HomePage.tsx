@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Users, Calendar, Mail, Book } from 'lucide-react';
 import Herobg from '../assets/ISPB-HERO.jpg';
+import Logo from '../assets/ispb-logo.png'
 
 const HomePage = () => {
   const features = [
@@ -47,10 +48,9 @@ const HomePage = () => {
         
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <div className="flex justify-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">
-              <span className="text-white font-bold text-4xl">I</span>
-            </div>
+          <div className="flex justify-center mb-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center shadow-2xl overflow-hidden">
+            <img src={Logo} alt="ISPB Logo" className="w-24 h-24 object-contain rounded-full shadow-2xl bg-white" />            </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
             Indian Society of

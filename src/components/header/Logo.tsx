@@ -1,13 +1,13 @@
-
 import { Link } from 'react-router-dom';
+import logoImg from '../../assets/ispb-logo.png';
 
 const Logo = () => {
   return (
     <div className="flex-shrink-0">
       <Link to="/" className="flex items-center space-x-3 group">
         <div className="relative">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-600 via-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-            <span className="text-white font-bold text-lg sm:text-xl">I</span>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+             <img src={logoImg} alt="ISPB Logo" className="w-34 object-contain rounded-full" />
           </div>
           <div className="absolute -inset-1 bg-gradient-to-br from-green-600 to-orange-500 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
         </div>
