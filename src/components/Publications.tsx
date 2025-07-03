@@ -6,14 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText, ExternalLink } from 'lucide-react';
+import { Search, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Publication {
   id: string;
   title: string;
   authors: string | null;
-  description?: string | null;
+  description: string | null;
   pdf_url: string | null;
   year: number | null;
   category: string | null;
@@ -45,8 +45,12 @@ const Publications = () => {
         .eq('status', 'published')
         .order('year', { ascending: false });
 
-      if (error) throw error;
-      setPublications(data || []);
+      if (error) {
+        console.error('Error fetching publications:', error);
+        toast.error('Error loading publications');
+      } else {
+        setPublications(data || []);
+      }
     } catch (error) {
       console.error('Error fetching publications:', error);
       toast.error('Error loading publications');
@@ -99,7 +103,6 @@ const Publications = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Publications</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -107,7 +110,6 @@ const Publications = () => {
           </p>
         </div>
 
-        {/* Filters */}
         <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -148,7 +150,6 @@ const Publications = () => {
           </Select>
         </div>
 
-        {/* Publications Grid */}
         <div className="grid grid-cols-1 gap-6">
           {filteredPublications.length === 0 ? (
             <div className="text-center py-12">
