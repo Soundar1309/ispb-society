@@ -1,11 +1,11 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2, Download, Hash } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Hash, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import MembershipForm from './MembershipForm';
+import MembersBulkUploadDialog from './MembersBulkUploadDialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface MemberWithUserData {
@@ -57,6 +57,7 @@ const AdminMembersTab = ({
   const [editingMember, setEditingMember] = useState<MemberWithUserData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<MemberWithUserData | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   // Get users who don't have active memberships for the add form
   const availableUsers = userRoles.filter(user => 
@@ -171,17 +172,21 @@ const AdminMembersTab = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <CardTitle>Enrolled Members</CardTitle>
               <CardDescription>Manage members with active memberships and member codes</CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={exportMembersCSV} variant="outline">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button onClick={exportMembersCSV} variant="outline" className="w-full sm:w-auto">
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
               </Button>
-              <Button onClick={() => setShowForm(true)} disabled={availableUsers.length === 0}>
+              <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" className="w-full sm:w-auto">
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Upload
+              </Button>
+              <Button onClick={() => setShowForm(true)} disabled={availableUsers.length === 0} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Membership
               </Button>
@@ -222,18 +227,18 @@ const AdminMembersTab = ({
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             {members.map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+              <div key={member.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-semibold">
                       {member.full_name ? member.full_name.charAt(0).toUpperCase() : 'U'}
                     </span>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{member.full_name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-1">
+                      <h3 className="font-semibold truncate">{member.full_name}</h3>
                       {member.member_code && (
                         <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-mono">
                           <Hash className="h-3 w-3" />
@@ -241,9 +246,9 @@ const AdminMembersTab = ({
                         </div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600">{member.email}</p>
-                    <p className="text-sm text-gray-500">{member.institution || 'No institution'}</p>
-                    <div className="flex gap-2 mt-1">
+                    <p className="text-sm text-gray-600 truncate">{member.email}</p>
+                    <p className="text-sm text-gray-500 truncate">{member.institution || 'No institution'}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
                       <Badge variant="outline" className="capitalize text-xs">
                         {member.membership_type}
                       </Badge>
@@ -263,7 +268,7 @@ const AdminMembersTab = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <Badge variant="outline" className="capitalize">
                     {member.role}
                   </Badge>
@@ -271,6 +276,7 @@ const AdminMembersTab = ({
                     size="sm"
                     variant="outline"
                     onClick={() => handleEditMembership(member)}
+                    className="min-w-[40px]"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -278,6 +284,7 @@ const AdminMembersTab = ({
                     size="sm"
                     variant="outline"
                     onClick={() => openDeleteDialog(member)}
+                    className="min-w-[40px]"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -291,6 +298,16 @@ const AdminMembersTab = ({
         </CardContent>
       </Card>
 
+      {/* Bulk Upload Dialog */}
+      <MembersBulkUploadDialog
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => {
+          // Refresh data after successful upload
+          window.location.reload();
+        }}
+      />
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
@@ -301,11 +318,11 @@ const AdminMembersTab = ({
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
+            <Button variant="destructive" onClick={handleDeleteConfirm} className="w-full sm:w-auto">
               Delete
             </Button>
           </div>

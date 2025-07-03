@@ -164,7 +164,7 @@ const LifeMembers = () => {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Life Members & Membership
           </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto px-4">
             Honoring our distinguished life members and providing membership services for ISPB.
           </p>
         </div>
@@ -203,9 +203,11 @@ const LifeMembers = () => {
               </CardContent>
             </Card>
           ) : (
-            currentMembers.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {currentMembers.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
           )}
         </div>
 
@@ -213,7 +215,7 @@ const LifeMembers = () => {
         {totalPages > 1 && (
           <div className="flex justify-center mb-6 sm:mb-8">
             <Pagination>
-              <PaginationContent className="flex-wrap">
+              <PaginationContent className="flex-wrap gap-2">
                 <PaginationItem>
                   <PaginationPrevious 
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}

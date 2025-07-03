@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +20,7 @@ interface LifeMember {
   phone: string;
   image_url: string;
   is_active: boolean;
+  life_member_number?: string;
 }
 
 interface AdminLifeMembersTabProps {
@@ -33,6 +33,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<LifeMember | null>(null);
   const [formData, setFormData] = useState({
+    life_member_number: '',
     name: '',
     designation: '',
     institution: '',
@@ -45,6 +46,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
 
   const resetForm = () => {
     setFormData({
+      life_member_number: '',
       name: '',
       designation: '',
       institution: '',
@@ -60,6 +62,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
   const handleEdit = (member: LifeMember) => {
     setEditingMember(member);
     setFormData({
+      life_member_number: member.life_member_number || '',
       name: member.name || '',
       designation: member.designation || '',
       institution: member.institution || '',
@@ -138,21 +141,21 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold">Life Members Management</h2>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)} className="w-full sm:w-auto">
             <Upload className="h-4 w-4 mr-2" />
             Bulk Upload
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={resetForm}>
+              <Button onClick={resetForm} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Life Member
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingMember ? 'Edit Life Member' : 'Add New Life Member'}
@@ -163,7 +166,17 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
               </DialogHeader>
               
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="life_member_number">Life Member Number</Label>
+                    <Input
+                      id="life_member_number"
+                      value={formData.life_member_number}
+                      onChange={(e) => setFormData({ ...formData, life_member_number: e.target.value })}
+                      placeholder="LM-001"
+                    />
+                  </div>
+                  
                   <div>
                     <Label htmlFor="name">Name *</Label>
                     <Input
@@ -230,7 +243,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                     />
                   </div>
                   
-                  <div>
+                  <div className="sm:col-span-2">
                     <Label htmlFor="image_url">Image URL</Label>
                     <Input
                       id="image_url"
@@ -241,11 +254,11 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   </div>
                 </div>
                 
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
                     Cancel
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" className="w-full sm:w-auto">
                     {editingMember ? 'Update' : 'Add'} Life Member
                   </Button>
                 </div>
@@ -265,24 +278,31 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
         {lifeMembers.map((member) => (
           <Card key={member.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                   {member.image_url && (
                     <img
                       src={member.image_url}
                       alt={member.name}
-                      className="w-16 h-16 rounded-full object-cover"
+                      className="w-16 h-16 rounded-full object-cover mx-auto sm:mx-0"
                     />
                   )}
-                  <div>
-                    <CardTitle className="text-lg">{member.name}</CardTitle>
+                  <div className="text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mb-2">
+                      <CardTitle className="text-lg">{member.name}</CardTitle>
+                      {member.life_member_number && (
+                        <Badge variant="outline" className="text-xs">
+                          {member.life_member_number}
+                        </Badge>
+                      )}
+                    </div>
                     <CardDescription>{member.designation}</CardDescription>
                     {member.institution && (
                       <p className="text-sm text-gray-600">{member.institution}</p>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-center lg:justify-end">
                   <Button
                     variant="outline"
                     size="sm"

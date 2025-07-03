@@ -9,27 +9,27 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface BulkUploadDialogProps {
+interface MembersBulkUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps) => {
+const MembersBulkUploadDialog = ({ isOpen, onClose, onSuccess }: MembersBulkUploadDialogProps) => {
   const [csvData, setCsvData] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const downloadTemplate = () => {
-    const template = `life_member_number,name,designation,institution,member_since,email,phone,image_url
-LM-001,Dr. John Doe,Professor,Example University,2020,john.doe@example.com,+1234567890,https://example.com/image1.jpg
-LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@example.com,+0987654321,https://example.com/image2.jpg`;
+    const template = `full_name,email,phone,institution,designation,specialization,membership_type,valid_from,valid_until,amount,member_code
+Dr. John Doe,john.doe@example.com,+1234567890,Example University,Professor,Plant Genetics,annual,2024-01-01,2024-12-31,5000,LM-001
+Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate Professor,Crop Breeding,lifetime,2024-01-01,2054-01-01,25000,LM-002`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'life_members_template.csv';
+    a.download = 'members_template.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -43,7 +43,7 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
     }
 
     const headers = lines[0].split(',').map(h => h.trim());
-    const requiredHeaders = ['name', 'designation'];
+    const requiredHeaders = ['full_name', 'email', 'membership_type'];
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
     
     if (missingHeaders.length > 0) {
@@ -65,9 +65,14 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
         record[header] = values[index] || null;
       });
 
-      if (!record.name || !record.designation) {
-        parseErrors.push(`Row ${i + 1}: Name and designation are required`);
+      if (!record.full_name || !record.email || !record.membership_type) {
+        parseErrors.push(`Row ${i + 1}: Name, email, and membership type are required`);
         continue;
+      }
+
+      // Convert amount to number
+      if (record.amount) {
+        record.amount = parseFloat(record.amount);
       }
 
       data.push(record);
@@ -92,13 +97,53 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
     try {
       const data = parseCsvData(csvData);
       
-      const { error } = await supabase
-        .from('life_members')
-        .insert(data);
+      // First create user roles, then memberships
+      for (const member of data) {
+        // Create user role first
+        const userRoleData = {
+          full_name: member.full_name,
+          email: member.email,
+          phone: member.phone,
+          institution: member.institution,
+          designation: member.designation,
+          specialization: member.specialization,
+          role: 'member'
+        };
 
-      if (error) throw error;
+        const { data: userRole, error: userError } = await supabase
+          .from('user_roles')
+          .insert(userRoleData)
+          .select()
+          .single();
 
-      toast.success(`Successfully uploaded ${data.length} life members`);
+        if (userError) {
+          console.error('Error creating user role:', userError);
+          continue;
+        }
+
+        // Create membership
+        const membershipData = {
+          user_id: userRole.user_id,
+          membership_type: member.membership_type,
+          valid_from: member.valid_from,
+          valid_until: member.valid_until,
+          amount: member.amount,
+          member_code: member.member_code,
+          status: 'active',
+          payment_status: 'manual',
+          is_manual: true
+        };
+
+        const { error: membershipError } = await supabase
+          .from('memberships')
+          .insert(membershipData);
+
+        if (membershipError) {
+          console.error('Error creating membership:', membershipError);
+        }
+      }
+
+      toast.success(`Successfully uploaded ${data.length} members`);
       setCsvData('');
       onSuccess();
       onClose();
@@ -116,9 +161,9 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Bulk Upload Life Members</DialogTitle>
+          <DialogTitle>Bulk Upload Members</DialogTitle>
           <DialogDescription>
-            Upload multiple life members at once using CSV format
+            Upload multiple members with memberships using CSV format
           </DialogDescription>
         </DialogHeader>
 
@@ -134,7 +179,7 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Required columns: life_member_number, name, designation, institution, member_since, email, phone, image_url
+              Required columns: full_name, email, membership_type. Optional: phone, institution, designation, specialization, valid_from, valid_until, amount, member_code
             </AlertDescription>
           </Alert>
 
@@ -174,4 +219,4 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
   );
 };
 
-export default BulkUploadDialog;
+export default MembersBulkUploadDialog;
