@@ -1,26 +1,25 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import BulkUploadDialog from './BulkUploadDialog';
 
 interface LifeMember {
   id: string;
   name: string;
-  designation: string | null;
-  institution: string | null;
-  specialization: string | null;
-  member_since: string | null;
-  image_url: string | null;
-  email: string | null;
-  phone: string | null;
+  designation: string;
+  institution: string;
+  specialization: string;
+  member_since: string;
+  email: string;
+  phone: string;
+  image_url: string;
   is_active: boolean;
 }
 
@@ -30,19 +29,18 @@ interface AdminLifeMembersTabProps {
 }
 
 const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProps) => {
-  const [showForm, setShowForm] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<LifeMember | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState<LifeMember | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     designation: '',
     institution: '',
     specialization: '',
     member_since: '',
-    image_url: '',
     email: '',
-    phone: ''
+    phone: '',
+    image_url: ''
   });
 
   const resetForm = () => {
@@ -52,31 +50,26 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
       institution: '',
       specialization: '',
       member_since: '',
-      image_url: '',
       email: '',
-      phone: ''
+      phone: '',
+      image_url: ''
     });
-  };
-
-  const handleAddMember = () => {
-    resetForm();
     setEditingMember(null);
-    setShowForm(true);
   };
 
-  const handleEditMember = (member: LifeMember) => {
+  const handleEdit = (member: LifeMember) => {
+    setEditingMember(member);
     setFormData({
       name: member.name || '',
       designation: member.designation || '',
       institution: member.institution || '',
       specialization: member.specialization || '',
       member_since: member.member_since || '',
-      image_url: member.image_url || '',
       email: member.email || '',
-      phone: member.phone || ''
+      phone: member.phone || '',
+      image_url: member.image_url || ''
     });
-    setEditingMember(member);
-    setShowForm(true);
+    setIsDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,254 +77,248 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
     
     try {
       if (editingMember) {
-        // Update existing member
         const { error } = await supabase
           .from('life_members')
           .update(formData)
           .eq('id', editingMember.id);
-
+        
         if (error) throw error;
         toast.success('Life member updated successfully');
       } else {
-        // Add new member
         const { error } = await supabase
           .from('life_members')
-          .insert([formData]);
-
+          .insert(formData);
+        
         if (error) throw error;
         toast.success('Life member added successfully');
       }
-
-      setShowForm(false);
+      
+      setIsDialogOpen(false);
       resetForm();
       onRefresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving life member:', error);
-      toast.error('Error saving life member');
+      toast.error(error.message || 'Error saving life member');
     }
   };
 
-  const handleDelete = async () => {
-    if (!memberToDelete) return;
-
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this life member?')) return;
+    
     try {
       const { error } = await supabase
         .from('life_members')
-        .update({ is_active: false })
-        .eq('id', memberToDelete.id);
-
-      if (error) throw error;
+        .delete()
+        .eq('id', id);
       
-      toast.success('Life member deactivated successfully');
-      setDeleteDialogOpen(false);
-      setMemberToDelete(null);
+      if (error) throw error;
+      toast.success('Life member deleted successfully');
       onRefresh();
-    } catch (error) {
-      console.error('Error deactivating life member:', error);
-      toast.error('Error deactivating life member');
+    } catch (error: any) {
+      console.error('Error deleting life member:', error);
+      toast.error(error.message || 'Error deleting life member');
     }
   };
 
-  const openDeleteDialog = (member: LifeMember) => {
-    setMemberToDelete(member);
-    setDeleteDialogOpen(true);
+  const toggleActive = async (id: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('life_members')
+        .update({ is_active: !isActive })
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast.success(`Life member ${!isActive ? 'activated' : 'deactivated'} successfully`);
+      onRefresh();
+    } catch (error: any) {
+      console.error('Error updating life member:', error);
+      toast.error(error.message || 'Error updating life member');
+    }
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Life Members Management</CardTitle>
-              <CardDescription>Add, edit, and manage life members</CardDescription>
-            </div>
-            <Button onClick={handleAddMember}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Life Member
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Member Form */}
-          {showForm && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>{editingMember ? 'Edit Life Member' : 'Add New Life Member'}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="designation">Designation</Label>
-                      <Input
-                        id="designation"
-                        value={formData.designation}
-                        onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="institution">Institution</Label>
-                      <Input
-                        id="institution"
-                        value={formData.institution}
-                        onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="specialization">Specialization</Label>
-                      <Input
-                        id="specialization"
-                        value={formData.specialization}
-                        onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="member_since">Member Since</Label>
-                      <Input
-                        id="member_since"
-                        value={formData.member_since}
-                        onChange={(e) => setFormData({ ...formData, member_since: e.target.value })}
-                        placeholder="e.g., 2000"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="image_url">Image URL</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit">
-                      <Save className="h-4 w-4 mr-2" />
-                      {editingMember ? 'Update' : 'Add'} Member
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                      <X className="h-4 w-4 mr-2" />
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Members List */}
-          <div className="space-y-4">
-            {lifeMembers.filter(member => member.is_active).map((member) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={member.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
-                    alt={member.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Life Members Management</h2>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Upload
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={resetForm}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Life Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingMember ? 'Edit Life Member' : 'Add New Life Member'}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingMember ? 'Update life member details' : 'Add a new life member'}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-semibold text-lg">{member.name}</h3>
-                    {member.designation && (
-                      <p className="text-green-600 font-medium">{member.designation}</p>
-                    )}
+                    <Label htmlFor="name">Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="designation">Designation *</Label>
+                    <Input
+                      id="designation"
+                      value={formData.designation}
+                      onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="institution">Institution</Label>
+                    <Input
+                      id="institution"
+                      value={formData.institution}
+                      onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="specialization">Specialization</Label>
+                    <Input
+                      id="specialization"
+                      value={formData.specialization}
+                      onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="member_since">Member Since</Label>
+                    <Input
+                      id="member_since"
+                      value={formData.member_since}
+                      onChange={(e) => setFormData({ ...formData, member_since: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="image_url">Image URL</Label>
+                    <Input
+                      id="image_url"
+                      type="url"
+                      value={formData.image_url}
+                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {editingMember ? 'Update' : 'Add'} Life Member
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      <BulkUploadDialog
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={onRefresh}
+      />
+
+      <div className="grid gap-4">
+        {lifeMembers.map((member) => (
+          <Card key={member.id}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-4">
+                  {member.image_url && (
+                    <img
+                      src={member.image_url}
+                      alt={member.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <CardTitle className="text-lg">{member.name}</CardTitle>
+                    <CardDescription>{member.designation}</CardDescription>
                     {member.institution && (
-                      <p className="text-gray-600">{member.institution}</p>
-                    )}
-                    <div className="flex gap-2 mt-1">
-                      {member.specialization && (
-                        <Badge variant="outline" className="text-xs">
-                          {member.specialization}
-                        </Badge>
-                      )}
-                      {member.member_since && (
-                        <Badge variant="outline" className="text-xs">
-                          Member since {member.member_since}
-                        </Badge>
-                      )}
-                      <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
-                        Active
-                      </Badge>
-                    </div>
-                    {(member.email || member.phone) && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        {member.email && <span className="mr-4">{member.email}</span>}
-                        {member.phone && <span>{member.phone}</span>}
-                      </div>
+                      <p className="text-sm text-gray-600">{member.institution}</p>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center space-x-2">
                   <Button
-                    size="sm"
                     variant="outline"
-                    onClick={() => handleEditMember(member)}
+                    size="sm"
+                    onClick={() => handleEdit(member)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
-                    size="sm"
                     variant="outline"
-                    onClick={() => openDeleteDialog(member)}
+                    size="sm"
+                    onClick={() => toggleActive(member.id, member.is_active)}
+                    className={member.is_active ? '' : 'text-red-600'}
+                  >
+                    {member.is_active ? 'Active' : 'Hidden'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(member.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-            ))}
-            {lifeMembers.filter(member => member.is_active).length === 0 && (
-              <p className="text-center text-gray-500 py-8">No active life members found</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Deactivate Life Member</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to deactivate {memberToDelete?.name}? 
-              This will hide them from the public life members page.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Deactivate
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-gray-600 space-y-1">
+                {member.specialization && <p><strong>Specialization:</strong> {member.specialization}</p>}
+                {member.member_since && <p><strong>Member Since:</strong> {member.member_since}</p>}
+                {member.email && <p><strong>Email:</strong> {member.email}</p>}
+                {member.phone && <p><strong>Phone:</strong> {member.phone}</p>}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

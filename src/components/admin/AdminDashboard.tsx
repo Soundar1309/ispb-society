@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +12,9 @@ import AdminPaymentTab from './AdminPaymentTab';
 import AdminOrdersTab from './AdminOrdersTab';
 import AdminMembershipPlansTab from './AdminMembershipPlansTab';
 import AdminLifeMembersTab from './AdminLifeMembersTab';
+import AdminPublicationsTab from './AdminPublicationsTab';
+import AdminGalleryTab from './AdminGalleryTab';
+import AdminOfficeBearersTab from './AdminOfficeBearersTab';
 import UserManagement from './UserManagement';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +32,9 @@ interface AdminDashboardProps {
   membershipPlans: any[];
   lifeMembers?: any[];
   orders: any[];
+  publications?: any[];
+  galleryItems?: any[];
+  officeBearers?: any[];
   refreshData: () => void;
   updateUserRole: (userId: string, newRole: string) => Promise<void>;
   addMembership: (membershipData: any) => void;
@@ -49,6 +54,9 @@ const AdminDashboard = ({
   membershipPlans,
   lifeMembers = [],
   orders,
+  publications = [],
+  galleryItems = [],
+  officeBearers = [],
   refreshData,
   updateUserRole,
   addMembership,
@@ -69,6 +77,9 @@ const AdminDashboard = ({
     { value: 'orders', label: 'Orders' },
     { value: 'plans', label: 'Plans' },
     { value: 'life-members', label: 'Life Members' },
+    { value: 'publications', label: 'Publications' },
+    { value: 'gallery', label: 'Gallery' },
+    { value: 'office-bearers', label: 'Office Bearers' },
     { value: 'content', label: 'Content' }
   ];
 
@@ -220,22 +231,6 @@ const AdminDashboard = ({
     }
   };
 
-  // Publication handlers
-  const handleAddPublication = async (publicationData: any) => {
-    try {
-      const { error } = await supabase
-        .from('publications')
-        .insert(publicationData);
-
-      if (error) throw error;
-      toast.success('Publication added successfully');
-      refreshData();
-    } catch (error: any) {
-      console.error('Error adding publication:', error);
-      toast.error(error.message || 'Error adding publication');
-    }
-  };
-
   const renderTabContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -262,6 +257,27 @@ const AdminDashboard = ({
         return (
           <AdminLifeMembersTab 
             lifeMembers={lifeMembers}
+            onRefresh={refreshData}
+          />
+        );
+      case 'publications':
+        return (
+          <AdminPublicationsTab 
+            publications={publications}
+            onRefresh={refreshData}
+          />
+        );
+      case 'gallery':
+        return (
+          <AdminGalleryTab 
+            galleryItems={galleryItems}
+            onRefresh={refreshData}
+          />
+        );
+      case 'office-bearers':
+        return (
+          <AdminOfficeBearersTab 
+            officeBearers={officeBearers}
             onRefresh={refreshData}
           />
         );
@@ -349,7 +365,7 @@ const AdminDashboard = ({
         {!isMobile ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <ScrollArea className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1 h-auto p-1">
+              <TabsList className="grid w-full grid-cols-7 lg:grid-cols-13 gap-1 h-auto p-1">
                 {tabs.map((tab) => (
                   <TabsTrigger 
                     key={tab.value} 

@@ -74,6 +74,9 @@ export const useAdminData = () => {
   const [membershipPlans, setMembershipPlans] = useState([]);
   const [lifeMembers, setLifeMembers] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [publications, setPublications] = useState([]);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [officeBearers, setOfficeBearers] = useState([]);
 
   const fetchStats = async () => {
     try {
@@ -106,7 +109,10 @@ export const useAdminData = () => {
         paymentsRes,
         membershipPlansRes,
         lifeMembersRes,
-        ordersRes
+        ordersRes,
+        publicationsRes,
+        galleryRes,
+        officeBearersRes
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
@@ -125,7 +131,10 @@ export const useAdminData = () => {
           *,
           user_roles!orders_user_id_fkey(full_name, email),
           memberships!orders_membership_id_fkey(membership_type, status)
-        `).order('created_at', { ascending: false })
+        `).order('created_at', { ascending: false }),
+        supabase.from('publications').select('*').order('year', { ascending: false }),
+        supabase.from('gallery').select('*').order('display_order', { ascending: true }),
+        supabase.from('office_bearers').select('*').order('display_order', { ascending: true })
       ]);
 
       console.log('Fetched user roles:', userRolesRes.data);
@@ -182,6 +191,9 @@ export const useAdminData = () => {
       setMembershipPlans(membershipPlansRes.data || []);
       setLifeMembers(lifeMembersRes.data || []);
       setOrders(ordersRes.data || []);
+      setPublications(publicationsRes.data || []);
+      setGalleryItems(galleryRes.data || []);
+      setOfficeBearers(officeBearersRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error loading admin data');
@@ -359,6 +371,9 @@ export const useAdminData = () => {
     membershipPlans,
     lifeMembers,
     orders,
+    publications,
+    galleryItems,
+    officeBearers,
     refreshData,
     updateUserRole,
     addMembership,

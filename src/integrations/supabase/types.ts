@@ -161,6 +161,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       life_members: {
         Row: {
           created_at: string | null
@@ -326,6 +362,42 @@ export type Database = {
         }
         Relationships: []
       }
+      office_bearers: {
+        Row: {
+          created_at: string | null
+          designation: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          institution: string | null
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          designation: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          designation?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          institution?: string | null
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number
@@ -435,6 +507,7 @@ export type Database = {
       publications: {
         Row: {
           authors: string | null
+          category: string | null
           created_at: string | null
           doi: string | null
           id: string
@@ -443,6 +516,7 @@ export type Database = {
           journal: string | null
           pages: string | null
           pdf_url: string | null
+          status: string | null
           title: string
           updated_at: string | null
           volume: string | null
@@ -450,6 +524,7 @@ export type Database = {
         }
         Insert: {
           authors?: string | null
+          category?: string | null
           created_at?: string | null
           doi?: string | null
           id?: string
@@ -458,6 +533,7 @@ export type Database = {
           journal?: string | null
           pages?: string | null
           pdf_url?: string | null
+          status?: string | null
           title: string
           updated_at?: string | null
           volume?: string | null
@@ -465,6 +541,7 @@ export type Database = {
         }
         Update: {
           authors?: string | null
+          category?: string | null
           created_at?: string | null
           doi?: string | null
           id?: string
@@ -473,6 +550,7 @@ export type Database = {
           journal?: string | null
           pages?: string | null
           pdf_url?: string | null
+          status?: string | null
           title?: string
           updated_at?: string | null
           volume?: string | null
