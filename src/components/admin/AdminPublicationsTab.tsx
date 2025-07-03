@@ -17,12 +17,8 @@ interface Publication {
   id: string;
   title: string;
   authors: string;
-  journal: string;
+  description: string;
   year: number;
-  volume: string;
-  issue: string;
-  pages: string;
-  doi: string;
   pdf_url: string;
   category: string;
   status: string;
@@ -40,12 +36,8 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
   const [formData, setFormData] = useState({
     title: '',
     authors: '',
-    journal: '',
+    description: '',
     year: new Date().getFullYear(),
-    volume: '',
-    issue: '',
-    pages: '',
-    doi: '',
     pdf_url: '',
     category: 'research',
     status: 'published',
@@ -56,12 +48,8 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
     setFormData({
       title: '',
       authors: '',
-      journal: '',
+      description: '',
       year: new Date().getFullYear(),
-      volume: '',
-      issue: '',
-      pages: '',
-      doi: '',
       pdf_url: '',
       category: 'research',
       status: 'published',
@@ -75,12 +63,8 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
     setFormData({
       title: publication.title || '',
       authors: publication.authors || '',
-      journal: publication.journal || '',
+      description: publication.description || '',
       year: publication.year || new Date().getFullYear(),
-      volume: publication.volume || '',
-      issue: publication.issue || '',
-      pages: publication.pages || '',
-      doi: publication.doi || '',
       pdf_url: publication.pdf_url || '',
       category: publication.category || 'research',
       status: publication.status || 'published',
@@ -159,8 +143,8 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
                   <Label htmlFor="title">Title *</Label>
                   <Input
                     id="title"
@@ -170,7 +154,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
                   />
                 </div>
                 
-                <div className="col-span-2">
+                <div>
                   <Label htmlFor="authors">Authors *</Label>
                   <Textarea
                     id="authors"
@@ -181,85 +165,53 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
                 </div>
                 
                 <div>
-                  <Label htmlFor="journal">Journal *</Label>
-                  <Input
-                    id="journal"
-                    value={formData.journal}
-                    onChange={(e) => setFormData({ ...formData, journal: e.target.value })}
-                    required
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Brief description of the publication"
                   />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="year">Year *</Label>
+                    <Input
+                      id="year"
+                      type="number"
+                      value={formData.year}
+                      onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="research">Research</SelectItem>
+                        <SelectItem value="review">Review</SelectItem>
+                        <SelectItem value="editorial">Editorial</SelectItem>
+                        <SelectItem value="conference">Conference</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 
                 <div>
-                  <Label htmlFor="year">Year *</Label>
-                  <Input
-                    id="year"
-                    type="number"
-                    value={formData.year}
-                    onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="volume">Volume</Label>
-                  <Input
-                    id="volume"
-                    value={formData.volume}
-                    onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="issue">Issue</Label>
-                  <Input
-                    id="issue"
-                    value={formData.issue}
-                    onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="pages">Pages</Label>
-                  <Input
-                    id="pages"
-                    value={formData.pages}
-                    onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="doi">DOI</Label>
-                  <Input
-                    id="doi"
-                    value={formData.doi}
-                    onChange={(e) => setFormData({ ...formData, doi: e.target.value })}
-                  />
-                </div>
-                
-                <div className="col-span-2">
-                  <Label htmlFor="pdf_url">PDF URL</Label>
+                  <Label htmlFor="pdf_url">PDF URL *</Label>
                   <Input
                     id="pdf_url"
                     type="url"
                     value={formData.pdf_url}
                     onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
+                    placeholder="https://example.com/publication.pdf"
+                    required
                   />
-                </div>
-                
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="research">Research</SelectItem>
-                      <SelectItem value="review">Review</SelectItem>
-                      <SelectItem value="editorial">Editorial</SelectItem>
-                      <SelectItem value="conference">Conference</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 
                 <div>
@@ -276,7 +228,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
                   </Select>
                 </div>
                 
-                <div className="col-span-2 flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <Switch
                     id="is_featured"
                     checked={formData.is_featured}
@@ -307,6 +259,9 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
                 <div>
                   <CardTitle className="text-lg">{publication.title}</CardTitle>
                   <CardDescription>{publication.authors}</CardDescription>
+                  {publication.description && (
+                    <CardDescription className="mt-2 text-sm">{publication.description}</CardDescription>
+                  )}
                 </div>
                 <div className="flex items-center space-x-2">
                   {publication.is_featured && <Badge variant="secondary">Featured</Badge>}
@@ -329,12 +284,20 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-gray-600">
-                <p><strong>Journal:</strong> {publication.journal} ({publication.year})</p>
-                {publication.volume && <p><strong>Volume:</strong> {publication.volume}</p>}
-                {publication.issue && <p><strong>Issue:</strong> {publication.issue}</p>}
-                {publication.pages && <p><strong>Pages:</strong> {publication.pages}</p>}
-                {publication.doi && <p><strong>DOI:</strong> {publication.doi}</p>}
+              <div className="text-sm text-gray-600 flex items-center justify-between">
+                <div>
+                  <p><strong>Year:</strong> {publication.year}</p>
+                </div>
+                {publication.pdf_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(publication.pdf_url, '_blank')}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    View PDF
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

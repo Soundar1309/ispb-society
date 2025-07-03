@@ -16,7 +16,6 @@ import LifeMembers from '@/components/LifeMembers';
 import Publications from '@/components/Publications';
 import Gallery from '@/components/Gallery';
 import EnhancedMembershipPage from '@/components/EnhancedMembershipPage';
-import MembershipCancellation from '@/components/MembershipCancellation';
 import PrivacyPolicy from '@/components/PrivacyPolicy';
 import TermsOfService from '@/components/TermsOfService';
 import CookiePolicy from '@/components/CookiePolicy';
@@ -32,7 +31,6 @@ const Index = () => {
       <Route path="/office-bearers" element={<OfficeBearers />} />
       <Route path="/membership" element={<Membership />} />
       <Route path="/enhanced-membership" element={<EnhancedMembershipPage />} />
-      <Route path="/membership-cancellation" element={<MembershipCancellation />} />
       <Route path="/conference" element={<Conference />} />
       <Route path="/contact" element={<ContactUs />} />
       <Route path="/auth" element={<AuthPage />} />

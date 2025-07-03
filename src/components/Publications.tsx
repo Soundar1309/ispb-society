@@ -13,13 +13,9 @@ interface Publication {
   id: string;
   title: string;
   authors: string;
-  journal: string;
-  year: number;
-  volume: string;
-  issue: string;
-  pages: string;
-  doi: string;
+  description: string;
   pdf_url: string;
+  year: number;
   category: string;
   status: string;
   is_featured: boolean;
@@ -66,7 +62,7 @@ const Publications = () => {
       filtered = filtered.filter(pub =>
         pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         pub.authors.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pub.journal.toLowerCase().includes(searchTerm.toLowerCase())
+        (pub.description && pub.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -167,67 +163,40 @@ const Publications = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-xl mb-2">{publication.title}</CardTitle>
-                      <CardDescription className="text-base">
-                        <span className="font-medium">{publication.authors}</span>
+                      <CardDescription className="text-base mb-2">
+                        <span className="font-medium">Authors: {publication.authors}</span>
                       </CardDescription>
+                      {publication.description && (
+                        <CardDescription className="text-sm text-gray-700">
+                          {publication.description}
+                        </CardDescription>
+                      )}
                     </div>
-                    {publication.is_featured && (
-                      <Badge variant="secondary" className="ml-4">Featured</Badge>
-                    )}
+                    <div className="flex items-center gap-2 ml-4">
+                      {publication.is_featured && (
+                        <Badge variant="secondary">Featured</Badge>
+                      )}
+                      <Badge variant="outline">{publication.category}</Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2 text-sm text-gray-600">
-                      <span><strong>Journal:</strong> {publication.journal}</span>
-                      <span>•</span>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
                       <span><strong>Year:</strong> {publication.year}</span>
-                      {publication.volume && (
-                        <>
-                          <span>•</span>
-                          <span><strong>Volume:</strong> {publication.volume}</span>
-                        </>
-                      )}
-                      {publication.issue && (
-                        <>
-                          <span>•</span>
-                          <span><strong>Issue:</strong> {publication.issue}</span>
-                        </>
-                      )}
-                      {publication.pages && (
-                        <>
-                          <span>•</span>
-                          <span><strong>Pages:</strong> {publication.pages}</span>
-                        </>
-                      )}
                     </div>
                     
-                    <div className="flex items-center gap-4 pt-2">
-                      <Badge variant="outline">{publication.category}</Badge>
-                      
-                      <div className="flex gap-2 ml-auto">
-                        {publication.doi && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(`https://doi.org/${publication.doi}`, '_blank')}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            DOI
-                          </Button>
-                        )}
-                        {publication.pdf_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(publication.pdf_url, '_blank')}
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            PDF
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                    {publication.pdf_url && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => window.open(publication.pdf_url, '_blank')}
+                        className="flex items-center gap-2"
+                      >
+                        <FileText className="h-4 w-4" />
+                        View PDF
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
