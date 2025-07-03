@@ -13,12 +13,16 @@ interface Publication {
   id: string;
   title: string;
   authors: string | null;
-  description: string | null;
+  journal: string | null;
   pdf_url: string | null;
   year: number | null;
   category: string | null;
   status: string | null;
   is_featured: boolean | null;
+  volume: string | null;
+  issue: string | null;
+  pages: string | null;
+  doi: string | null;
 }
 
 const Publications = () => {
@@ -66,7 +70,7 @@ const Publications = () => {
       filtered = filtered.filter(pub =>
         pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (pub.authors && pub.authors.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (pub.description && pub.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        (pub.journal && pub.journal.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -169,9 +173,9 @@ const Publications = () => {
                           <span className="font-medium">Authors: {publication.authors}</span>
                         </CardDescription>
                       )}
-                      {publication.description && (
+                      {publication.journal && (
                         <CardDescription className="text-sm text-gray-700 mb-3">
-                          {publication.description}
+                          <span className="font-medium">Journal: </span>{publication.journal}
                         </CardDescription>
                       )}
                     </div>
