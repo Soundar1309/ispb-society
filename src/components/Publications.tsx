@@ -12,13 +12,13 @@ import { toast } from 'sonner';
 interface Publication {
   id: string;
   title: string;
-  authors: string;
-  description: string;
-  pdf_url: string;
-  year: number;
-  category: string;
-  status: string;
-  is_featured: boolean;
+  authors: string | null;
+  description?: string | null;
+  pdf_url: string | null;
+  year: number | null;
+  category: string | null;
+  status: string | null;
+  is_featured: boolean | null;
 }
 
 const Publications = () => {
@@ -61,7 +61,7 @@ const Publications = () => {
     if (searchTerm) {
       filtered = filtered.filter(pub =>
         pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        pub.authors.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (pub.authors && pub.authors.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (pub.description && pub.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
@@ -71,19 +71,19 @@ const Publications = () => {
     }
 
     if (yearFilter !== 'all') {
-      filtered = filtered.filter(pub => pub.year.toString() === yearFilter);
+      filtered = filtered.filter(pub => pub.year?.toString() === yearFilter);
     }
 
     setFilteredPublications(filtered);
   };
 
   const getUniqueYears = () => {
-    const years = [...new Set(publications.map(pub => pub.year))];
-    return years.sort((a, b) => b - a);
+    const years = [...new Set(publications.map(pub => pub.year).filter(year => year !== null))];
+    return years.sort((a, b) => (b || 0) - (a || 0));
   };
 
   const getUniqueCategories = () => {
-    return [...new Set(publications.map(pub => pub.category))];
+    return [...new Set(publications.map(pub => pub.category).filter(cat => cat !== null))];
   };
 
   if (loading) {
@@ -126,8 +126,8 @@ const Publications = () => {
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {getUniqueCategories().map(category => (
-                <SelectItem key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                <SelectItem key={category} value={category || ''}>
+                  {category ? category.charAt(0).toUpperCase() + category.slice(1) : 'Other'}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -140,8 +140,8 @@ const Publications = () => {
             <SelectContent>
               <SelectItem value="all">All Years</SelectItem>
               {getUniqueYears().map(year => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
+                <SelectItem key={year} value={year?.toString() || ''}>
+                  {year || 'Unknown'}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -163,11 +163,13 @@ const Publications = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-xl mb-2">{publication.title}</CardTitle>
-                      <CardDescription className="text-base mb-2">
-                        <span className="font-medium">Authors: {publication.authors}</span>
-                      </CardDescription>
+                      {publication.authors && (
+                        <CardDescription className="text-base mb-2">
+                          <span className="font-medium">Authors: {publication.authors}</span>
+                        </CardDescription>
+                      )}
                       {publication.description && (
-                        <CardDescription className="text-sm text-gray-700">
+                        <CardDescription className="text-sm text-gray-700 mb-3">
                           {publication.description}
                         </CardDescription>
                       )}
@@ -176,14 +178,18 @@ const Publications = () => {
                       {publication.is_featured && (
                         <Badge variant="secondary">Featured</Badge>
                       )}
-                      <Badge variant="outline">{publication.category}</Badge>
+                      {publication.category && (
+                        <Badge variant="outline">{publication.category}</Badge>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <span><strong>Year:</strong> {publication.year}</span>
+                      {publication.year && (
+                        <span><strong>Year:</strong> {publication.year}</span>
+                      )}
                     </div>
                     
                     {publication.pdf_url && (
