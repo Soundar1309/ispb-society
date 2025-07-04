@@ -83,54 +83,6 @@ const AdminDashboard = ({
     { value: 'content', label: 'Content' }
   ];
 
-  // Conference handlers
-  const handleAddConference = async (conferenceData: any) => {
-    try {
-      const { error } = await supabase
-        .from('conferences')
-        .insert(conferenceData);
-
-      if (error) throw error;
-      toast.success('Conference added successfully');
-      refreshData();
-    } catch (error: any) {
-      console.error('Error adding conference:', error);
-      toast.error(error.message || 'Error adding conference');
-    }
-  };
-
-  const handleUpdateConference = async (conferenceId: string, conferenceData: any) => {
-    try {
-      const { error } = await supabase
-        .from('conferences')
-        .update(conferenceData)
-        .eq('id', conferenceId);
-
-      if (error) throw error;
-      toast.success('Conference updated successfully');
-      refreshData();
-    } catch (error: any) {
-      console.error('Error updating conference:', error);
-      toast.error(error.message || 'Error updating conference');
-    }
-  };
-
-  const handleDeleteConference = async (conferenceId: string) => {
-    try {
-      const { error } = await supabase
-        .from('conferences')
-        .delete()
-        .eq('id', conferenceId);
-
-      if (error) throw error;
-      toast.success('Conference deleted successfully');
-      refreshData();
-    } catch (error: any) {
-      console.error('Error deleting conference:', error);
-      toast.error(error.message || 'Error deleting conference');
-    }
-  };
-
   // Message handlers
   const handleMarkMessageRead = async (messageId: string) => {
     try {
@@ -285,9 +237,7 @@ const AdminDashboard = ({
         return (
           <AdminConferencesTab 
             conferences={conferences}
-            onAddConference={handleAddConference}
-            onUpdateConference={handleUpdateConference}
-            onDeleteConference={handleDeleteConference}
+            onRefresh={refreshData}
           />
         );
       case 'messages':

@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { to, subject, html, type }: EmailRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "ISPB <noreply@resend.dev>", // You'll need to update this with your verified domain
+      from: "ISPB <noreply@yourdomain.com>", // Update this with your verified domain
       to: [to],
       subject: subject,
       html: html,

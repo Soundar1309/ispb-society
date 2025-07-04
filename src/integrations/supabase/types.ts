@@ -88,13 +88,15 @@ export type Database = {
           created_at: string | null
           date_from: string | null
           date_to: string | null
+          deadline: string | null
           description: string | null
           early_bird_deadline: string | null
           early_bird_fee: number | null
+          fee: number | null
           id: string
           image_url: string | null
           is_active: boolean | null
-          registration_fee: number | null
+          link: string | null
           title: string
           updated_at: string | null
           venue: string | null
@@ -103,13 +105,15 @@ export type Database = {
           created_at?: string | null
           date_from?: string | null
           date_to?: string | null
+          deadline?: string | null
           description?: string | null
           early_bird_deadline?: string | null
           early_bird_fee?: number | null
+          fee?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
-          registration_fee?: number | null
+          link?: string | null
           title: string
           updated_at?: string | null
           venue?: string | null
@@ -118,13 +122,15 @@ export type Database = {
           created_at?: string | null
           date_from?: string | null
           date_to?: string | null
+          deadline?: string | null
           description?: string | null
           early_bird_deadline?: string | null
           early_bird_fee?: number | null
+          fee?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
-          registration_fee?: number | null
+          link?: string | null
           title?: string
           updated_at?: string | null
           venue?: string | null
@@ -508,14 +514,19 @@ export type Database = {
         Row: {
           authors: string | null
           category: string | null
+          cover_image_url: string | null
           created_at: string | null
+          description: string | null
           doi: string | null
           id: string
           is_featured: boolean | null
           issue: string | null
           journal: string | null
+          link: string | null
           pages: string | null
+          pdf_file_url: string | null
           pdf_url: string | null
+          price: number | null
           status: string | null
           title: string
           updated_at: string | null
@@ -525,14 +536,19 @@ export type Database = {
         Insert: {
           authors?: string | null
           category?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
+          description?: string | null
           doi?: string | null
           id?: string
           is_featured?: boolean | null
           issue?: string | null
           journal?: string | null
+          link?: string | null
           pages?: string | null
+          pdf_file_url?: string | null
           pdf_url?: string | null
+          price?: number | null
           status?: string | null
           title: string
           updated_at?: string | null
@@ -542,14 +558,19 @@ export type Database = {
         Update: {
           authors?: string | null
           category?: string | null
+          cover_image_url?: string | null
           created_at?: string | null
+          description?: string | null
           doi?: string | null
           id?: string
           is_featured?: boolean | null
           issue?: string | null
           journal?: string | null
+          link?: string | null
           pages?: string | null
+          pdf_file_url?: string | null
           pdf_url?: string | null
+          price?: number | null
           status?: string | null
           title?: string
           updated_at?: string | null
