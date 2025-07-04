@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ interface Conference {
   venue: string;
   date_from: string;
   date_to: string;
-  registration_fee: number;
+  fee: number;
   early_bird_fee: number;
   early_bird_deadline: string;
   is_active: boolean;
@@ -27,26 +28,20 @@ interface Conference {
 
 interface AdminConferencesTabProps {
   conferences: Conference[];
-  onAddConference: (data: any) => void;
-  onUpdateConference: (id: string, data: any) => void;
-  onDeleteConference: (id: string) => void;
+  onRefresh: () => void;
 }
 
-const AdminConferencesTab = ({ 
-  conferences, 
-  onAddConference, 
-  onUpdateConference, 
-  onDeleteConference 
-}: AdminConferencesTabProps) => {
+const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     venue: '',
     date_from: '',
     date_to: '',
-    registration_fee: '',
+    fee: '',
     early_bird_fee: '',
     early_bird_deadline: '',
     link: '',
@@ -60,7 +55,7 @@ const AdminConferencesTab = ({
       venue: '',
       date_from: '',
       date_to: '',
-      registration_fee: '',
+      fee: '',
       early_bird_fee: '',
       early_bird_deadline: '',
       link: '',
@@ -68,23 +63,45 @@ const AdminConferencesTab = ({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const conferenceData = {
-      ...formData,
-      registration_fee: parseFloat(formData.registration_fee),
-      early_bird_fee: parseFloat(formData.early_bird_fee),
-      is_active: true
-    };
+    setIsSubmitting(true);
 
-    if (editingConference) {
-      onUpdateConference(editingConference.id, conferenceData);
-      setEditingConference(null);
-    } else {
-      onAddConference(conferenceData);
-      setIsAddDialogOpen(false);
+    try {
+      const conferenceData = {
+        ...formData,
+        fee: formData.fee ? parseFloat(formData.fee) : null,
+        early_bird_fee: formData.early_bird_fee ? parseFloat(formData.early_bird_fee) : null,
+        is_active: true
+      };
+
+      if (editingConference) {
+        const { error } = await supabase
+          .from('conferences')
+          .update(conferenceData)
+          .eq('id', editingConference.id);
+
+        if (error) throw error;
+        toast.success('Conference updated successfully');
+        setEditingConference(null);
+      } else {
+        const { error } = await supabase
+          .from('conferences')
+          .insert(conferenceData);
+
+        if (error) throw error;
+        toast.success('Conference added successfully');
+        setIsAddDialogOpen(false);
+      }
+
+      resetForm();
+      onRefresh();
+    } catch (error: any) {
+      console.error('Error saving conference:', error);
+      toast.error('Error saving conference: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
-    resetForm();
   };
 
   const handleEdit = (conference: Conference) => {
@@ -95,7 +112,7 @@ const AdminConferencesTab = ({
       venue: conference.venue || '',
       date_from: conference.date_from || '',
       date_to: conference.date_to || '',
-      registration_fee: conference.registration_fee?.toString() || '',
+      fee: conference.fee?.toString() || '',
       early_bird_fee: conference.early_bird_fee?.toString() || '',
       early_bird_deadline: conference.early_bird_deadline || '',
       link: conference.link || '',
@@ -103,9 +120,21 @@ const AdminConferencesTab = ({
     });
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this conference?')) {
-      onDeleteConference(id);
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this conference?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('conferences')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Conference deleted successfully');
+      onRefresh();
+    } catch (error: any) {
+      console.error('Error deleting conference:', error);
+      toast.error('Error deleting conference: ' + error.message);
     }
   };
 
@@ -113,9 +142,9 @@ const AdminConferencesTab = ({
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Conference Title *</label>
+          <label className="text-sm font-medium">Event Name *</label>
           <Input
-            placeholder="Conference Title"
+            placeholder="Event Name"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
@@ -123,9 +152,9 @@ const AdminConferencesTab = ({
         </div>
         
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Description</label>
+          <label className="text-sm font-medium">Event Description</label>
           <Textarea
-            placeholder="Conference Description"
+            placeholder="Event Description"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={3}
@@ -135,24 +164,24 @@ const AdminConferencesTab = ({
         <div>
           <label className="text-sm font-medium">Venue</label>
           <Input
-            placeholder="Conference Venue"
+            placeholder="Event Venue"
             value={formData.venue}
             onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium">Conference Link</label>
+          <label className="text-sm font-medium">Event Link (Optional)</label>
           <Input
             type="url"
-            placeholder="https://conference-website.com"
+            placeholder="https://event-website.com"
             value={formData.link}
             onChange={(e) => setFormData({ ...formData, link: e.target.value })}
           />
         </div>
         
         <div>
-          <label className="text-sm font-medium">Conference Start Date</label>
+          <label className="text-sm font-medium">Event Start Date</label>
           <Input
             type="date"
             value={formData.date_from}
@@ -161,7 +190,7 @@ const AdminConferencesTab = ({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Conference End Date</label>
+          <label className="text-sm font-medium">Event End Date</label>
           <Input
             type="date"
             value={formData.date_to}
@@ -170,7 +199,7 @@ const AdminConferencesTab = ({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Registration Deadline</label>
+          <label className="text-sm font-medium">Registration Deadline (Optional)</label>
           <Input
             type="date"
             value={formData.deadline}
@@ -188,12 +217,12 @@ const AdminConferencesTab = ({
         </div>
         
         <div>
-          <label className="text-sm font-medium">Registration Fee (₹)</label>
+          <label className="text-sm font-medium">Registration Fee (₹) (Optional)</label>
           <Input
             type="number"
             placeholder="5000"
-            value={formData.registration_fee}
-            onChange={(e) => setFormData({ ...formData, registration_fee: e.target.value })}
+            value={formData.fee}
+            onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
           />
         </div>
         
@@ -221,11 +250,12 @@ const AdminConferencesTab = ({
             resetForm();
           }}
           className="w-full sm:w-auto"
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button type="submit" className="w-full sm:w-auto">
-          {editingConference ? 'Update Conference' : 'Add Conference'}
+        <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : editingConference ? 'Update Event' : 'Add Event'}
         </Button>
       </div>
     </form>
@@ -236,20 +266,20 @@ const AdminConferencesTab = ({
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <CardTitle>Conference Management</CardTitle>
-            <CardDescription>Add, edit, and manage conferences</CardDescription>
+            <CardTitle>Event Management</CardTitle>
+            <CardDescription>Add, edit, and manage events</CardDescription>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Conference
+                Add Event
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
-                <DialogTitle>Add New Conference</DialogTitle>
-                <DialogDescription>Create a new conference event</DialogDescription>
+                <DialogTitle>Add New Event</DialogTitle>
+                <DialogDescription>Create a new event</DialogDescription>
               </DialogHeader>
               <ConferenceForm />
             </DialogContent>
@@ -260,14 +290,14 @@ const AdminConferencesTab = ({
         {conferences.length === 0 ? (
           <div className="text-center py-8">
             <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500">No conferences found. Add your first conference!</p>
+            <p className="text-gray-500">No events found. Add your first event!</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[200px]">Title</TableHead>
+                  <TableHead className="min-w-[200px]">Event Name</TableHead>
                   <TableHead className="min-w-[150px]">Venue</TableHead>
                   <TableHead className="min-w-[180px]">Dates</TableHead>
                   <TableHead className="min-w-[120px]">Fees</TableHead>
@@ -289,7 +319,7 @@ const AdminConferencesTab = ({
                             className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            View Link
+                            Event Link
                           </a>
                         )}
                       </div>
@@ -305,8 +335,8 @@ const AdminConferencesTab = ({
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>Regular: ₹{conference.registration_fee}</div>
-                        <div>Early Bird: ₹{conference.early_bird_fee}</div>
+                        {conference.fee && <div>Regular: ₹{conference.fee}</div>}
+                        {conference.early_bird_fee && <div>Early Bird: ₹{conference.early_bird_fee}</div>}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -345,8 +375,8 @@ const AdminConferencesTab = ({
           <Dialog open={!!editingConference} onOpenChange={() => setEditingConference(null)}>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
-                <DialogTitle>Edit Conference</DialogTitle>
-                <DialogDescription>Update conference details</DialogDescription>
+                <DialogTitle>Edit Event</DialogTitle>
+                <DialogDescription>Update event details</DialogDescription>
               </DialogHeader>
               <ConferenceForm />
             </DialogContent>

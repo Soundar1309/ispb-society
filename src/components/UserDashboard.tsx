@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,8 @@ const UserDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editForm, setEditForm] = useState({
+    full_name: '',
+    email: '',
     phone: '',
     institution: '',
     designation: '',
@@ -50,6 +53,8 @@ const UserDashboard = () => {
       console.log('Fetched user role data:', userRoleData);
       setUserRole(userRoleData);
       setEditForm({
+        full_name: userRoleData.full_name || '',
+        email: userRoleData.email || user.email || '',
         phone: userRoleData.phone || '',
         institution: userRoleData.institution || '',
         designation: userRoleData.designation || '',
@@ -89,6 +94,32 @@ const UserDashboard = () => {
     try {
       console.log('Updating profile with data:', editForm);
       
+      // Update Supabase auth user metadata
+      if (editForm.full_name !== user.user_metadata?.full_name) {
+        const { error: authError } = await supabase.auth.updateUser({
+          data: { full_name: editForm.full_name }
+        });
+        
+        if (authError) {
+          console.error('Auth update error:', authError);
+          toast.error('Error updating auth profile: ' + authError.message);
+          return;
+        }
+      }
+
+      // Update email if changed
+      if (editForm.email !== user.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: editForm.email
+        });
+        
+        if (emailError) {
+          console.error('Email update error:', emailError);
+          toast.error('Error updating email: ' + emailError.message);
+          return;
+        }
+      }
+      
       // First check if user_roles record exists
       const { data: existingRole } = await supabase
         .from('user_roles')
@@ -116,8 +147,6 @@ const UserDashboard = () => {
           .insert({
             user_id: user.id,
             role: 'member',
-            email: user.email,
-            full_name: userRole?.full_name || '',
             ...editForm,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -270,13 +299,31 @@ const UserDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium">Full Name</label>
-                    <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{userRole?.full_name || 'Not provided'}</p>
-                    <p className="text-xs text-gray-500 mt-1">Contact support to change your name</p>
+                    {isEditing ? (
+                      <Input
+                        value={editForm.full_name}
+                        onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                        placeholder="Enter your full name"
+                      />
+                    ) : (
+                      <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{userRole?.full_name || 'Not provided'}</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium">Email</label>
-                    <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{user.email}</p>
-                    <p className="text-xs text-gray-500 mt-1">Contact support to change your email</p>
+                    {isEditing ? (
+                      <Input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                        placeholder="Enter your email"
+                      />
+                    ) : (
+                      <p className="text-gray-700 bg-gray-50 px-3 py-2 rounded border">{userRole?.email || user?.email}</p>
+                    )}
+                    {isEditing && (
+                      <p className="text-xs text-amber-600 mt-1">Changing email will require verification</p>
+                    )}
                   </div>
                   <div>
                     <label className="text-sm font-medium">Phone</label>

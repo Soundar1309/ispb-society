@@ -6,23 +6,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, FileText } from 'lucide-react';
+import { Search, FileText, ExternalLink, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Publication {
   id: string;
   title: string;
-  authors: string | null;
-  journal: string | null;
-  pdf_url: string | null;
-  year: number | null;
-  category: string | null;
-  status: string | null;
-  is_featured: boolean | null;
-  volume: string | null;
-  issue: string | null;
-  pages: string | null;
-  doi: string | null;
+  description?: string;
+  authors?: string;
+  journal?: string;
+  pdf_url?: string;
+  pdf_file_url?: string;
+  year?: number;
+  category?: string;
+  status?: string;
+  is_featured?: boolean;
+  cover_image_url?: string;
+  price?: number;
+  link?: string;
 }
 
 const Publications = () => {
@@ -70,7 +71,8 @@ const Publications = () => {
       filtered = filtered.filter(pub =>
         pub.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (pub.authors && pub.authors.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (pub.journal && pub.journal.toLowerCase().includes(searchTerm.toLowerCase()))
+        (pub.journal && pub.journal.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (pub.description && pub.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -167,17 +169,33 @@ const Publications = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">{publication.title}</CardTitle>
-                      {publication.authors && (
-                        <CardDescription className="text-base mb-2">
-                          <span className="font-medium">Authors: {publication.authors}</span>
-                        </CardDescription>
-                      )}
-                      {publication.journal && (
-                        <CardDescription className="text-sm text-gray-700 mb-3">
-                          <span className="font-medium">Journal: </span>{publication.journal}
-                        </CardDescription>
-                      )}
+                      <div className="flex items-start gap-4">
+                        {publication.cover_image_url && (
+                          <img
+                            src={publication.cover_image_url}
+                            alt={publication.title}
+                            className="w-20 h-24 object-cover rounded-md flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <CardTitle className="text-xl mb-2">{publication.title}</CardTitle>
+                          {publication.description && (
+                            <CardDescription className="text-base mb-2">
+                              {publication.description}
+                            </CardDescription>
+                          )}
+                          {publication.authors && (
+                            <CardDescription className="text-base mb-2">
+                              <span className="font-medium">Authors: </span>{publication.authors}
+                            </CardDescription>
+                          )}
+                          {publication.journal && (
+                            <CardDescription className="text-sm text-gray-700 mb-3">
+                              <span className="font-medium">Journal: </span>{publication.journal}
+                            </CardDescription>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       {publication.is_featured && (
@@ -185,6 +203,9 @@ const Publications = () => {
                       )}
                       {publication.category && (
                         <Badge variant="outline">{publication.category}</Badge>
+                      )}
+                      {publication.price && (
+                        <Badge className="bg-green-100 text-green-800">₹{publication.price}</Badge>
                       )}
                     </div>
                   </div>
@@ -197,17 +218,31 @@ const Publications = () => {
                       )}
                     </div>
                     
-                    {publication.pdf_url && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => window.open(publication.pdf_url, '_blank')}
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="h-4 w-4" />
-                        View PDF
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {publication.link && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => window.open(publication.link, '_blank')}
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                          Buy Now
+                        </Button>
+                      )}
+                      
+                      {(publication.pdf_url || publication.pdf_file_url) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(publication.pdf_url || publication.pdf_file_url, '_blank')}
+                          className="flex items-center gap-2"
+                        >
+                          <FileText className="h-4 w-4" />
+                          View PDF
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

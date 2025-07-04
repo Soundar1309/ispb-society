@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Users, FileText, Clock, DollarSign } from 'lucide-react';
+import { Calendar, MapPin, Users, FileText, Clock, DollarSign, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Conference {
@@ -12,11 +12,13 @@ interface Conference {
   venue: string;
   date_from: string;
   date_to: string;
-  registration_fee: number;
+  fee: number;
   early_bird_fee: number;
   early_bird_deadline: string;
   is_active: boolean;
   image_url?: string;
+  link?: string;
+  deadline?: string;
 }
 
 const Conference = () => {
@@ -128,6 +130,11 @@ const Conference = () => {
                           <p className="text-gray-700">
                             {formatDate(conference.date_from)} - {formatDate(conference.date_to)}
                           </p>
+                          {conference.deadline && (
+                            <p className="text-red-600 text-sm font-medium">
+                              Registration Deadline: {formatDate(conference.deadline)}
+                            </p>
+                          )}
                         </div>
                       </div>
                       {conference.venue && (
@@ -139,30 +146,38 @@ const Conference = () => {
                           </div>
                         </div>
                       )}
-                      <div className="flex items-start space-x-3">
-                        <DollarSign className="h-5 w-5 text-green-600 mt-1" />
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-1">Registration Fee</h4>
-                          <p className="text-gray-700">
-                            Regular: ₹{conference.registration_fee}
-                            {conference.early_bird_fee && isEarlyBirdValid(conference.early_bird_deadline) && (
-                              <span className="block text-green-600 font-medium">
-                                Early Bird: ₹{conference.early_bird_fee}
-                              </span>
+                      {(conference.fee || conference.early_bird_fee) && (
+                        <div className="flex items-start space-x-3">
+                          <DollarSign className="h-5 w-5 text-green-600 mt-1" />
+                          <div>
+                            <h4 className="font-semibold text-gray-900 mb-1">Registration Fee</h4>
+                            <div className="text-gray-700">
+                              {conference.fee && <p>Regular: ₹{conference.fee}</p>}
+                              {conference.early_bird_fee && isEarlyBirdValid(conference.early_bird_deadline) && (
+                                <p className="text-green-600 font-medium">
+                                  Early Bird: ₹{conference.early_bird_fee}
+                                </p>
+                              )}
+                            </div>
+                            {conference.early_bird_deadline && isEarlyBirdValid(conference.early_bird_deadline) && (
+                              <p className="text-sm text-gray-500">
+                                Early bird until: {formatDate(conference.early_bird_deadline)}
+                              </p>
                             )}
-                          </p>
-                          {conference.early_bird_deadline && isEarlyBirdValid(conference.early_bird_deadline) && (
-                            <p className="text-sm text-gray-500">
-                              Early bird until: {formatDate(conference.early_bird_deadline)}
-                            </p>
-                          )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      <Button className="bg-green-600 hover:bg-green-700">
-                        Register Now
-                      </Button>
+                      {conference.link && (
+                        <Button 
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => window.open(conference.link, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Register Now
+                        </Button>
+                      )}
                       <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
                         View Details
                       </Button>
