@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,19 +47,17 @@ const Header = () => {
       setIsMenuOpen(false);
     } catch (error) {
       console.error('Error during sign out:', error);
-      // Still close the menu even if sign out fails
       setIsMenuOpen(false);
     }
   };
 
-  // Don't render anything while checking authentication
   if (loading) {
     return (
-      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm z-50">
+      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-lg z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             <Logo />
-            <div className="animate-pulse bg-gray-200 h-8 w-32 rounded"></div>
+            <div className="animate-pulse bg-gray-200 h-8 w-32 rounded-md"></div>
           </div>
         </div>
       </header>
@@ -68,7 +65,7 @@ const Header = () => {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-lg z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
           <Logo />

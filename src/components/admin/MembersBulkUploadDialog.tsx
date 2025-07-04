@@ -1,10 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Upload, Download, AlertCircle } from 'lucide-react';
+import { Upload, Download, AlertCircle, FileUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,9 +15,10 @@ interface MembersBulkUploadDialogProps {
 }
 
 const MembersBulkUploadDialog = ({ isOpen, onClose, onSuccess }: MembersBulkUploadDialogProps) => {
-  const [csvData, setCsvData] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const downloadTemplate = () => {
     const template = `full_name,email,phone,institution,designation,specialization,membership_type,valid_from,valid_until,amount,member_code
@@ -34,6 +34,17 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/csv') {
+      setSelectedFile(file);
+      setErrors([]);
+    } else {
+      toast.error('Please select a valid CSV file');
+      setSelectedFile(null);
+    }
   };
 
   const parseCsvData = (csvText: string) => {
@@ -70,7 +81,6 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
         continue;
       }
 
-      // Convert amount to number
       if (record.amount) {
         record.amount = parseFloat(record.amount);
       }
@@ -86,8 +96,8 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
   };
 
   const handleUpload = async () => {
-    if (!csvData.trim()) {
-      toast.error('Please paste CSV data');
+    if (!selectedFile) {
+      toast.error('Please select a CSV file');
       return;
     }
 
@@ -95,11 +105,10 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
     setErrors([]);
 
     try {
-      const data = parseCsvData(csvData);
+      const csvText = await selectedFile.text();
+      const data = parseCsvData(csvText);
       
-      // First create user roles, then memberships
       for (const member of data) {
-        // Create user role first
         const userRoleData = {
           full_name: member.full_name,
           email: member.email,
@@ -121,7 +130,6 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
           continue;
         }
 
-        // Create membership
         const membershipData = {
           user_id: userRole.user_id,
           membership_type: member.membership_type,
@@ -144,7 +152,10 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
       }
 
       toast.success(`Successfully uploaded ${data.length} members`);
-      setCsvData('');
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -159,37 +170,54 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Bulk Upload Members</DialogTitle>
-          <DialogDescription>
-            Upload multiple members with memberships using CSV format
+          <DialogTitle className="text-xl font-semibold text-gray-900">Bulk Upload Members</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Upload multiple members with memberships using CSV file format
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <Label>CSV Data</Label>
+            <Label className="text-sm font-medium text-gray-700">CSV File Upload</Label>
             <Button variant="outline" size="sm" onClick={downloadTemplate} className="w-full sm:w-auto">
               <Download className="h-4 w-4 mr-2" />
               Download Template
             </Button>
           </div>
 
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+          <Alert className="border-blue-200 bg-blue-50">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
               Required columns: full_name, email, membership_type. Optional: phone, institution, designation, specialization, valid_from, valid_until, amount, member_code
             </AlertDescription>
           </Alert>
 
-          <Textarea
-            placeholder="Paste your CSV data here..."
-            value={csvData}
-            onChange={(e) => setCsvData(e.target.value)}
-            rows={10}
-            className="font-mono text-sm"
-          />
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="csv-upload-members"
+              />
+              <label htmlFor="csv-upload-members" className="cursor-pointer">
+                <FileUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Click to select CSV file or drag and drop</p>
+                <p className="text-sm text-gray-500">Only CSV files are accepted</p>
+              </label>
+            </div>
+
+            {selectedFile && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-green-800 font-medium">Selected file: {selectedFile.name}</p>
+                <p className="text-green-600 text-sm">Size: {(selectedFile.size / 1024).toFixed(2)} KB</p>
+              </div>
+            )}
+          </div>
 
           {errors.length > 0 && (
             <Alert variant="destructive">
@@ -200,17 +228,17 @@ Dr. Jane Smith,jane.smith@example.com,+0987654321,Research Institute,Associate P
             </Alert>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
             <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button 
               onClick={handleUpload} 
-              disabled={isUploading || !csvData.trim()}
-              className="w-full sm:w-auto"
+              disabled={isUploading || !selectedFile}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
             >
               <Upload className="h-4 w-4 mr-2" />
-              {isUploading ? 'Uploading...' : 'Upload'}
+              {isUploading ? 'Uploading...' : 'Upload CSV'}
             </Button>
           </div>
         </div>
