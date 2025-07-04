@@ -67,21 +67,29 @@ const AdminDashboard = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Simplified and organized tabs
   const tabs = [
-    { value: 'dashboard', label: 'Dashboard' },
-    { value: 'members', label: 'Members' },
-    { value: 'users', label: 'Users' },
-    { value: 'messages', label: 'Messages' },
-    { value: 'conferences', label: 'Conferences' },
-    { value: 'payments', label: 'Payments' },
-    { value: 'orders', label: 'Orders' },
-    { value: 'plans', label: 'Plans' },
-    { value: 'life-members', label: 'Life Members' },
-    { value: 'publications', label: 'Publications' },
-    { value: 'gallery', label: 'Gallery' },
-    { value: 'office-bearers', label: 'Office Bearers' },
-    { value: 'content', label: 'Content' }
+    { value: 'dashboard', label: 'Dashboard', category: 'overview' },
+    { value: 'members', label: 'Members', category: 'management' },
+    { value: 'life-members', label: 'Life Members', category: 'management' },
+    { value: 'users', label: 'User Roles', category: 'management' },
+    { value: 'conferences', label: 'Conferences', category: 'content' },
+    { value: 'publications', label: 'Publications', category: 'content' },
+    { value: 'gallery', label: 'Gallery', category: 'content' },
+    { value: 'office-bearers', label: 'Office Bearers', category: 'content' },
+    { value: 'content', label: 'Mandates & Activities', category: 'content' },
+    { value: 'messages', label: 'Messages', category: 'communication' },
+    { value: 'payments', label: 'Payments', category: 'finance' },
   ];
+
+  // Group tabs by category for better organization
+  const tabCategories = {
+    overview: tabs.filter(t => t.category === 'overview'),
+    management: tabs.filter(t => t.category === 'management'),
+    content: tabs.filter(t => t.category === 'content'),
+    communication: tabs.filter(t => t.category === 'communication'),
+    finance: tabs.filter(t => t.category === 'finance'),
+  };
 
   // Message handlers
   const handleMarkMessageRead = async (messageId: string) => {
@@ -265,34 +273,23 @@ const AdminDashboard = ({
             onUpdatePayment={handleUpdatePayment}
           />
         );
-      case 'orders':
-        return (
-          <AdminOrdersTab 
-            orders={orders}
-          />
-        );
-      case 'plans':
-        return (
-          <AdminMembershipPlansTab 
-            plans={membershipPlans}
-            onRefresh={refreshData}
-          />
-        );
       default:
         return <AdminStats stats={stats} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="responsive-container py-4 sm:py-8">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="responsive-container py-4 sm:py-6">
+        {/* Enhanced Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="responsive-text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="responsive-text-sm text-gray-600 mt-1">
-                Comprehensive management of ISPB website and registered users
+            <div className="text-center sm:text-left">
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                Comprehensive management system for ISPB
               </p>
             </div>
             
@@ -302,7 +299,7 @@ const AdminDashboard = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="self-start"
+                className="self-center sm:self-start bg-white shadow-sm hover:shadow-md transition-shadow"
               >
                 {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
                 <span className="ml-2">{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
@@ -311,24 +308,128 @@ const AdminDashboard = ({
           </div>
         </div>
 
-        {/* Desktop Tabs */}
+        {/* Desktop Tabs - Redesigned */}
         {!isMobile ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <ScrollArea className="w-full">
-              <TabsList className="grid w-full grid-cols-7 lg:grid-cols-13 gap-1 h-auto p-1">
-                {tabs.map((tab) => (
-                  <TabsTrigger 
-                    key={tab.value} 
-                    value={tab.value}
-                    className="text-xs sm:text-sm whitespace-nowrap px-2 py-2 data-[state=active]:bg-white"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </ScrollArea>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+              <ScrollArea className="w-full">
+                <div className="space-y-4">
+                  {/* Overview Section */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Overview</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {tabCategories.overview.map((tab) => (
+                        <Button
+                          key={tab.value}
+                          variant={activeTab === tab.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setActiveTab(tab.value)}
+                          className={`transition-all duration-200 ${
+                            activeTab === tab.value 
+                              ? 'bg-green-600 hover:bg-green-700 text-white shadow-md' 
+                              : 'hover:bg-green-50 hover:border-green-300'
+                          }`}
+                        >
+                          {tab.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-            <div className="mt-6">
+                  {/* Management Section */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Management</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {tabCategories.management.map((tab) => (
+                        <Button
+                          key={tab.value}
+                          variant={activeTab === tab.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setActiveTab(tab.value)}
+                          className={`transition-all duration-200 ${
+                            activeTab === tab.value 
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+                              : 'hover:bg-blue-50 hover:border-blue-300'
+                          }`}
+                        >
+                          {tab.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Content Section */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Content</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {tabCategories.content.map((tab) => (
+                        <Button
+                          key={tab.value}
+                          variant={activeTab === tab.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setActiveTab(tab.value)}
+                          className={`transition-all duration-200 ${
+                            activeTab === tab.value 
+                              ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md' 
+                              : 'hover:bg-purple-50 hover:border-purple-300'
+                          }`}
+                        >
+                          {tab.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Communication & Finance Section */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Communication</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {tabCategories.communication.map((tab) => (
+                          <Button
+                            key={tab.value}
+                            variant={activeTab === tab.value ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setActiveTab(tab.value)}
+                            className={`transition-all duration-200 ${
+                              activeTab === tab.value 
+                                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md' 
+                                : 'hover:bg-orange-50 hover:border-orange-300'
+                            }`}
+                          >
+                            {tab.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Finance</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {tabCategories.finance.map((tab) => (
+                          <Button
+                            key={tab.value}
+                            variant={activeTab === tab.value ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setActiveTab(tab.value)}
+                            className={`transition-all duration-200 ${
+                              activeTab === tab.value 
+                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-md' 
+                                : 'hover:bg-red-50 hover:border-red-300'
+                            }`}
+                          >
+                            {tab.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Content Area */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               {tabs.map((tab) => (
                 <TabsContent key={tab.value} value={tab.value} className="mt-0">
                   {renderTabContent()}
@@ -337,41 +438,57 @@ const AdminDashboard = ({
             </div>
           </Tabs>
         ) : (
-          /* Mobile Layout */
+          /* Mobile Layout - Enhanced */
           <div className="space-y-4">
             {/* Mobile Navigation */}
             {isMobileMenuOpen && (
-              <div className="bg-white rounded-lg shadow-sm border p-4">
-                <div className="grid grid-cols-2 gap-2">
-                  {tabs.map((tab) => (
-                    <Button
-                      key={tab.value}
-                      variant={activeTab === tab.value ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setActiveTab(tab.value);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="justify-start text-xs"
-                    >
-                      {tab.label}
-                    </Button>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
+                <div className="space-y-3">
+                  {Object.entries(tabCategories).map(([category, categoryTabs]) => (
+                    <div key={category}>
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 capitalize">
+                        {category}
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {categoryTabs.map((tab) => (
+                          <Button
+                            key={tab.value}
+                            variant={activeTab === tab.value ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              setActiveTab(tab.value);
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className={`justify-start text-xs transition-all ${
+                              activeTab === tab.value 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            {tab.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Current Tab Indicator */}
-            <div className="bg-white rounded-lg shadow-sm border p-3">
-              <div className="flex items-center gap-2">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
+              <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900">
                   {tabs.find(tab => tab.value === activeTab)?.label}
                 </h2>
+                <div className="text-xs text-gray-500 capitalize">
+                  {tabs.find(tab => tab.value === activeTab)?.category}
+                </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="bg-white rounded-lg shadow-sm border p-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
               {renderTabContent()}
             </div>
           </div>

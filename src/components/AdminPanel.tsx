@@ -16,6 +16,9 @@ const AdminPanel = () => {
     membershipPlans,
     lifeMembers,
     orders,
+    publications,
+    galleryItems,
+    officeBearers,
     refreshData,
     updateUserRole,
     addMembership,
@@ -37,6 +40,9 @@ const AdminPanel = () => {
         membershipPlans={membershipPlans}
         lifeMembers={lifeMembers}
         orders={orders}
+        publications={publications}
+        galleryItems={galleryItems}
+        officeBearers={officeBearers}
         refreshData={refreshData}
         updateUserRole={updateUserRole}
         addMembership={addMembership}
