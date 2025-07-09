@@ -139,105 +139,135 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
   };
 
   const ConferenceForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Event Name *</label>
-          <Input
-            placeholder="Event Name"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            required
-          />
+    <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto">
+      {/* Basic Information Section */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Basic Information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Title *</label>
+            <Input
+              placeholder="e.g., 16th ISPB International Congress"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+              className="w-full"
+            />
+          </div>
+          
+          <div className="sm:col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Description</label>
+            <Textarea
+              placeholder="Detailed description of the conference, its objectives, and key highlights..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={4}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Venue</label>
+            <Input
+              placeholder="e.g., India International Centre, New Delhi"
+              value={formData.venue}
+              onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Website (Optional)</label>
+            <Input
+              type="url"
+              placeholder="https://conference.ispb.org.in"
+              value={formData.link}
+              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              className="w-full"
+            />
+          </div>
         </div>
-        
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Event Description</label>
-          <Textarea
-            placeholder="Event Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows={3}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Venue</label>
-          <Input
-            placeholder="Event Venue"
-            value={formData.venue}
-            onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Event Link (Optional)</label>
-          <Input
-            type="url"
-            placeholder="https://event-website.com"
-            value={formData.link}
-            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Event Start Date</label>
-          <Input
-            type="date"
-            value={formData.date_from}
-            onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Event End Date</label>
-          <Input
-            type="date"
-            value={formData.date_to}
-            onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Registration Deadline (Optional)</label>
-          <Input
-            type="date"
-            value={formData.deadline}
-            onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Early Bird Deadline</label>
-          <Input
-            type="date"
-            value={formData.early_bird_deadline}
-            onChange={(e) => setFormData({ ...formData, early_bird_deadline: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Registration Fee (₹) (Optional)</label>
-          <Input
-            type="number"
-            placeholder="5000"
-            value={formData.fee}
-            onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Early Bird Fee (₹)</label>
-          <Input
-            type="number"
-            placeholder="4000"
-            value={formData.early_bird_fee}
-            onChange={(e) => setFormData({ ...formData, early_bird_fee: e.target.value })}
-          />
+      </div>
+
+      {/* Dates & Deadlines Section */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Dates & Deadlines</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Start Date</label>
+            <Input
+              type="date"
+              value={formData.date_from}
+              onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Conference End Date</label>
+            <Input
+              type="date"
+              value={formData.date_to}
+              onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Deadline</label>
+            <Input
+              type="date"
+              value={formData.deadline}
+              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Last date for conference registration</p>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Early Bird Deadline</label>
+            <Input
+              type="date"
+              value={formData.early_bird_deadline}
+              onChange={(e) => setFormData({ ...formData, early_bird_deadline: e.target.value })}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Deadline for early bird pricing</p>
+          </div>
         </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+      {/* Fee Structure Section */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Fee Structure</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Regular Registration Fee (₹)</label>
+            <Input
+              type="number"
+              placeholder="5000"
+              value={formData.fee}
+              onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Standard registration fee</p>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Early Bird Fee (₹)</label>
+            <Input
+              type="number"
+              placeholder="4000"
+              value={formData.early_bird_fee}
+              onChange={(e) => setFormData({ ...formData, early_bird_fee: e.target.value })}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">Discounted fee for early registrations</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
         <Button 
           type="button" 
           variant="outline" 
@@ -254,8 +284,12 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
         >
           Cancel
         </Button>
-        <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : editingConference ? 'Update Event' : 'Add Event'}
+        <Button 
+          type="submit" 
+          className="w-full sm:w-auto bg-green-600 hover:bg-green-700" 
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Saving...' : editingConference ? 'Update Conference' : 'Add Conference'}
         </Button>
       </div>
     </form>
@@ -266,20 +300,20 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <CardTitle>Event Management</CardTitle>
-            <CardDescription>Add, edit, and manage events</CardDescription>
+            <CardTitle className="text-xl text-gray-900">Conference Management</CardTitle>
+            <CardDescription>Manage ISPB conferences, symposiums, and events</CardDescription>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Event
+                Add New Conference
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add New Event</DialogTitle>
-                <DialogDescription>Create a new event</DialogDescription>
+                <DialogTitle className="text-xl">Add New Conference</DialogTitle>
+                <DialogDescription>Create a new ISPB conference or event with complete details</DialogDescription>
               </DialogHeader>
               <ConferenceForm />
             </DialogContent>
@@ -288,69 +322,119 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       </CardHeader>
       <CardContent>
         {conferences.length === 0 ? (
-          <div className="text-center py-8">
-            <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500">No events found. Add your first event!</p>
+          <div className="text-center py-12">
+            <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Conferences Found</h3>
+            <p className="text-gray-500 mb-4">Start by adding your first ISPB conference or event</p>
+            <Button 
+              onClick={() => setIsAddDialogOpen(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Conference
+            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[200px]">Event Name</TableHead>
-                  <TableHead className="min-w-[150px]">Venue</TableHead>
-                  <TableHead className="min-w-[180px]">Dates</TableHead>
-                  <TableHead className="min-w-[120px]">Fees</TableHead>
-                  <TableHead className="min-w-[100px]">Status</TableHead>
-                  <TableHead className="min-w-[120px]">Actions</TableHead>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="min-w-[250px] font-semibold">Conference Details</TableHead>
+                  <TableHead className="min-w-[150px] font-semibold">Venue & Dates</TableHead>
+                  <TableHead className="min-w-[140px] font-semibold">Registration Info</TableHead>
+                  <TableHead className="min-w-[100px] font-semibold">Status</TableHead>
+                  <TableHead className="min-w-[120px] font-semibold text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {conferences.map((conference) => (
-                  <TableRow key={conference.id}>
+                  <TableRow key={conference.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium">
-                      <div className="flex flex-col gap-1">
-                        <span>{conference.title}</span>
+                      <div className="space-y-2">
+                        <div className="font-semibold text-gray-900">{conference.title}</div>
+                        {conference.description && (
+                          <div className="text-sm text-gray-600 line-clamp-2">
+                            {conference.description.length > 100 
+                              ? `${conference.description.substring(0, 100)}...`
+                              : conference.description
+                            }
+                          </div>
+                        )}
                         {conference.link && (
                           <a 
                             href={conference.link} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
+                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            Event Link
+                            Conference Website
                           </a>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{conference.venue}</TableCell>
+                    
                     <TableCell>
-                      <div className="text-sm">
-                        <div>{conference.date_from} to {conference.date_to}</div>
+                      <div className="space-y-1">
+                        {conference.venue && (
+                          <div className="font-medium text-gray-900">{conference.venue}</div>
+                        )}
+                        <div className="text-sm text-gray-600">
+                          {conference.date_from && conference.date_to ? (
+                            <div>
+                              <div>📅 {new Date(conference.date_from).toLocaleDateString()} - {new Date(conference.date_to).toLocaleDateString()}</div>
+                            </div>
+                          ) : (
+                            <div className="text-gray-400">Dates not set</div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell>
+                      <div className="space-y-1 text-sm">
+                        {conference.fee && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Regular:</span>
+                            <span className="text-green-600 font-semibold">₹{conference.fee}</span>
+                          </div>
+                        )}
+                        {conference.early_bird_fee && (
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">Early Bird:</span>
+                            <span className="text-orange-600 font-semibold">₹{conference.early_bird_fee}</span>
+                          </div>
+                        )}
                         {conference.deadline && (
-                          <div className="text-red-600 text-xs">Deadline: {conference.deadline}</div>
+                          <div className="text-red-600 text-xs font-medium">
+                            ⏰ Deadline: {new Date(conference.deadline).toLocaleDateString()}
+                          </div>
+                        )}
+                        {conference.early_bird_deadline && (
+                          <div className="text-orange-600 text-xs">
+                            ⚡ Early Bird: {new Date(conference.early_bird_deadline).toLocaleDateString()}
+                          </div>
                         )}
                       </div>
                     </TableCell>
+                    
                     <TableCell>
-                      <div className="text-sm">
-                        {conference.fee && <div>Regular: ₹{conference.fee}</div>}
-                        {conference.early_bird_fee && <div>Early Bird: ₹{conference.early_bird_fee}</div>}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={conference.is_active ? "default" : "secondary"}>
+                      <Badge 
+                        variant={conference.is_active ? "default" : "secondary"}
+                        className={conference.is_active ? "bg-green-100 text-green-800" : ""}
+                      >
                         {conference.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
+                    
                     <TableCell>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex justify-center gap-1">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleEdit(conference)}
-                          className="w-full sm:w-auto"
+                          className="hover:bg-blue-50 hover:border-blue-300"
+                          title="Edit Conference"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -358,7 +442,8 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                           size="sm"
                           variant="outline"
                           onClick={() => handleDelete(conference.id)}
-                          className="w-full sm:w-auto"
+                          className="hover:bg-red-50 hover:border-red-300 text-red-600"
+                          title="Delete Conference"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -373,10 +458,10 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
 
         {editingConference && (
           <Dialog open={!!editingConference} onOpenChange={() => setEditingConference(null)}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Edit Event</DialogTitle>
-                <DialogDescription>Update event details</DialogDescription>
+                <DialogTitle className="text-xl">Edit Conference</DialogTitle>
+                <DialogDescription>Update conference details and information</DialogDescription>
               </DialogHeader>
               <ConferenceForm />
             </DialogContent>
