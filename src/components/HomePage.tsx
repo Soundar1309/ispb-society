@@ -60,16 +60,16 @@ const HomePage = () => {
             Advancing plant breeding science for sustainable agriculture and food security through research, 
             education, and collaboration among scientists, researchers, and professionals.
           </p>
-          <div className="space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/membership"
-              className="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="inline-block bg-green-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg text-center"
             >
               Join ISPB
             </Link>
             <Link
               to="/genesis"
-              className="inline-block border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="inline-block border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 transform hover:scale-105 shadow-lg text-center"
             >
               Learn More
             </Link>
@@ -135,24 +135,24 @@ const HomePage = () => {
                 </li>
               </ul>
             </div>
-            <div className="bg-gradient-to-br from-green-100 to-orange-100 rounded-2xl p-8">
+            <div className="bg-gradient-to-br from-green-100 to-orange-100 rounded-2xl p-6 sm:p-8">
               <div className="text-center">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 mb-1">500+</div>
-                    <div className="text-sm text-gray-600">Active Members</div>
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">500+</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Active Members</div>
                   </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 mb-1">25+</div>
-                    <div className="text-sm text-gray-600">Years of Service</div>
+                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">25+</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Years of Service</div>
                   </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 mb-1">50+</div>
-                    <div className="text-sm text-gray-600">Conferences Held</div>
+                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">50+</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Conferences Held</div>
                   </div>
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-2xl font-bold text-green-600 mb-1">200+</div>
-                    <div className="text-sm text-gray-600">Research Papers</div>
+                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">200+</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Research Papers</div>
                   </div>
                 </div>
               </div>

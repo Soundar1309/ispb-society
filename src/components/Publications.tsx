@@ -109,14 +109,14 @@ const Publications = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Publications</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Publications</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Explore our research publications and scientific contributions to plant breeding
           </p>
         </div>
 
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
@@ -167,37 +167,37 @@ const Publications = () => {
             filteredPublications.map((publication) => (
               <Card key={publication.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-start gap-4">
+                      <div className="flex flex-col sm:flex-row items-start gap-4">
                         {publication.cover_image_url && (
                           <img
                             src={publication.cover_image_url}
                             alt={publication.title}
-                            className="w-20 h-24 object-cover rounded-md flex-shrink-0"
+                            className="w-16 h-20 sm:w-20 sm:h-24 object-cover rounded-md flex-shrink-0 mx-auto sm:mx-0"
                           />
                         )}
-                        <div className="flex-1">
-                          <CardTitle className="text-xl mb-2">{publication.title}</CardTitle>
+                        <div className="flex-1 text-center sm:text-left">
+                          <CardTitle className="text-lg sm:text-xl mb-2">{publication.title}</CardTitle>
                           {publication.description && (
-                            <CardDescription className="text-base mb-2">
+                            <CardDescription className="text-sm sm:text-base mb-2">
                               {publication.description}
                             </CardDescription>
                           )}
                           {publication.authors && (
-                            <CardDescription className="text-base mb-2">
+                            <CardDescription className="text-sm sm:text-base mb-2">
                               <span className="font-medium">Authors: </span>{publication.authors}
                             </CardDescription>
                           )}
                           {publication.journal && (
-                            <CardDescription className="text-sm text-gray-700 mb-3">
+                            <CardDescription className="text-xs sm:text-sm text-gray-700 mb-3">
                               <span className="font-medium">Journal: </span>{publication.journal}
                             </CardDescription>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-end">
                       {publication.is_featured && (
                         <Badge variant="secondary">Featured</Badge>
                       )}
@@ -211,20 +211,20 @@ const Publications = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="text-sm text-gray-600 text-center sm:text-left">
                       {publication.year && (
                         <span><strong>Year:</strong> {publication.year}</span>
                       )}
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-end">
                       {publication.link && (
                         <Button
                           variant="default"
                           size="sm"
                           onClick={() => window.open(publication.link, '_blank')}
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                          className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700"
                         >
                           <ShoppingCart className="h-4 w-4" />
                           Buy Now
@@ -236,7 +236,7 @@ const Publications = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => window.open(publication.pdf_url || publication.pdf_file_url, '_blank')}
-                          className="flex items-center gap-2"
+                          className="flex items-center justify-center gap-2"
                         >
                           <FileText className="h-4 w-4" />
                           View PDF

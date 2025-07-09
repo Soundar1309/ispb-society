@@ -100,28 +100,28 @@ const MandateActivities = () => {
     <div className="min-h-screen py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Mandate & Activities</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Mandate & Activities</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Our mission-driven activities and initiatives that advance plant breeding science 
             and support the professional community in India.
           </p>
         </div>
 
         {/* Mandate Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Mandate</h2>
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="space-y-6">
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Our Mandate</h2>
+          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
+            <div className="space-y-4 sm:space-y-6">
               {mandates.map((mandate, index) => (
-                <div key={mandate.id} className="border-l-4 border-green-500 pl-6 py-4">
-                  <div className="flex flex-wrap items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">{mandate.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                <div key={mandate.id} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{mandate.title}</h3>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
                       #{mandate.display_order}
                     </span>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{mandate.content}</p>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{mandate.content}</p>
                 </div>
               ))}
             </div>
@@ -129,20 +129,20 @@ const MandateActivities = () => {
         </section>
 
         {/* Congress History */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">ISPB Congress History</h2>
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="space-y-6">
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">ISPB Congress History</h2>
+          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
+            <div className="space-y-4 sm:space-y-6">
               {congresses.map((congress, index) => (
-                <div key={index} className="border-l-4 border-green-500 pl-6 py-4">
-                  <div className="flex flex-wrap items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">{congress.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                <div key={index} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{congress.title}</h3>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
                       {congress.year}
                     </span>
                   </div>
-                  <p className="text-lg text-green-600 font-medium mb-2">{congress.theme}</p>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  <p className="text-base sm:text-lg text-green-600 font-medium mb-2">{congress.theme}</p>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-600">
                     <span>📍 {congress.location}</span>
                     <span>👥 {congress.participants}</span>
                   </div>
@@ -154,18 +154,18 @@ const MandateActivities = () => {
 
         {/* Activities Section */}
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Our Activities</h2>
-          <div className="bg-white rounded-xl shadow-md p-8">
-            <div className="space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Our Activities</h2>
+          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
+            <div className="space-y-4 sm:space-y-6">
               {activities.map((activity, index) => (
-                <div key={activity.id} className="border-l-4 border-green-500 pl-6 py-4">
-                  <div className="flex flex-wrap items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">{activity.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                <div key={activity.id} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{activity.title}</h3>
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
                       #{activity.display_order}
                     </span>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{activity.content}</p>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{activity.content}</p>
                 </div>
               ))}
             </div>
@@ -173,12 +173,12 @@ const MandateActivities = () => {
         </section>
 
         {/* Call to Action */}
-        <div className="mt-16 bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-8 text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Join Our Mission</h2>
-          <p className="text-lg mb-6 opacity-90">
+        <div className="mt-12 sm:mt-16 bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 sm:p-8 text-center text-white">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Join Our Mission</h2>
+          <p className="text-base sm:text-lg mb-6 opacity-90">
             Be part of India's premier plant breeding community and contribute to agricultural innovation.
           </p>
-          <button className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+          <button className="bg-white text-green-600 px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
             Become a Member
           </button>
         </div>

@@ -53,19 +53,19 @@ const OfficeBearers = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Office Bearers</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Office Bearers</h1>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Meet our distinguished office bearers who guide the Indian Society of Plant Breeders
           </p>
         </div>
 
         {/* Office Bearers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
           {officeBearers.map((bearer) => (
             <Card key={bearer.id} className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gray-200">
+              <CardContent className="p-4 sm:p-6">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gray-200">
                   {bearer.image_url ? (
                     <img
                       src={bearer.image_url}
@@ -74,20 +74,20 @@ const OfficeBearers = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-gray-400 text-4xl font-bold">
+                      <span className="text-gray-400 text-2xl sm:text-4xl font-bold">
                         {bearer.name.charAt(0)}
                       </span>
                     </div>
                   )}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                   {bearer.name}
                 </h3>
-                <p className="text-green-600 font-medium mb-2">
+                <p className="text-green-600 font-medium mb-2 text-sm sm:text-base">
                   {bearer.designation}
                 </p>
                 {bearer.institution && (
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 text-xs sm:text-sm">
                     {bearer.institution}
                   </p>
                 )}
