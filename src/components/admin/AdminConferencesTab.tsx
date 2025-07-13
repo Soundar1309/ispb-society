@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Calendar, ExternalLink } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Edit, Trash2, Calendar, ExternalLink, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,11 +20,12 @@ interface Conference {
   date_from: string;
   date_to: string;
   fee: number;
-  early_bird_fee: number;
-  early_bird_deadline: string;
   is_active: boolean;
   link?: string;
   deadline?: string;
+  registration_required?: boolean;
+  attachment_url?: string;
+  registration_form_url?: string;
 }
 
 interface AdminConferencesTabProps {
@@ -42,10 +44,11 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
     date_from: '',
     date_to: '',
     fee: '',
-    early_bird_fee: '',
-    early_bird_deadline: '',
     link: '',
-    deadline: ''
+    deadline: '',
+    registration_required: false,
+    attachment_url: '',
+    registration_form_url: ''
   });
 
   const resetForm = () => {
@@ -56,10 +59,11 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       date_from: '',
       date_to: '',
       fee: '',
-      early_bird_fee: '',
-      early_bird_deadline: '',
       link: '',
-      deadline: ''
+      deadline: '',
+      registration_required: false,
+      attachment_url: '',
+      registration_form_url: ''
     });
   };
 
@@ -71,7 +75,6 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       const conferenceData = {
         ...formData,
         fee: formData.fee ? parseFloat(formData.fee) : null,
-        early_bird_fee: formData.early_bird_fee ? parseFloat(formData.early_bird_fee) : null,
         is_active: true
       };
 
@@ -113,10 +116,11 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       date_from: conference.date_from || '',
       date_to: conference.date_to || '',
       fee: conference.fee?.toString() || '',
-      early_bird_fee: conference.early_bird_fee?.toString() || '',
-      early_bird_deadline: conference.early_bird_deadline || '',
       link: conference.link || '',
-      deadline: conference.deadline || ''
+      deadline: conference.deadline || '',
+      registration_required: conference.registration_required || false,
+      attachment_url: conference.attachment_url || '',
+      registration_form_url: conference.registration_form_url || ''
     });
   };
 
@@ -225,24 +229,25 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Early Bird Deadline</label>
-            <Input
-              type="date"
-              value={formData.early_bird_deadline}
-              onChange={(e) => setFormData({ ...formData, early_bird_deadline: e.target.value })}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500 mt-1">Deadline for early bird pricing</p>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Required</label>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                checked={formData.registration_required}
+                onCheckedChange={(checked) => setFormData({ ...formData, registration_required: checked === true })}
+              />
+              <span className="text-sm text-gray-600">Enable conference registration</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Check this if users need to register for the conference</p>
           </div>
         </div>
       </div>
       
-      {/* Fee Structure Section */}
+      {/* Registration & Attachments Section */}
       <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Fee Structure</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Registration & Attachments</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Regular Registration Fee (₹)</label>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Fee (₹)</label>
             <Input
               type="number"
               placeholder="5000"
@@ -250,19 +255,31 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">Standard registration fee</p>
+            <p className="text-xs text-gray-500 mt-1">Leave empty if the conference is free</p>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Early Bird Fee (₹)</label>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Attachment URL</label>
             <Input
-              type="number"
-              placeholder="4000"
-              value={formData.early_bird_fee}
-              onChange={(e) => setFormData({ ...formData, early_bird_fee: e.target.value })}
+              type="url"
+              placeholder="https://example.com/brochure.pdf"
+              value={formData.attachment_url}
+              onChange={(e) => setFormData({ ...formData, attachment_url: e.target.value })}
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">Discounted fee for early registrations</p>
+            <p className="text-xs text-gray-500 mt-1">Link to conference brochure or documents</p>
+          </div>
+          
+          <div className="sm:col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Form URL</label>
+            <Input
+              type="url"
+              placeholder="https://forms.example.com/conference-registration"
+              value={formData.registration_form_url}
+              onChange={(e) => setFormData({ ...formData, registration_form_url: e.target.value })}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500 mt-1">External registration form URL (if not using built-in registration)</p>
           </div>
         </div>
       </div>
@@ -395,14 +412,16 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                       <div className="space-y-1 text-sm">
                         {conference.fee && (
                           <div className="flex items-center gap-1">
-                            <span className="font-medium">Regular:</span>
+                            <span className="font-medium">Fee:</span>
                             <span className="text-green-600 font-semibold">₹{conference.fee}</span>
                           </div>
                         )}
-                        {conference.early_bird_fee && (
-                          <div className="flex items-center gap-1">
-                            <span className="font-medium">Early Bird:</span>
-                            <span className="text-orange-600 font-semibold">₹{conference.early_bird_fee}</span>
+                        {!conference.fee && (
+                          <div className="text-green-600 font-medium text-sm">Free Conference</div>
+                        )}
+                        {conference.registration_required && (
+                          <div className="text-blue-600 text-xs font-medium">
+                            ✅ Registration Required
                           </div>
                         )}
                         {conference.deadline && (
@@ -410,10 +429,16 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                             ⏰ Deadline: {new Date(conference.deadline).toLocaleDateString()}
                           </div>
                         )}
-                        {conference.early_bird_deadline && (
-                          <div className="text-orange-600 text-xs">
-                            ⚡ Early Bird: {new Date(conference.early_bird_deadline).toLocaleDateString()}
-                          </div>
+                        {conference.attachment_url && (
+                          <a 
+                            href={conference.attachment_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs"
+                          >
+                            <FileText className="h-3 w-3" />
+                            Attachment
+                          </a>
                         )}
                       </div>
                     </TableCell>

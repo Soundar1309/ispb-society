@@ -22,9 +22,14 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
     { name: 'Office Bearers', href: '/office-bearers' },
     { name: 'Genesis', href: '/genesis' },
     { name: 'Mandate & Activities', href: '/mandate-activities' },
+    { name: 'Contact Us', href: '/contact' },
+  ];
+
+  const resourcesNavigation = [
     { name: 'Life Members', href: '/life-members' },
     { name: 'Conference', href: '/conference' },
-    { name: 'Contact Us', href: '/contact' },
+    { name: 'Publications', href: '/publications' },
+    { name: 'Gallery', href: '/gallery' },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -89,6 +94,29 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
                     {item.name}
                   </Link>
                 ))}
+              </div>
+
+              {/* Resources Section */}
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Resources
+                </h3>
+                <div className="space-y-2">
+                  {resourcesNavigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive(item.href)
+                          ? 'bg-green-50 text-green-700'
+                          : 'text-gray-700 hover:text-green-600 hover:bg-green-50/50'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
 
               {/* User menu items */}

@@ -90,52 +90,55 @@ export type Database = {
       }
       conferences: {
         Row: {
+          attachment_url: string | null
           created_at: string | null
           date_from: string | null
           date_to: string | null
           deadline: string | null
           description: string | null
-          early_bird_deadline: string | null
-          early_bird_fee: number | null
           fee: number | null
           id: string
           image_url: string | null
           is_active: boolean | null
           link: string | null
+          registration_form_url: string | null
+          registration_required: boolean | null
           title: string
           updated_at: string | null
           venue: string | null
         }
         Insert: {
+          attachment_url?: string | null
           created_at?: string | null
           date_from?: string | null
           date_to?: string | null
           deadline?: string | null
           description?: string | null
-          early_bird_deadline?: string | null
-          early_bird_fee?: number | null
           fee?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           link?: string | null
+          registration_form_url?: string | null
+          registration_required?: boolean | null
           title: string
           updated_at?: string | null
           venue?: string | null
         }
         Update: {
+          attachment_url?: string | null
           created_at?: string | null
           date_from?: string | null
           date_to?: string | null
           deadline?: string | null
           description?: string | null
-          early_bird_deadline?: string | null
-          early_bird_fee?: number | null
           fee?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           link?: string | null
+          registration_form_url?: string | null
+          registration_required?: boolean | null
           title?: string
           updated_at?: string | null
           venue?: string | null
@@ -175,10 +178,13 @@ export type Database = {
       gallery: {
         Row: {
           category: string | null
+          category_id: string | null
           created_at: string | null
           description: string | null
           display_order: number | null
+          file_format: string | null
           id: string
+          image_size: string | null
           image_url: string
           is_active: boolean | null
           title: string
@@ -186,10 +192,13 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
+          file_format?: string | null
           id?: string
+          image_size?: string | null
           image_url: string
           is_active?: boolean | null
           title: string
@@ -197,13 +206,51 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
+          file_format?: string | null
           id?: string
+          image_size?: string | null
           image_url?: string
           is_active?: boolean | null
           title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gallery_categories: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
           updated_at?: string | null
         }
         Relationships: []

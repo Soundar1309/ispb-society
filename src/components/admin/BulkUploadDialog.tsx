@@ -21,19 +21,54 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const downloadTemplate = () => {
-    const template = `life_member_number,name,designation,institution,member_since,email,phone,image_url
-LM-001,Dr. John Doe,Professor,Example University,2020,john.doe@example.com,+1234567890,https://example.com/image1.jpg
-LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@example.com,+0987654321,https://example.com/image2.jpg`;
-    
-    const blob = new Blob([template], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'life_members_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    const headers = [
+      'name',
+      'designation', 
+      'institution',
+      'specialization',
+      'member_since',
+      'email',
+      'phone',
+      'image_url'
+    ];
+
+    const sampleData = [
+      [
+        'Dr. John Doe',
+        'Professor',
+        'University of Agriculture',
+        'Plant Genetics',
+        '2020',
+        'john.doe@university.edu',
+        '+1234567890',
+        'https://example.com/profile1.jpg'
+      ],
+      [
+        'Dr. Jane Smith',
+        'Research Scientist',
+        'Agricultural Research Institute',
+        'Crop Breeding',
+        '2019',
+        'jane.smith@research.org',
+        '+0987654321',
+        'https://example.com/profile2.jpg'
+      ]
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...sampleData.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'life_members_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +184,7 @@ LM-002,Dr. Jane Smith,Associate Professor,Research Institute,2019,jane.smith@exa
           <Alert className="border-blue-200 bg-blue-50">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              Required columns: life_member_number, name, designation, institution, member_since, email, phone, image_url
+              Required columns: name, designation. Optional: institution, specialization, member_since, email, phone, image_url
             </AlertDescription>
           </Alert>
 

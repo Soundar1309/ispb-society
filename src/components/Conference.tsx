@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Users, FileText, Clock, DollarSign, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Calendar, MapPin, FileText, DollarSign, ExternalLink, User, Mail, Phone, Building } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Conference {
   id: string;
@@ -12,17 +17,28 @@ interface Conference {
   date_from: string;
   date_to: string;
   fee: number;
-  early_bird_fee: number;
-  early_bird_deadline: string;
   is_active: boolean;
   image_url?: string;
   link?: string;
   deadline?: string;
+  registration_required?: boolean;
+  attachment_url?: string;
+  registration_form_url?: string;
 }
 
 const Conference = () => {
   const [conferences, setConferences] = useState<Conference[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedConference, setSelectedConference] = useState<Conference | null>(null);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [registrationData, setRegistrationData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    institution: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchConferences();
@@ -53,9 +69,58 @@ const Conference = () => {
     return format(new Date(dateString), 'MMM dd, yyyy');
   };
 
-  const isEarlyBirdValid = (deadline: string) => {
-    if (!deadline) return false;
-    return new Date(deadline) > new Date();
+  const handleRegisterClick = (conference: Conference) => {
+    setSelectedConference(conference);
+    setRegistrationData({
+      name: user?.user_metadata?.full_name || '',
+      email: user?.email || '',
+      phone: '',
+      institution: ''
+    });
+    setShowRegistration(true);
+  };
+
+  const handleRegistrationSubmit = async () => {
+    if (!selectedConference || !registrationData.name || !registrationData.email) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const registrationPayload = {
+        conference_id: selectedConference.id,
+        user_id: user?.id || null,
+        name: registrationData.name,
+        email: registrationData.email,
+        phone: registrationData.phone,
+        institution: registrationData.institution,
+        amount_paid: selectedConference.fee,
+        payment_status: selectedConference.fee ? 'pending' : 'completed'
+      };
+
+      const { error } = await supabase
+        .from('conference_registrations')
+        .insert(registrationPayload);
+
+      if (error) throw error;
+
+      // If payment is required, redirect to payment gateway
+      if (selectedConference.fee && selectedConference.fee > 0) {
+        // Create Razorpay order here
+        toast.success('Registration initiated. Proceeding to payment...');
+        // Add Razorpay integration here
+      } else {
+        toast.success('Registration completed successfully!');
+        setShowRegistration(false);
+        setSelectedConference(null);
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getUpcomingConferences = () => {
@@ -145,44 +210,43 @@ const Conference = () => {
                           </div>
                         </div>
                       )}
-                      {(conference.fee || conference.early_bird_fee) && (
+                      {conference.fee && conference.fee > 0 && (
                         <div className="flex items-start space-x-3">
                           <DollarSign className="h-5 w-5 text-green-600 mt-1" />
                           <div>
                             <h4 className="font-semibold text-gray-900 mb-1">Registration Fee</h4>
-                            <div className="text-gray-700">
-                              {conference.fee && <p>Regular: ₹{conference.fee}</p>}
-                              {conference.early_bird_fee && isEarlyBirdValid(conference.early_bird_deadline) && (
-                                <p className="text-green-600 font-medium">
-                                  Early Bird: ₹{conference.early_bird_fee}
-                                </p>
-                              )}
-                            </div>
-                            {conference.early_bird_deadline && isEarlyBirdValid(conference.early_bird_deadline) && (
-                              <p className="text-sm text-gray-500">
-                                Early bird until: {formatDate(conference.early_bird_deadline)}
-                              </p>
-                            )}
+                            <p className="text-gray-700">₹{conference.fee}</p>
                           </div>
                         </div>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      {conference.link && (
+                      {conference.registration_required ? (
+                        <Button 
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => handleRegisterClick(conference)}
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Register Now
+                        </Button>
+                      ) : conference.link && (
                         <Button 
                           className="bg-green-600 hover:bg-green-700"
                           onClick={() => window.open(conference.link, '_blank')}
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
-                          Register Now
+                          View Details
                         </Button>
                       )}
-                      <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-                        View Details
-                      </Button>
-                      <Button variant="outline">
-                        Download Brochure
-                      </Button>
+                      {conference.attachment_url && (
+                        <Button 
+                          variant="outline"
+                          onClick={() => window.open(conference.attachment_url, '_blank')}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download Attachment
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -270,6 +334,80 @@ const Conference = () => {
             </p>
           </div>
         )}
+
+        {/* Registration Dialog */}
+        <Dialog open={showRegistration} onOpenChange={setShowRegistration}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Register for {selectedConference?.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Full Name *</Label>
+                <Input
+                  id="name"
+                  value={registrationData.name}
+                  onChange={(e) => setRegistrationData({ ...registrationData, name: e.target.value })}
+                  placeholder="Enter your full name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={registrationData.email}
+                  onChange={(e) => setRegistrationData({ ...registrationData, email: e.target.value })}
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={registrationData.phone}
+                  onChange={(e) => setRegistrationData({ ...registrationData, phone: e.target.value })}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="institution">Institution</Label>
+                <Input
+                  id="institution"
+                  value={registrationData.institution}
+                  onChange={(e) => setRegistrationData({ ...registrationData, institution: e.target.value })}
+                  placeholder="Enter your institution"
+                />
+              </div>
+              {selectedConference?.fee && selectedConference.fee > 0 && (
+                <div className="bg-yellow-50 p-3 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    Registration Fee: ₹{selectedConference.fee}
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    You will be redirected to payment gateway after registration
+                  </p>
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowRegistration(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleRegistrationSubmit}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  {isSubmitting ? 'Registering...' : 'Register'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
