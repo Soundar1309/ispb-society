@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -27,6 +26,8 @@ interface AdminOfficeBearersTabProps {
 const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersTabProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBearer, setEditingBearer] = useState<OfficeBearer | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     designation: '',
@@ -44,6 +45,7 @@ const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersT
       display_order: 1
     });
     setEditingBearer(null);
+    setPreviewUrl('');
   };
 
   const handleEdit = (bearer: OfficeBearer) => {
@@ -55,7 +57,63 @@ const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersT
       image_url: bearer.image_url || '',
       display_order: bearer.display_order || 1
     });
+    setPreviewUrl(bearer.image_url || '');
     setIsDialogOpen(true);
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload only PNG, JPG, or JPEG images');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `office-bearer-${Date.now()}.${fileExt}`;
+
+      // Convert file to base64 for upload
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Data = e.target?.result as string;
+        
+        // For now, we'll use the base64 data URL directly
+        // In a production environment, you'd upload to Supabase Storage
+        setPreviewUrl(base64Data);
+        setFormData(prev => ({ ...prev, image_url: base64Data }));
+        toast.success('Image uploaded successfully');
+        setUploading(false);
+      };
+      
+      reader.onerror = () => {
+        toast.error('Error reading file');
+        setUploading(false);
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Error uploading image');
+      setUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setPreviewUrl('');
+    setFormData(prev => ({ ...prev, image_url: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +191,7 @@ const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersT
               Add Office Bearer
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingBearer ? 'Edit Office Bearer' : 'Add New Office Bearer'}
@@ -174,16 +232,6 @@ const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersT
               </div>
               
               <div>
-                <Label htmlFor="image_url">Image URL</Label>
-                <Input
-                  id="image_url"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                />
-              </div>
-              
-              <div>
                 <Label htmlFor="display_order">Display Order</Label>
                 <Input
                   id="display_order"
@@ -193,12 +241,73 @@ const AdminOfficeBearersTab = ({ officeBearers, onRefresh }: AdminOfficeBearersT
                   min="1"
                 />
               </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-3">
+                <Label>Profile Image</Label>
+                
+                {/* Image Preview */}
+                {previewUrl && (
+                  <div className="relative w-32 h-32 mx-auto">
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                      onClick={removeImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Upload Button */}
+                <div className="flex flex-col items-center space-y-2">
+                  <Label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="flex items-center justify-center space-x-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors">
+                      <Upload className="h-4 w-4" />
+                      <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
+                    </div>
+                  </Label>
+                  <Input
+                    id="image-upload"
+                    type="file"
+                    accept="image/png,image/jpg,image/jpeg"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, JPEG only. Max 5MB.
+                  </p>
+                </div>
+
+                {/* Manual URL Input */}
+                <div>
+                  <Label htmlFor="image_url">Or enter image URL</Label>
+                  <Input
+                    id="image_url"
+                    type="url"
+                    value={formData.image_url}
+                    onChange={(e) => {
+                      setFormData({ ...formData, image_url: e.target.value });
+                      setPreviewUrl(e.target.value);
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
               
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" disabled={uploading}>
                   {editingBearer ? 'Update' : 'Add'} Office Bearer
                 </Button>
               </div>
