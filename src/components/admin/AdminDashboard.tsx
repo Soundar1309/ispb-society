@@ -17,7 +17,8 @@ import {
   Award, 
   MessageSquare, 
   CreditCard,
-  ChevronRight
+  ChevronRight,
+  Settings
 } from 'lucide-react';
 import AdminStats from './AdminStats';
 import AdminMembersTab from './AdminMembersTab';
@@ -112,6 +113,13 @@ const AdminDashboard = ({
           icon: Crown,
           description: 'Lifetime membership holders',
           count: lifeMembers?.length || 0
+        },
+        { 
+          id: 'membership-plans', 
+          label: 'Membership Plans', 
+          icon: Settings,
+          description: 'Manage membership plans',
+          count: membershipPlans?.length || 0
         },
         { 
           id: 'users', 
@@ -308,6 +316,13 @@ const AdminDashboard = ({
         return (
           <AdminLifeMembersTab 
             lifeMembers={lifeMembers}
+            onRefresh={refreshData}
+          />
+        );
+      case 'membership-plans':
+        return (
+          <AdminMembershipPlansTab 
+            membershipPlans={membershipPlans}
             onRefresh={refreshData}
           />
         );
