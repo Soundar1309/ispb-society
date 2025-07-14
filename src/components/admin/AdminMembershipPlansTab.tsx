@@ -66,6 +66,11 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
     setIsDialogOpen(true);
   };
 
+  const handleAdd = () => {
+    resetForm();
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -159,7 +164,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={handleAdd}>
               <Plus className="w-4 h-4 mr-2" />
               Add Plan
             </Button>
