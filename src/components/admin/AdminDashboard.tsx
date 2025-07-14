@@ -321,6 +321,7 @@ const AdminDashboard = ({
       case 'membership-plans':
         return (
           <AdminMembershipPlansTab 
+            plans={membershipPlans}
             onRefresh={refreshData}
           />
         );
