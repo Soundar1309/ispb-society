@@ -118,10 +118,12 @@ const LifeMembers = () => {
     let filtered = lifeMembers;
 
     if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(member =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.institution?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.designation?.toLowerCase().includes(searchTerm.toLowerCase())
+        member.name.toLowerCase().includes(searchLower) ||
+        member.institution?.toLowerCase().includes(searchLower) ||
+        member.designation?.toLowerCase().includes(searchLower) ||
+        member.specialization?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -160,7 +162,7 @@ const LifeMembers = () => {
     <div className="min-h-screen py-6 sm:py-8 lg:py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Life Members & Membership
           </h1>
@@ -170,31 +172,37 @@ const LifeMembers = () => {
         </div>
 
         {/* Membership Status Card */}
-        <MembershipStatusCard
-          user={user}
-          userMembership={userMembership}
-          membershipLoading={membershipLoading}
-          onRefresh={fetchUserMembership}
-        />
+        <div className="animate-scale-in">
+          <MembershipStatusCard
+            user={user}
+            userMembership={userMembership}
+            membershipLoading={membershipLoading}
+            onRefresh={fetchUserMembership}
+          />
+        </div>
 
         {/* Statistics */}
-        <StatisticsCards lifeMembers={lifeMembers} />
+        <div className="animate-fade-in">
+          <StatisticsCards lifeMembers={lifeMembers} />
+        </div>
 
         {/* Search and Filter */}
-        <SearchAndFilter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          institutionFilter={institutionFilter}
-          setInstitutionFilter={setInstitutionFilter}
-          specializationFilter={specializationFilter}
-          setSpecializationFilter={setSpecializationFilter}
-          lifeMembers={lifeMembers}
-        />
+        <div className="animate-slide-in-right">
+          <SearchAndFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            institutionFilter={institutionFilter}
+            setInstitutionFilter={setInstitutionFilter}
+            specializationFilter={specializationFilter}
+            setSpecializationFilter={setSpecializationFilter}
+            lifeMembers={lifeMembers}
+          />
+        </div>
 
         {/* Members List */}
         <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
           {currentMembers.length === 0 ? (
-            <Card className="py-12">
+            <Card className="py-12 animate-fade-in">
               <CardContent className="text-center">
                 <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-base sm:text-lg">
@@ -204,8 +212,14 @@ const LifeMembers = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {currentMembers.map((member) => (
-                <MemberCard key={member.id} member={member} />
+              {currentMembers.map((member, index) => (
+                <div 
+                  key={member.id} 
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <MemberCard member={member} />
+                </div>
               ))}
             </div>
           )}

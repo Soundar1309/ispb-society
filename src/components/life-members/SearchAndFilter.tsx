@@ -1,19 +1,10 @@
 
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface LifeMember {
-  id: string;
-  name: string;
-  designation: string | null;
-  institution: string | null;
-  specialization: string | null;
-  member_since: string | null;
-  image_url: string | null;
-  email: string | null;
-  phone: string | null;
-}
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, Filter } from 'lucide-react';
+import { debounce } from 'lodash';
 
 interface SearchAndFilterProps {
   searchTerm: string;
@@ -22,7 +13,7 @@ interface SearchAndFilterProps {
   setInstitutionFilter: (filter: string) => void;
   specializationFilter: string;
   setSpecializationFilter: (filter: string) => void;
-  lifeMembers: LifeMember[];
+  lifeMembers: any[];
 }
 
 const SearchAndFilter = ({
@@ -34,68 +25,79 @@ const SearchAndFilter = ({
   setSpecializationFilter,
   lifeMembers
 }: SearchAndFilterProps) => {
-  const getUniqueInstitutions = () => {
-    const institutions = lifeMembers
-      .map(member => member.institution)
-      .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index);
-    return institutions;
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+
+  // Debounced search to improve performance while typing
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      setSearchTerm(term);
+    }, 300),
+    [setSearchTerm]
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearchTerm(value);
+    debouncedSearch(value);
   };
 
-  const getUniqueSpecializations = () => {
-    const specializations = lifeMembers
+  // Get unique institutions and specializations for filters
+  const institutions = Array.from(new Set(
+    lifeMembers
+      .map(member => member.institution)
+      .filter(Boolean)
+  )).sort();
+
+  const specializations = Array.from(new Set(
+    lifeMembers
       .map(member => member.specialization)
       .filter(Boolean)
-      .filter((value, index, self) => self.indexOf(value) === index);
-    return specializations;
-  };
+  )).sort();
 
   return (
     <Card className="mb-6 sm:mb-8">
       <CardContent className="p-4 sm:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Search by Name
-            </label>
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              type="text"
-              placeholder="Enter member name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="text-sm sm:text-base"
+              placeholder="Search by name, institution, or designation..."
+              value={localSearchTerm}
+              onChange={handleSearchChange}
+              className="pl-10 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filter by Institution
-            </label>
+
+          {/* Institution Filter */}
+          <div className="w-full lg:w-64">
             <Select value={institutionFilter} onValueChange={setInstitutionFilter}>
-              <SelectTrigger className="text-sm sm:text-base">
-                <SelectValue placeholder="All Institutions" />
+              <SelectTrigger className="focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                <Filter className="h-4 w-4 mr-2 text-gray-400" />
+                <SelectValue placeholder="Filter by Institution" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Institutions</SelectItem>
-                {getUniqueInstitutions().map((institution) => (
-                  <SelectItem key={institution} value={institution!}>
+                {institutions.map((institution) => (
+                  <SelectItem key={institution} value={institution}>
                     {institution}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filter by Specialization
-            </label>
+
+          {/* Specialization Filter */}
+          <div className="w-full lg:w-64">
             <Select value={specializationFilter} onValueChange={setSpecializationFilter}>
-              <SelectTrigger className="text-sm sm:text-base">
-                <SelectValue placeholder="All Specializations" />
+              <SelectTrigger className="focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200">
+                <Filter className="h-4 w-4 mr-2 text-gray-400" />
+                <SelectValue placeholder="Filter by Specialization" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Specializations</SelectItem>
-                {getUniqueSpecializations().map((specialization) => (
-                  <SelectItem key={specialization} value={specialization!}>
+                {specializations.map((specialization) => (
+                  <SelectItem key={specialization} value={specialization}>
                     {specialization}
                   </SelectItem>
                 ))}

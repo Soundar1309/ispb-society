@@ -20,51 +20,68 @@ interface MemberCardProps {
 
 const MemberCard = ({ member }: MemberCardProps) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-          <div className="flex-shrink-0 self-center sm:self-start">
-            <img
-              src={member.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
-              alt={member.name}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto sm:mx-0"
-            />
+    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/50 overflow-hidden relative">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100/20 to-blue-100/20 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500" />
+      
+      <CardContent className="p-6 relative">
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Profile Image */}
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white shadow-lg group-hover:ring-green-100 transition-all duration-300">
+              <img
+                src={member.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'}
+                alt={member.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+            </div>
+            {/* Life Member Badge */}
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1 text-xs font-semibold shadow-lg animate-fade-in">
+                Life Member
+              </Badge>
+            </div>
           </div>
-          <div className="flex-grow text-center sm:text-left">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+
+          {/* Member Details */}
+          <div className="space-y-2 w-full">
+            <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 leading-tight">
               {member.name}
             </h3>
+            
             {member.designation && (
-              <p className="text-green-600 font-semibold mb-1 text-sm sm:text-base">
+              <p className="text-green-600 font-semibold text-sm bg-green-50 px-3 py-1 rounded-full inline-block animate-fade-in">
                 {member.designation}
               </p>
             )}
+            
             {member.institution && (
-              <p className="text-gray-600 mb-2 text-sm sm:text-base">
+              <p className="text-gray-600 text-sm font-medium leading-relaxed">
                 {member.institution}
               </p>
             )}
-            <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
-              {member.specialization && (
-                <span className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  {member.specialization}
-                </span>
-              )}
-              {member.member_since && (
-                <span className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                  Member since {member.member_since}
-                </span>
-              )}
-            </div>
           </div>
-          <div className="flex-shrink-0 self-center sm:self-start">
-            <Badge className="bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
-              Life Member
-            </Badge>
+
+          {/* Additional Information */}
+          <div className="w-full space-y-2 pt-2 border-t border-gray-100">
+            {member.specialization && (
+              <div className="flex items-center justify-center text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
+                <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span className="font-medium">{member.specialization}</span>
+              </div>
+            )}
+            
+            {member.member_since && (
+              <div className="flex items-center justify-center text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
+                <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full mr-2"></div>
+                <span className="font-medium">Member since {member.member_since}</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Hover effect overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       </CardContent>
     </Card>
   );
