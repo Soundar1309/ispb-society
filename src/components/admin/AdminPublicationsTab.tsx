@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,6 +64,13 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
       pdf_url: '',
       pdf_file_url: ''
     });
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,7 +158,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
           <Input
             placeholder="Publication Title"
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={(e) => handleInputChange('title', e.target.value)}
             required
           />
         </div>
@@ -162,7 +168,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
           <Textarea
             placeholder="Publication Description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) => handleInputChange('description', e.target.value)}
             rows={3}
           />
         </div>
@@ -172,7 +178,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
           <Input
             placeholder="Author names"
             value={formData.authors}
-            onChange={(e) => setFormData({ ...formData, authors: e.target.value })}
+            onChange={(e) => handleInputChange('authors', e.target.value)}
           />
         </div>
         
@@ -181,7 +187,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
           <Input
             placeholder="Journal name"
             value={formData.journal}
-            onChange={(e) => setFormData({ ...formData, journal: e.target.value })}
+            onChange={(e) => handleInputChange('journal', e.target.value)}
           />
         </div>
         
@@ -191,7 +197,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             type="number"
             placeholder="2024"
             value={formData.year}
-            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+            onChange={(e) => handleInputChange('year', e.target.value)}
           />
         </div>
         
@@ -200,7 +206,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
           <select
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
             value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            onChange={(e) => handleInputChange('category', e.target.value)}
           >
             <option value="research">Research</option>
             <option value="review">Review</option>
@@ -215,7 +221,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             type="url"
             placeholder="https://example.com/cover.jpg"
             value={formData.cover_image_url}
-            onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
+            onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
           />
         </div>
         
@@ -226,7 +232,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             step="0.01"
             placeholder="500.00"
             value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            onChange={(e) => handleInputChange('price', e.target.value)}
           />
         </div>
         
@@ -236,7 +242,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             type="url"
             placeholder="https://store.example.com/publication"
             value={formData.link}
-            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+            onChange={(e) => handleInputChange('link', e.target.value)}
           />
         </div>
         
@@ -246,7 +252,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             type="url"
             placeholder="https://example.com/publication.pdf"
             value={formData.pdf_url}
-            onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
+            onChange={(e) => handleInputChange('pdf_url', e.target.value)}
           />
         </div>
         
@@ -256,7 +262,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
             type="url"
             placeholder="https://example.com/files/publication.pdf"
             value={formData.pdf_file_url}
-            onChange={(e) => setFormData({ ...formData, pdf_file_url: e.target.value })}
+            onChange={(e) => handleInputChange('pdf_file_url', e.target.value)}
           />
         </div>
       </div>

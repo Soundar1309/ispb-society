@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,6 +64,13 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       attachment_url: '',
       registration_form_url: ''
     });
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +159,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Input
               placeholder="e.g., 16th ISPB International Congress"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               required
               className="w-full"
             />
@@ -164,7 +170,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Textarea
               placeholder="Detailed description of the conference, its objectives, and key highlights..."
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => handleInputChange('description', e.target.value)}
               rows={4}
               className="w-full"
             />
@@ -175,7 +181,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Input
               placeholder="e.g., India International Centre, New Delhi"
               value={formData.venue}
-              onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+              onChange={(e) => handleInputChange('venue', e.target.value)}
               className="w-full"
             />
           </div>
@@ -186,7 +192,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               type="url"
               placeholder="https://conference.ispb.org.in"
               value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              onChange={(e) => handleInputChange('link', e.target.value)}
               className="w-full"
             />
           </div>
@@ -202,7 +208,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Input
               type="date"
               value={formData.date_from}
-              onChange={(e) => setFormData({ ...formData, date_from: e.target.value })}
+              onChange={(e) => handleInputChange('date_from', e.target.value)}
               className="w-full"
             />
           </div>
@@ -212,7 +218,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Input
               type="date"
               value={formData.date_to}
-              onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
+              onChange={(e) => handleInputChange('date_to', e.target.value)}
               className="w-full"
             />
           </div>
@@ -222,7 +228,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Input
               type="date"
               value={formData.deadline}
-              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              onChange={(e) => handleInputChange('deadline', e.target.value)}
               className="w-full"
             />
             <p className="text-xs text-gray-500 mt-1">Last date for conference registration</p>
@@ -233,7 +239,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <div className="flex items-center space-x-2">
               <Checkbox
                 checked={formData.registration_required}
-                onCheckedChange={(checked) => setFormData({ ...formData, registration_required: checked === true })}
+                onCheckedChange={(checked) => handleInputChange('registration_required', checked === true)}
               />
               <span className="text-sm text-gray-600">Enable conference registration</span>
             </div>
@@ -252,7 +258,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               type="number"
               placeholder="5000"
               value={formData.fee}
-              onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+              onChange={(e) => handleInputChange('fee', e.target.value)}
               className="w-full"
             />
             <p className="text-xs text-gray-500 mt-1">Leave empty if the conference is free</p>
@@ -264,7 +270,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               type="url"
               placeholder="https://example.com/brochure.pdf"
               value={formData.attachment_url}
-              onChange={(e) => setFormData({ ...formData, attachment_url: e.target.value })}
+              onChange={(e) => handleInputChange('attachment_url', e.target.value)}
               className="w-full"
             />
             <p className="text-xs text-gray-500 mt-1">Link to conference brochure or documents</p>
@@ -276,7 +282,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               type="url"
               placeholder="https://forms.example.com/conference-registration"
               value={formData.registration_form_url}
-              onChange={(e) => setFormData({ ...formData, registration_form_url: e.target.value })}
+              onChange={(e) => handleInputChange('registration_form_url', e.target.value)}
               className="w-full"
             />
             <p className="text-xs text-gray-500 mt-1">External registration form URL (if not using built-in registration)</p>

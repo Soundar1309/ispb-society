@@ -50,6 +50,13 @@ const AdminContentTab = ({
     });
   };
 
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const contentData = {
@@ -87,13 +94,13 @@ const AdminContentTab = ({
       <Input
         placeholder="Title"
         value={formData.title}
-        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+        onChange={(e) => handleInputChange('title', e.target.value)}
         required
       />
       <Textarea
         placeholder="Content"
         value={formData.content}
-        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+        onChange={(e) => handleInputChange('content', e.target.value)}
         rows={6}
         required
       />
@@ -101,7 +108,7 @@ const AdminContentTab = ({
         type="number"
         placeholder="Display Order"
         value={formData.order}
-        onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+        onChange={(e) => handleInputChange('order', parseInt(e.target.value))}
         min="1"
       />
       <Button type="submit">
