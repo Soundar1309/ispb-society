@@ -200,15 +200,7 @@ const Membership = () => {
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Government-issued photo ID proof</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Educational qualification certificates</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Curriculum Vitae (CV)</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Upload the Educational qualification with specialization</span>
                 </li>
               </ul>
             </div>

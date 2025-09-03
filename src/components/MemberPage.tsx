@@ -210,7 +210,7 @@ const MemberPage = () => {
               <div className="text-center">
                 <CreditCard className="h-12 w-12 text-green-600 mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Digital Resources</h3>
-                <p className="text-sm text-gray-600">Access to journals, publications, and technical resources</p>
+                <p className="text-sm text-gray-600">Priority in Publication and Concession in Publication Fee. </p>
               </div>
               <div className="text-center">
                 <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />

@@ -32,11 +32,11 @@ const Genesis = () => {
                 education, and application. The founding members envisioned an organization that would:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
-                <li>Foster scientific research and innovation in plant breeding and genetics</li>
+                <li>Foster scientific research and innovation in Plant Breeding and Genetics.</li>
                 <li>Provide a platform for knowledge sharing among researchers and practitioners</li>
                 <li>Organize conferences, seminars, and training programs</li>
                 <li>Publish scientific literature and research findings</li>
-                <li>Strengthen collaboration between academic institutions and industry</li>
+                <li>Strengthen collaboration between academia and industry</li>
               </ul>
             </section>
 
@@ -44,7 +44,7 @@ const Genesis = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Founding Members</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 The society was founded by eminent plant breeders and scientists from premier institutions 
-                across India, including:
+                like:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -54,10 +54,22 @@ const Genesis = () => {
                   <h4 className="font-semibold text-gray-900">Punjab Agricultural University, Ludhiana</h4>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900">Tamil Nadu Agricultural University, Coimbatore</h4>
+                  <h4 className="font-semibold text-gray-900">International Crops Research Institute for the Semi-Arid Tropics,Hyderabad</h4>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-gray-900">University of Agricultural Sciences, Bangalore</h4>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900">International Rice Research Institute,Philippines</h4>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900">ICAR-Sugarcane Breeding Institute,Coimbatore</h4>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900">ICAR-Central Institute For Cotton Research</h4>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-gray-900">ICAR-Indian Institute of Rice Research, Hyderabad</h4>
                 </div>
               </div>
             </section>

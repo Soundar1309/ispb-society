@@ -94,6 +94,15 @@ const Navigation = () => {
       </div>
 
       <Link
+        to="https://www.ejplantbreeding.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-gray-700 hover:text-green-600 font-medium transition-all duration-300 hover:scale-105 px-3 py-2 rounded-lg hover:bg-green-50"
+      >
+        EJPB
+      </Link>
+
+      <Link
         to="/contact"
         className="text-gray-700 hover:text-green-600 font-medium transition-all duration-300 hover:scale-105 px-3 py-2 rounded-lg hover:bg-green-50"
       >
