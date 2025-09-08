@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 
 interface LifeMember {
   id: string;
+  life_member_no: string | null;
   name: string;
-  designation: string | null;
-  institution: string | null;
-  specialization: string | null;
-  member_since: string | null;
+  address: string | null;
+  occupation: string | null;
+  date_of_enrollment: string | null;
   image_url: string | null;
   email: string | null;
-  phone: string | null;
+  mobile: string | null;
 }
 
 interface MemberCardProps {
@@ -49,32 +49,43 @@ const MemberCard = ({ member }: MemberCardProps) => {
               {member.name}
             </h3>
             
-            {member.designation && (
+            {/* Life Member Number */}
+            {member.life_member_no && (
               <p className="text-green-600 font-semibold text-sm bg-green-50 px-3 py-1 rounded-full inline-block animate-fade-in">
-                {member.designation}
+                {member.life_member_no}
               </p>
             )}
             
-            {member.institution && (
+            {member.occupation && (
               <p className="text-gray-600 text-sm font-medium leading-relaxed">
-                {member.institution}
+                {member.occupation}
+              </p>
+            )}
+            
+            {member.address && (
+              <p className="text-gray-500 text-xs leading-relaxed">
+                {member.address}
               </p>
             )}
           </div>
 
           {/* Additional Information */}
-          <div className="w-full space-y-2 pt-2 border-t border-gray-100">
-            {member.specialization && (
+          <div className="w-full space-y-2 pt-2 border-t border-gray-100">            
+            {member.date_of_enrollment && (
               <div className="flex items-center justify-center text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full mr-2 animate-pulse"></div>
-                <span className="font-medium">{member.specialization}</span>
+                <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full mr-2"></div>
+                <span className="font-medium">Enrolled {new Date(member.date_of_enrollment).toLocaleDateString()}</span>
               </div>
             )}
             
-            {member.member_since && (
-              <div className="flex items-center justify-center text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-300">
-                <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full mr-2"></div>
-                <span className="font-medium">Member since {member.member_since}</span>
+            {(member.email || member.mobile) && (
+              <div className="flex items-center justify-center text-xs text-gray-500 space-x-3">
+                {member.email && (
+                  <span className="font-medium">{member.email}</span>
+                )}
+                {member.mobile && (
+                  <span className="font-medium">{member.mobile}</span>
+                )}
               </div>
             )}
           </div>

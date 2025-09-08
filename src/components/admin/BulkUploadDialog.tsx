@@ -22,34 +22,34 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
 
   const downloadTemplate = () => {
     const headers = [
+      'life_member_no',
       'name',
-      'designation', 
-      'institution',
-      'specialization',
-      'member_since',
+      'address',
+      'occupation',
+      'date_of_enrollment',
       'email',
-      'phone',
+      'mobile',
       'image_url'
     ];
 
     const sampleData = [
       [
-        'Dr. John Doe',
-        'Professor',
-        'University of Agriculture',
-        'Plant Genetics',
-        '2020',
-        'john.doe@university.edu',
+        'LM-001',
+        'Ramasamy, P.',
+        'Agricultural Research Center-Hays',
+        'Sorghum Breeder',
+        '1995-11-10',
+        'ramasamyp@hotmail.com',
         '+1234567890',
         'https://example.com/profile1.jpg'
       ],
       [
-        'Dr. Jane Smith',
-        'Research Scientist',
-        'Agricultural Research Institute',
-        'Crop Breeding',
-        '2019',
-        'jane.smith@research.org',
+        'LM-002',
+        'Sundaresan, N',
+        'Coimbatore',
+        'Professor (Retd.)',
+        '1995-11-10',
+        'sundaresan@research.org',
         '+0987654321',
         'https://example.com/profile2.jpg'
       ]
@@ -89,7 +89,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     }
 
     const headers = lines[0].split(',').map(h => h.trim());
-    const requiredHeaders = ['name', 'designation'];
+    const requiredHeaders = ['life_member_no', 'name'];
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
     
     if (missingHeaders.length > 0) {
@@ -111,9 +111,21 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
         record[header] = values[index] || null;
       });
 
-      if (!record.name || !record.designation) {
-        parseErrors.push(`Row ${i + 1}: Name and designation are required`);
+      if (!record.name || !record.life_member_no) {
+        parseErrors.push(`Row ${i + 1}: Life member number and name are required`);
         continue;
+      }
+
+      // Convert date string to proper format if provided
+      if (record.date_of_enrollment) {
+        try {
+          const date = new Date(record.date_of_enrollment);
+          if (!isNaN(date.getTime())) {
+            record.date_of_enrollment = date.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          // Keep original value if date parsing fails
+        }
       }
 
       data.push(record);

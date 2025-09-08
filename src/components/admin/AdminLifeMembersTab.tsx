@@ -13,16 +13,15 @@ import BulkUploadDialog from './BulkUploadDialog';
 
 interface LifeMember {
   id: string;
+  life_member_no: string;
   name: string;
-  designation: string;
-  institution: string;
-  specialization: string;
-  member_since: string;
+  address: string;
+  occupation: string;
+  date_of_enrollment: string;
   email: string;
-  phone: string;
+  mobile: string;
   image_url: string;
   is_active: boolean;
-  life_member_number?: string;
 }
 
 interface AdminLifeMembersTabProps {
@@ -35,27 +34,25 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<LifeMember | null>(null);
   const [formData, setFormData] = useState({
-    life_member_number: '',
+    life_member_no: '',
     name: '',
-    designation: '',
-    institution: '',
-    specialization: '',
-    member_since: '',
+    address: '',
+    occupation: '',
+    date_of_enrollment: '',
     email: '',
-    phone: '',
+    mobile: '',
     image_url: ''
   });
 
   const resetForm = () => {
     setFormData({
-      life_member_number: '',
+      life_member_no: '',
       name: '',
-      designation: '',
-      institution: '',
-      specialization: '',
-      member_since: '',
+      address: '',
+      occupation: '',
+      date_of_enrollment: '',
       email: '',
-      phone: '',
+      mobile: '',
       image_url: ''
     });
     setEditingMember(null);
@@ -64,14 +61,13 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
   const handleEdit = (member: LifeMember) => {
     setEditingMember(member);
     setFormData({
-      life_member_number: member.life_member_number || '',
+      life_member_no: member.life_member_no || '',
       name: member.name || '',
-      designation: member.designation || '',
-      institution: member.institution || '',
-      specialization: member.specialization || '',
-      member_since: member.member_since || '',
+      address: member.address || '',
+      occupation: member.occupation || '',
+      date_of_enrollment: member.date_of_enrollment || '',
       email: member.email || '',
-      phone: member.phone || '',
+      mobile: member.mobile || '',
       image_url: member.image_url || ''
     });
     setIsDialogOpen(true);
@@ -170,11 +166,11 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="life_member_number">Life Member Number</Label>
+                    <Label htmlFor="life_member_no">Life Member Number</Label>
                     <Input
-                      id="life_member_number"
-                      value={formData.life_member_number}
-                      onChange={(e) => setFormData({ ...formData, life_member_number: e.target.value })}
+                      id="life_member_no"
+                      value={formData.life_member_no}
+                      onChange={(e) => setFormData({ ...formData, life_member_no: e.target.value })}
                       placeholder="LM-001"
                     />
                   </div>
@@ -190,39 +186,31 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   </div>
                   
                   <div>
-                    <Label htmlFor="designation">Designation *</Label>
+                    <Label htmlFor="occupation">Occupation *</Label>
                     <Input
-                      id="designation"
-                      value={formData.designation}
-                      onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                      id="occupation"
+                      value={formData.occupation}
+                      onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
                       required
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="institution">Institution</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input
-                      id="institution"
-                      value={formData.institution}
-                      onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="specialization">Specialization</Label>
+                    <Label htmlFor="date_of_enrollment">Date of Enrollment</Label>
                     <Input
-                      id="specialization"
-                      value={formData.specialization}
-                      onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="member_since">Member Since</Label>
-                    <Input
-                      id="member_since"
-                      value={formData.member_since}
-                      onChange={(e) => setFormData({ ...formData, member_since: e.target.value })}
+                      id="date_of_enrollment"
+                      type="date"
+                      value={formData.date_of_enrollment}
+                      onChange={(e) => setFormData({ ...formData, date_of_enrollment: e.target.value })}
                     />
                   </div>
                   
@@ -237,11 +225,11 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   </div>
                   
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="mobile">Mobile</Label>
                     <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      id="mobile"
+                      value={formData.mobile}
+                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                     />
                   </div>
                   
@@ -292,15 +280,15 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   <div className="text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row items-center gap-2 mb-2">
                       <CardTitle className="text-lg">{member.name}</CardTitle>
-                      {member.life_member_number && (
+                      {member.life_member_no && (
                         <Badge variant="outline" className="text-xs">
-                          {member.life_member_number}
+                          {member.life_member_no}
                         </Badge>
                       )}
                     </div>
-                    <CardDescription>{member.designation}</CardDescription>
-                    {member.institution && (
-                      <p className="text-sm text-gray-600">{member.institution}</p>
+                    <CardDescription>{member.occupation}</CardDescription>
+                    {member.address && (
+                      <p className="text-sm text-gray-600">{member.address}</p>
                     )}
                   </div>
                 </div>
@@ -332,10 +320,9 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
             </CardHeader>
             <CardContent>
               <div className="text-sm text-gray-600 space-y-1">
-                {member.specialization && <p><strong>Specialization:</strong> {member.specialization}</p>}
-                {member.member_since && <p><strong>Member Since:</strong> {member.member_since}</p>}
+                {member.date_of_enrollment && <p><strong>Date of Enrollment:</strong> {new Date(member.date_of_enrollment).toLocaleDateString()}</p>}
                 {member.email && <p><strong>Email:</strong> {member.email}</p>}
-                {member.phone && <p><strong>Phone:</strong> {member.phone}</p>}
+                {member.mobile && <p><strong>Mobile:</strong> {member.mobile}</p>}
               </div>
             </CardContent>
           </Card>

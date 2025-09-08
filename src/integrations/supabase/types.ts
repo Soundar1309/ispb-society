@@ -257,45 +257,45 @@ export type Database = {
       }
       life_members: {
         Row: {
+          address: string | null
           created_at: string | null
-          designation: string | null
+          date_of_enrollment: string | null
           email: string | null
           id: string
           image_url: string | null
-          institution: string | null
           is_active: boolean | null
-          member_since: string | null
+          life_member_no: string | null
+          mobile: string | null
           name: string
-          phone: string | null
-          specialization: string | null
+          occupation: string | null
           updated_at: string | null
         }
         Insert: {
+          address?: string | null
           created_at?: string | null
-          designation?: string | null
+          date_of_enrollment?: string | null
           email?: string | null
           id?: string
           image_url?: string | null
-          institution?: string | null
           is_active?: boolean | null
-          member_since?: string | null
+          life_member_no?: string | null
+          mobile?: string | null
           name: string
-          phone?: string | null
-          specialization?: string | null
+          occupation?: string | null
           updated_at?: string | null
         }
         Update: {
+          address?: string | null
           created_at?: string | null
-          designation?: string | null
+          date_of_enrollment?: string | null
           email?: string | null
           id?: string
           image_url?: string | null
-          institution?: string | null
           is_active?: boolean | null
-          member_since?: string | null
+          life_member_no?: string | null
+          mobile?: string | null
           name?: string
-          phone?: string | null
-          specialization?: string | null
+          occupation?: string | null
           updated_at?: string | null
         }
         Relationships: []

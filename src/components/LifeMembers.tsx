@@ -14,14 +14,14 @@ import MembershipCTA from '@/components/life-members/MembershipCTA';
 
 interface LifeMember {
   id: string;
+  life_member_no: string | null;
   name: string;
-  designation: string | null;
-  institution: string | null;
-  specialization: string | null;
-  member_since: string | null;
+  address: string | null;
+  occupation: string | null;
+  date_of_enrollment: string | null;
   image_url: string | null;
   email: string | null;
-  phone: string | null;
+  mobile: string | null;
 }
 
 interface UserMembership {
@@ -121,21 +121,21 @@ const LifeMembers = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(member =>
         member.name.toLowerCase().includes(searchLower) ||
-        member.institution?.toLowerCase().includes(searchLower) ||
-        member.designation?.toLowerCase().includes(searchLower) ||
-        member.specialization?.toLowerCase().includes(searchLower)
+        member.address?.toLowerCase().includes(searchLower) ||
+        member.occupation?.toLowerCase().includes(searchLower) ||
+        member.life_member_no?.toLowerCase().includes(searchLower)
       );
     }
 
     if (institutionFilter && institutionFilter !== 'all') {
       filtered = filtered.filter(member =>
-        member.institution?.toLowerCase().includes(institutionFilter.toLowerCase())
+        member.address?.toLowerCase().includes(institutionFilter.toLowerCase())
       );
     }
 
     if (specializationFilter && specializationFilter !== 'all') {
       filtered = filtered.filter(member =>
-        member.specialization?.toLowerCase().includes(specializationFilter.toLowerCase())
+        member.occupation?.toLowerCase().includes(specializationFilter.toLowerCase())
       );
     }
 

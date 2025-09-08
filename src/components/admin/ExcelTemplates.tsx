@@ -3,34 +3,34 @@ import { Download } from 'lucide-react';
 
 export const downloadLifeMembersTemplate = () => {
   const headers = [
+    'life_member_no',
     'name',
-    'designation', 
-    'institution',
-    'specialization',
-    'member_since',
+    'address',
+    'occupation',
+    'date_of_enrollment',
     'email',
-    'phone',
+    'mobile',
     'image_url'
   ];
 
   const sampleData = [
     [
-      'Dr. John Doe',
-      'Professor',
-      'University of Agriculture',
-      'Plant Genetics',
-      '2020',
-      'john.doe@university.edu',
+      'LM-001',
+      'Ramasamy, P.',
+      'Agricultural Research Center-Hays',
+      'Sorghum Breeder',
+      '1995-11-10',
+      'ramasamyp@hotmail.com',
       '+1234567890',
       'https://example.com/profile1.jpg'
     ],
     [
-      'Dr. Jane Smith',
-      'Research Scientist',
-      'Agricultural Research Institute',
-      'Crop Breeding',
-      '2019',
-      'jane.smith@research.org',
+      'LM-002',
+      'Sundaresan, N',
+      'Coimbatore',
+      'Professor (Retd.)',
+      '1995-11-10',
+      'sundaresan@research.org',
       '+0987654321',
       'https://example.com/profile2.jpg'
     ]
