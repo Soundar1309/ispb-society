@@ -21,14 +21,13 @@ const TermsOfService = () => {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Membership Terms</h2>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Eligibility</h3>
               <ul className="list-disc pl-6 text-gray-700 mb-4">
-                <li>Open to professionals in plant breeding and related fields</li>
+                <li>Open to professionals in Plant Breeding and related fields</li>
                 <li>Accurate information must be provided during registration</li>
                 <li>Users must be 18 years or older</li>
               </ul>
               
               <h3 className="text-lg font-medium text-gray-900 mb-2">Membership Types</h3>
               <ul className="list-disc pl-6 text-gray-700 mb-4">
-                <li>Annual memberships are valid for one year from the date of payment</li>
                 <li>Lifetime memberships are renewed annually for administrative purposes</li>
                 <li>Member codes (LM-XXX) are assigned upon successful payment</li>
               </ul>
@@ -39,8 +38,7 @@ const TermsOfService = () => {
               <ul className="list-disc pl-6 text-gray-700 mb-4">
                 <li>All fees are payable in Indian Rupees (INR)</li>
                 <li>Payment processing is handled through secure third-party services</li>
-                <li>Refunds are subject to ISPB's refund policy</li>
-                <li>Membership fees are non-transferable</li>
+                <li>Membership fees are non-transferable and non-refundable</li>
               </ul>
             </section>
 
@@ -65,7 +63,7 @@ const TermsOfService = () => {
             <section className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Privacy</h2>
               <p className="text-gray-700 mb-4">
-                Your privacy is important to us. Please refer to our Privacy Policy for information on how we collect, use, and protect your personal information.
+                Your privacy is important to us. Please refer to our privacy policy for information on how we collect, use, and protect your personal information.
               </p>
             </section>
 
@@ -97,9 +95,8 @@ const TermsOfService = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> ispbtnau@gmail.com<br />
-                  <strong>Phone:</strong> +91 94886 17091<br />
-                  <strong>Address:</strong> Centre for Plant Breeding & Genetics, Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-03, India
+                  <strong>Email:</strong> president@ispb.org.in<br />
+                  <strong>Address:</strong> Centre for Plant Breeding & Genetics, Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
                 </p>
               </div>
             </section>

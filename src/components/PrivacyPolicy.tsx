@@ -73,7 +73,6 @@ const PrivacyPolicy = () => {
                 <li>Access your personal information</li>
                 <li>Correct inaccurate or incomplete data</li>
                 <li>Request deletion of your data</li>
-                <li>Object to processing of your data</li>
                 <li>Data portability</li>
               </ul>
             </section>
@@ -85,9 +84,8 @@ const PrivacyPolicy = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> ispbtnau@gmail.com<br />
-                  <strong>Phone:</strong> +91 94886 17091<br />
-                  <strong>Address:</strong> Centre for Plant Breeding & Genetics, Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-03, India
+                  <strong>Email:</strong> president@ispb.org.in<br />
+                  <strong>Address:</strong> Centre for Plant Breeding & Genetics, Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
                 </p>
               </div>
             </section>

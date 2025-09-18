@@ -32,7 +32,7 @@ const ContactUs = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in Touch</h1>
           <p className="text-xl md:text-2xl text-green-100 max-w-3xl mx-auto">
-            We're here to help with your queries about plant breeding, membership, and research collaboration.
+            We're here to help with your queries about membership in ISPB, and publishing in EJPB.
           </p>
         </div>
       </div>
@@ -186,22 +186,8 @@ const ContactUs = () => {
                   <h3 className="text-lg font-semibold text-gray-900">Visit Us</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  Division of Genetics<br />
-                  Indian Agricultural Research Institute<br />
-                  Pusa Campus, New Delhi - 110012<br />
-                  India
+                 Centre for Plant Breeding & Genetics, <br /> Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
                 </p>
-              </div>
-
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                    <Phone className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Call Us</h3>
-                </div>
-                <p className="text-gray-700">+91-11-2584-0000</p>
-                <p className="text-sm text-gray-500 mt-1">Monday to Friday, 9 AM - 5 PM</p>
               </div>
 
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
@@ -211,7 +197,7 @@ const ContactUs = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
                 </div>
-                <p className="text-gray-700">info@ispb.org.in</p>
+                <p className="text-gray-700">president@ispb.org.in</p>
                 <p className="text-sm text-gray-500 mt-1">We reply within 24 hours</p>
               </div>
 
@@ -226,14 +212,6 @@ const ContactUs = () => {
                   <div className="flex justify-between">
                     <span>Monday - Friday</span>
                     <span className="font-medium">9:00 AM - 5:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saturday</span>
-                    <span className="font-medium">9:00 AM - 1:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sunday</span>
-                    <span className="font-medium text-red-600">Closed</span>
                   </div>
                 </div>
               </div>
@@ -250,7 +228,7 @@ const ContactUs = () => {
 
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.2769726856707!2d77.17145127549173!3d28.639596475667866!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d03d15b62e8f9%3A0x8d5b0d1e1c1b4e8f!2sIndian%20Agricultural%20Research%20Institute%2C%20Pusa%20Campus!5e0!3m2!1sen!2sin!4v1639123456789!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.352320254036!2d76.9354212!3d11.012170599999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8592754d00001%3A0x58af4a04bdda7a1f!2sTamil%20Nadu%20Agricultural%20University!5e0!3m2!1sen!2sin!4v1758179109398!5m2!1sen!2sin"
               width="100%"
               height="400"
               style={{ border: 0 }}
@@ -265,13 +243,11 @@ const ContactUs = () => {
 
         {/* Department Contacts */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Department Contacts</h2>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Contacts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { title: 'Membership', email: 'membership@ispb.org.in', description: 'Applications and renewals', color: 'green' },
-              { title: 'Conference', email: 'conference@ispb.org.in', description: 'Event registration', color: 'blue' },
-              { title: 'Publications', email: 'publications@ispb.org.in', description: 'Journal submissions', color: 'orange' },
-              { title: 'General', email: 'info@ispb.org.in', description: 'General inquiries', color: 'purple' }
+              { title: 'General', email: 'president@ispb.org.in', description: 'General inquiries', color: 'purple' }
             ].map((contact, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
                 <div className={`w-12 h-12 bg-${contact.color}-100 rounded-full flex items-center justify-center mb-4`}>

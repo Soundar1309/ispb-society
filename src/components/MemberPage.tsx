@@ -16,18 +16,6 @@ const MemberPage = () => {
 
   const membershipPlans = [
     {
-      type: 'annual',
-      title: 'Annual Membership',
-      price: 500,
-      duration: '1 Year',
-      features: [
-        'Access to all conferences',
-        'Digital publications',
-        'Networking opportunities',
-        'Technical resources'
-      ]
-    },
-    {
       type: 'lifetime',
       title: 'Lifetime Membership',
       price: 5000,

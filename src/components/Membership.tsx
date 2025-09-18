@@ -34,18 +34,18 @@ const Membership = () => {
   const registrationSteps = [
     {
       step: 1,
-      title: "Choose Membership Type",
-      description: "Select the appropriate membership category based on your professional status and requirements."
-    },
-    {
-      step: 2,
       title: "Fill Application Form",
       description: "Complete the online membership application form with your personal and professional details."
     },
     {
+      step: 2,
+     title: "Upload Documents",
+      description: "Submit required documents as indicated below."
+    },
+    {
       step: 3,
-      title: "Upload Documents",
-      description: "Submit required documents including educational certificates and professional experience proof."
+      title: "Application Review",
+      description: "Your application will be reviewed by the membership committee within 7-10 working days."
     },
     {
       step: 4,
@@ -54,13 +54,8 @@ const Membership = () => {
     },
     {
       step: 5,
-      title: "Application Review",
-      description: "Your application will be reviewed by the membership committee within 7-10 working days."
-    },
-    {
-      step: 6,
       title: "Membership Confirmation",
-      description: "Receive your membership certificate and welcome kit via email and post."
+      description: "Receive your membership confirmation certificate via email."
     }
   ];
 
@@ -130,10 +125,10 @@ const Membership = () => {
         <section className="mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Registration Process</h2>
           <div className="bg-white rounded-xl shadow-md p-4 sm:p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-center mx-auto">
               {registrationSteps.map((step, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-base sm:text-lg">
+                <div key={index} className="text-center items-center flex flex-col justify-center">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-600 text-white rounded-full flex items-center justify-center mb-4 font-bold text-base sm:text-lg">
                     {step.step}
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
@@ -141,6 +136,47 @@ const Membership = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Required Documents */}
+        <section className="mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Required Documents</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-1 text-center gap-6 sm:gap-8 justify-center">
+            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4 text-center">For All Applicants (Documents to be uploaded)</h3>
+              <ul className="space-y-3 text-center grid grid-cols-1 sm:grid-cols-2 items-center justify-center mb-6 sm:mb-8 ml-4">
+                <li className="flex">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base">Recent passport-sized photograph</span>
+                </li>
+                <li className="flex">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base">Proof for educational qualification with specialization</span>
+                </li>
+              </ul>
+            </div>
+            {/* <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4">Additional Requirements</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Students:</strong> Bonafide student certificate</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Professionals:</strong> Experience certificate</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base"><strong>Life Members:</strong> Research publication list</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <span className="text-gray-700 text-sm sm:text-base">Two professional references</span>
+                </li>
+              </ul>
+            </div> */}
           </div>
         </section>
 
@@ -187,47 +223,6 @@ const Membership = () => {
           </div>
         </section>
 
-        {/* Required Documents */}
-        <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Required Documents</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4">For All Applicants</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Recent passport-sized photograph</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Upload the Educational qualification with specialization</span>
-                </li>
-              </ul>
-            </div>
-            <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-green-600 mb-4">Additional Requirements</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base"><strong>Students:</strong> Bonafide student certificate</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base"><strong>Professionals:</strong> Experience certificate</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base"><strong>Life Members:</strong> Research publication list</span>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <span className="text-gray-700 text-sm sm:text-base">Two professional references</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
         {/* Contact Information */}
         <section>
           <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 text-center">
@@ -235,14 +230,10 @@ const Membership = () => {
             <p className="text-gray-600 mb-6">
               Our membership team is here to assist you with any questions or concerns.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Email Support</h3>
                 <p className="text-green-600 text-sm sm:text-base">membership@ispb.org.in</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Phone Support</h3>
-                <p className="text-green-600 text-sm sm:text-base">+91-11-2584-0000</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Office Hours</h3>

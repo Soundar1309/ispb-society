@@ -15,7 +15,7 @@ const Genesis = () => {
         <div className="prose prose-lg max-w-none">
           <div className="bg-gradient-to-r from-green-50 to-orange-50 rounded-xl p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">The Beginning</h2>
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed text-justify">
               The Indian Society of Plant Breeders (ISPB) was conceived in the late 1990s by a group of 
               visionary plant breeders and geneticists who recognized the need for a dedicated platform 
               to advance plant breeding science in India. The founding members were driven by the mission 

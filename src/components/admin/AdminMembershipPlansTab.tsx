@@ -187,7 +187,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                   disabled={!!editingPlan}
                 />
               </div>
-              <div>
+              {/* <div>
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
@@ -196,7 +196,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                   placeholder="e.g., Annual Membership"
                   required
                 />
-              </div>
+              </div> */}
               <div>
                 <Label htmlFor="price">Price (INR)</Label>
                 <Input

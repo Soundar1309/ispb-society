@@ -17,22 +17,22 @@ const PaymentIntegration = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const membershipPlan = {
-    type: 'annual',
-    title: 'Annual Membership',
-    price: 5000,
-    duration: '1 Year',
-    features: [
-      'Access to all journals and publications',
-      'Full conference access and discounts',
-      'Professional networking opportunities',
-      'Research support and collaboration',
-      'Expert consultations',
-      'Publication opportunities',
-      'Priority event registration',
-      'Member directory access'
-    ]
-  };
+  // const membershipPlan = {
+  //   type: 'annual',
+  //   title: 'Annual Membership',
+  //   price: 5000,
+  //   duration: '1 Year',
+  //   features: [
+  //     'Access to all journals and publications',
+  //     'Full conference access and discounts',
+  //     'Professional networking opportunities',
+  //     'Research support and collaboration',
+  //     'Expert consultations',
+  //     'Publication opportunities',
+  //     'Priority event registration',
+  //     'Member directory access'
+  //   ]
+  // };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {

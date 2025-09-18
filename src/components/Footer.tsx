@@ -110,16 +110,16 @@ const Footer = () => {
                 <MapPin className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-gray-300">
                   <p>Indian Society of Plant Breeders <br />Centre for Plant Breeding & Genetics <br />
-                  Tamil Nadu Agricultural University <br />Coimbatore, Tamil Nadu-03, India.</p>
+                  Tamil Nadu Agricultural University <br />Coimbatore, Tamil Nadu-641003, India.</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              {/* <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-green-400 flex-shrink-0" />
                 <span className="text-sm text-gray-300">+91 94886 17091</span>
-              </div>
+              </div> */}
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <a href="mailto:ispbtnau@gmail.com" className="text-sm text-gray-300 hover:text-green-400 transition-colors">ispbtnau@gmail.com</a>
+                <a href="mailto:president@ispb.org.in" className="text-sm text-gray-300 hover:text-green-400 transition-colors">president@ispb.org.in</a>
               </div>
             </div>
           </div>
