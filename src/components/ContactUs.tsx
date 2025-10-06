@@ -197,8 +197,8 @@ const ContactUs = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
                 </div>
-                <p className="text-gray-700">president@ispb.org.in</p>
-                <p className="text-sm text-gray-500 mt-1">We reply within 24 hours</p>
+                <p className="text-gray-700">secretary@ispb.org.in</p>
+                {/* <p className="text-sm text-gray-500 mt-1">We reply within 24 hours</p> */}
               </div>
 
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
@@ -222,8 +222,8 @@ const ContactUs = () => {
         {/* Map Section */}
         <div className="mt-16">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find Us on Map</h2>
-            <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, Pusa Campus, New Delhi</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Find us on map</h2>
+            {/* <p className="text-lg text-gray-600">Located at the Indian Agricultural Research Institute, Pusa Campus, New Delhi</p> */}
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
@@ -247,7 +247,7 @@ const ContactUs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { title: 'Membership', email: 'membership@ispb.org.in', description: 'Applications and renewals', color: 'green' },
-              { title: 'General', email: 'president@ispb.org.in', description: 'General inquiries', color: 'purple' }
+              { title: 'General', email: 'secretary@ispb.org.in', description: 'General inquiries', color: 'purple' }
             ].map((contact, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
                 <div className={`w-12 h-12 bg-${contact.color}-100 rounded-full flex items-center justify-center mb-4`}>

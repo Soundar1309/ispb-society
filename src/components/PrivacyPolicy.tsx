@@ -84,7 +84,7 @@ const PrivacyPolicy = () => {
               </p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <strong>Email:</strong> president@ispb.org.in<br />
+                  <strong>Email:</strong> secretary@ispb.org.in<br />
                   <strong>Address:</strong> Centre for Plant Breeding & Genetics, Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
                 </p>
               </div>
