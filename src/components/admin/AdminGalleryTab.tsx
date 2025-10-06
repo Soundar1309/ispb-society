@@ -5,18 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, Image } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface GalleryItem {
   id: string;
-  title: string;
-  description: string;
   image_url: string;
-  category: string;
   display_order: number;
   is_active: boolean;
 }
@@ -30,19 +25,14 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    image_url: '',
-    category: 'general',
+    image_file: null as File | null,
     display_order: 1
   });
+  const [isUploading, setIsUploading] = useState(false);
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      description: '',
-      image_url: '',
-      category: 'general',
+      image_file: null,
       display_order: 1
     });
     setEditingItem(null);
@@ -51,10 +41,7 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
   const handleEdit = (item: GalleryItem) => {
     setEditingItem(item);
     setFormData({
-      title: item.title || '',
-      description: item.description || '',
-      image_url: item.image_url || '',
-      category: item.category || 'general',
+      image_file: null,
       display_order: item.display_order || 1
     });
     setIsDialogOpen(true);
@@ -63,11 +50,46 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.image_file && !editingItem) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    setIsUploading(true);
+    
     try {
+      let imageUrl = editingItem?.image_url || '';
+      
+      // Upload new image if provided
+      if (formData.image_file) {
+        const fileExt = formData.image_file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('gallery')
+          .upload(filePath, formData.image_file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(filePath);
+        
+        imageUrl = data.publicUrl;
+      }
+      
       if (editingItem) {
         const { error } = await supabase
           .from('gallery')
-          .update(formData)
+          .update({
+            image_url: imageUrl,
+            display_order: formData.display_order
+          })
           .eq('id', editingItem.id);
         
         if (error) throw error;
@@ -75,7 +97,11 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
       } else {
         const { error } = await supabase
           .from('gallery')
-          .insert(formData);
+          .insert({
+            image_url: imageUrl,
+            title: '',
+            display_order: formData.display_order
+          });
         
         if (error) throw error;
         toast.success('Gallery item added successfully');
@@ -87,6 +113,8 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
     } catch (error: any) {
       console.error('Error saving gallery item:', error);
       toast.error(error.message || 'Error saving gallery item');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -147,49 +175,19 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="image_file">
+                  {editingItem ? 'Upload New Image (optional)' : 'Upload Image *'}
+                </Label>
                 <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
+                  id="image_file"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormData({ ...formData, image_file: e.target.files?.[0] || null })}
+                  required={!editingItem}
                 />
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="image_url">Image URL *</Label>
-                <Input
-                  id="image_url"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="events">Events</SelectItem>
-                    <SelectItem value="conferences">Conferences</SelectItem>
-                    <SelectItem value="research">Research</SelectItem>
-                    <SelectItem value="members">Members</SelectItem>
-                  </SelectContent>
-                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Supported formats: JPG, PNG, WEBP
+                </p>
               </div>
               
               <div>
@@ -207,8 +205,9 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingItem ? 'Update' : 'Add'} Image
+                <Button type="submit" disabled={isUploading}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isUploading ? 'Uploading...' : editingItem ? 'Update' : 'Add'}
                 </Button>
               </div>
             </form>
@@ -222,16 +221,13 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
             <div className="aspect-square overflow-hidden">
               <img
                 src={item.image_url}
-                alt={item.title}
+                alt="Gallery item"
                 className="w-full h-full object-cover"
               />
             </div>
             <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold">{item.title}</h3>
-                  <p className="text-sm text-gray-600 capitalize">{item.category}</p>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Order: {item.display_order}</span>
                 <div className="flex space-x-1">
                   <Button
                     variant="outline"
@@ -257,9 +253,6 @@ const AdminGalleryTab = ({ galleryItems, onRefresh }: AdminGalleryTabProps) => {
                   </Button>
                 </div>
               </div>
-              {item.description && (
-                <p className="text-sm text-gray-600">{item.description}</p>
-              )}
             </CardContent>
           </Card>
         ))}
