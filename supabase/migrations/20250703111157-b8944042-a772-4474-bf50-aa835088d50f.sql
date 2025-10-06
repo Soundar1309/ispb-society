@@ -59,8 +59,8 @@ CREATE POLICY "Admins can manage office bearers"
 
 -- Insert default office bearers data from the current static data
 INSERT INTO public.office_bearers (name, designation, institution, display_order) VALUES
-('Dr. R. Ravikesavan', 'President', '', 1),
-('Dr. S. Manickam', 'Vice President', '', 2),
+('Dr. R. Ravikesavan', 'secretary', '', 1),
+('Dr. S. Manickam', 'Vice secretary', '', 2),
 ('Dr. R. Pushpam', 'Secretary', 'Tamil Nadu Agricultural University, Coimbatore', 3),
 ('Dr. A. Subramanian', 'Chief Editor', 'University of Agricultural Sciences, Bangalore', 4),
 ('Dr. A. Manivannan', 'Editor', 'Chaudhary Charan Singh University, Meerut', 5),

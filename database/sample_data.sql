@@ -36,8 +36,8 @@ INSERT INTO membership_plans (id, plan_type, title, price, duration_months, feat
 
 -- Sample Office Bearers
 INSERT INTO office_bearers (id, name, designation, institution, display_order, is_active) VALUES
-(UUID(), 'Dr. Rajesh Kumar', 'President', 'AIIMS Delhi', 1, TRUE),
-(UUID(), 'Dr. Priya Sharma', 'Vice President', 'PGIMER Chandigarh', 2, TRUE),
+(UUID(), 'Dr. Rajesh Kumar', 'secretary', 'AIIMS Delhi', 1, TRUE),
+(UUID(), 'Dr. Priya Sharma', 'Vice secretary', 'PGIMER Chandigarh', 2, TRUE),
 (UUID(), 'Dr. Amit Gupta', 'Secretary', 'KEM Hospital Mumbai', 3, TRUE),
 (UUID(), 'Dr. Sunita Patel', 'Treasurer', 'CMC Vellore', 4, TRUE),
 (UUID(), 'Dr. Vikram Singh', 'Chief Editor', 'SGPGIMS Lucknow', 5, TRUE);
