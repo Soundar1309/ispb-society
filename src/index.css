@@ -151,3 +151,48 @@
   .desktop-hide { display: none !important; }
   .desktop-show { display: block !important; }
 }
+
+/* React Quill Editor Styles */
+.ql-container {
+  font-family: inherit;
+  font-size: 1rem;
+  min-height: 200px;
+}
+
+.ql-editor {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ql-toolbar {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.ql-container {
+  border-color: hsl(var(--border)) !important;
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.dark .ql-toolbar {
+  background: hsl(var(--card));
+}
+
+.dark .ql-editor {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.dark .ql-stroke {
+  stroke: hsl(var(--foreground));
+}
+
+.dark .ql-fill {
+  fill: hsl(var(--foreground));
+}
+
+.dark .ql-picker-label {
+  color: hsl(var(--foreground));
+}

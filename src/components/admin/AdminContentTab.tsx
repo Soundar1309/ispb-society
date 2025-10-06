@@ -3,18 +3,20 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface ContentItem {
   id: string;
-  title: string;
+  title: string | null;
   content: string;
   type: 'mandate' | 'activity';
   order: number;
+  year?: number | null;
   is_active: boolean;
 }
 
@@ -39,14 +41,14 @@ const AdminContentTab = ({
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    order: 1
+    year: null as number | null
   });
 
   const resetForm = () => {
     setFormData({
       title: '',
       content: '',
-      order: 1
+      year: null
     });
   };
 
@@ -77,9 +79,9 @@ const AdminContentTab = ({
   const handleEdit = (item: ContentItem) => {
     setEditingItem(item);
     setFormData({
-      title: item.title,
+      title: item.title || '',
       content: item.content,
-      order: item.order
+      year: item.year || null
     });
   };
 
@@ -92,25 +94,35 @@ const AdminContentTab = ({
   const ContentForm = () => (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        placeholder="Title"
+        placeholder="Title (optional)"
         value={formData.title}
         onChange={(e) => handleInputChange('title', e.target.value)}
-        required
-      />
-      <Textarea
-        placeholder="Content"
-        value={formData.content}
-        onChange={(e) => handleInputChange('content', e.target.value)}
-        rows={6}
-        required
       />
       <Input
         type="number"
-        placeholder="Display Order"
-        value={formData.order}
-        onChange={(e) => handleInputChange('order', parseInt(e.target.value))}
-        min="1"
+        placeholder="Year (optional)"
+        value={formData.year || ''}
+        onChange={(e) => handleInputChange('year', e.target.value ? parseInt(e.target.value) : null)}
       />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Content</label>
+        <ReactQuill
+          theme="snow"
+          value={formData.content}
+          onChange={(content) => handleInputChange('content', content)}
+          className="bg-background"
+          modules={{
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'align': [] }],
+              ['link'],
+              ['clean']
+            ]
+          }}
+        />
+      </div>
       <Button type="submit">
         {editingItem ? 'Update' : 'Add'} {activeTab === 'mandates' ? 'Mandate' : 'Activity'}
       </Button>
@@ -121,7 +133,7 @@ const AdminContentTab = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Order</TableHead>
+          <TableHead>Year</TableHead>
           <TableHead>Title</TableHead>
           <TableHead>Content Preview</TableHead>
           <TableHead>Actions</TableHead>
@@ -129,12 +141,14 @@ const AdminContentTab = ({
       </TableHeader>
       <TableBody>
         {items
-          .sort((a, b) => a.order - b.order)
+          .sort((a, b) => (b.year || 0) - (a.year || 0))
           .map((item) => (
           <TableRow key={item.id}>
-            <TableCell>{item.order}</TableCell>
-            <TableCell className="font-medium">{item.title}</TableCell>
-            <TableCell className="max-w-md truncate">{item.content}</TableCell>
+            <TableCell>{item.year || '-'}</TableCell>
+            <TableCell className="font-medium">{item.title || '-'}</TableCell>
+            <TableCell className="max-w-md truncate">
+              <div dangerouslySetInnerHTML={{ __html: item.content.substring(0, 100) + '...' }} />
+            </TableCell>
             <TableCell>
               <div className="flex gap-2">
                 <Button

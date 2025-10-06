@@ -1,13 +1,16 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Header from './Header';
+import Footer from './Footer';
+import { Button } from './ui/button';
 
 interface ContentItem {
   id: string;
-  title: string;
+  title: string | null;
   content: string;
   display_order: number;
+  year?: number | null;
   is_active: boolean;
 }
 
@@ -51,138 +54,84 @@ const MandateActivities = () => {
     }
   };
 
-  const congresses = [
-    {
-      year: "2023",
-      title: "15th ISPB Congress",
-      theme: "Climate-Smart Plant Breeding for Sustainable Agriculture",
-      location: "Hyderabad, India",
-      participants: "450+ Delegates"
-    },
-    {
-      year: "2021",
-      title: "14th ISPB Congress",
-      theme: "Genomics-Assisted Plant Breeding for Future Food Security",
-      location: "Virtual Conference",
-      participants: "600+ Delegates"
-    },
-    {
-      year: "2019",
-      title: "13th ISPB Congress",
-      theme: "Plant Breeding Innovations for Nutritional Security",
-      location: "Pune, India",
-      participants: "520+ Delegates"
-    },
-    {
-      year: "2017",
-      title: "12th ISPB Congress",
-      theme: "Harnessing Genetic Diversity for Crop Improvement",
-      location: "Bhubaneswar, India",
-      participants: "480+ Delegates"
-    },
-    {
-      year: "2015",
-      title: "11th ISPB Congress",
-      theme: "Plant Breeding for Abiotic Stress Tolerance",
-      location: "Coimbatore, India",
-      participants: "400+ Delegates"
-    },
-    {
-      year: "2013",
-      title: "10th ISPB Congress",
-      theme: "Molecular Plant Breeding: Challenges and Opportunities",
-      location: "New Delhi, India",
-      participants: "380+ Delegates"
-    }
-  ];
-
   return (
-    <div className="min-h-screen py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Mandate & Activities</h1>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
-            Our mission-driven activities and initiatives that advance plant breeding science 
-            and support the professional community in India.
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto space-y-12">
+          {/* Mandate Section */}
+          <section className="space-y-6">
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-primary">
+                Our Mandate
+              </h1>
+              <div className="h-1 w-24 bg-gradient-to-r from-primary to-primary/50 mx-auto rounded-full" />
+            </div>
+            
+            <div className="prose prose-lg max-w-none space-y-6">
+              {mandates.map((mandate) => (
+                <div key={mandate.id} className="bg-card p-8 rounded-xl shadow-lg border border-border hover:shadow-xl transition-all">
+                  {mandate.title && (
+                    <h2 className="text-2xl font-semibold text-primary mb-4">{mandate.title}</h2>
+                  )}
+                  {mandate.year && (
+                    <p className="text-sm text-muted-foreground mb-4">Year: {mandate.year}</p>
+                  )}
+                  <div 
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: mandate.content }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Activities Section */}
+          <section className="space-y-6">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-primary">
+                Our Activities
+              </h2>
+              <div className="h-1 w-24 bg-gradient-to-r from-primary to-primary/50 mx-auto rounded-full" />
+            </div>
+            
+            <div className="prose prose-lg max-w-none space-y-6">
+              {activities.map((activity) => (
+                <div key={activity.id} className="bg-card p-8 rounded-xl shadow-lg border border-border hover:shadow-xl transition-all">
+                  {activity.title && (
+                    <h3 className="text-2xl font-semibold text-primary mb-4">{activity.title}</h3>
+                  )}
+                  {activity.year && (
+                    <p className="text-sm text-muted-foreground mb-4">Year: {activity.year}</p>
+                  )}
+                  <div 
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: activity.content }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="text-center py-12">
+            <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 p-12 rounded-2xl border border-primary/20">
+              <h3 className="text-2xl font-bold text-primary mb-4">
+                Join Our Mission
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Be part of India's premier plant biology community and contribute to advancing research and education.
+              </p>
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                Become a Member
+              </Button>
+            </div>
+          </section>
         </div>
-
-        {/* Mandate Section */}
-        <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Our Mandate</h2>
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
-            <div className="space-y-4 sm:space-y-6">
-              {mandates.map((mandate, index) => (
-                <div key={mandate.id} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{mandate.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
-                      #{mandate.display_order}
-                    </span>
-                  </div>
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{mandate.content}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Congress History */}
-        <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">ISPB Congress History</h2>
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
-            <div className="space-y-4 sm:space-y-6">
-              {congresses.map((congress, index) => (
-                <div key={index} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{congress.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
-                      {congress.year}
-                    </span>
-                  </div>
-                  <p className="text-base sm:text-lg text-green-600 font-medium mb-2">{congress.theme}</p>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-600">
-                    <span>📍 {congress.location}</span>
-                    <span>👥 {congress.participants}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Activities Section */}
-        <section>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Our Activities</h2>
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 lg:p-8">
-            <div className="space-y-4 sm:space-y-6">
-              {activities.map((activity, index) => (
-                <div key={activity.id} className="border-l-4 border-green-500 pl-4 sm:pl-6 py-3 sm:py-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{activity.title}</h3>
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-auto">
-                      #{activity.display_order}
-                    </span>
-                  </div>
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{activity.content}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <div className="mt-12 sm:mt-16 bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 sm:p-8 text-center text-white">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Join Our Mission</h2>
-          <p className="text-base sm:text-lg mb-6 opacity-90">
-            Be part of India's premier plant breeding community and contribute to agricultural innovation.
-          </p>
-          <button className="bg-white text-green-600 px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-            Become a Member
-          </button>
-        </div>
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };

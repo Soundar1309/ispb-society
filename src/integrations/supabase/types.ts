@@ -21,8 +21,9 @@ export type Database = {
           display_order: number
           id: string
           is_active: boolean
-          title: string
+          title: string | null
           updated_at: string
+          year: number | null
         }
         Insert: {
           content: string
@@ -30,8 +31,9 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          title: string
+          title?: string | null
           updated_at?: string
+          year?: number | null
         }
         Update: {
           content?: string
@@ -39,8 +41,9 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          title?: string
+          title?: string | null
           updated_at?: string
+          year?: number | null
         }
         Relationships: []
       }
@@ -307,8 +310,9 @@ export type Database = {
           display_order: number
           id: string
           is_active: boolean
-          title: string
+          title: string | null
           updated_at: string
+          year: number | null
         }
         Insert: {
           content: string
@@ -316,8 +320,9 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          title: string
+          title?: string | null
           updated_at?: string
+          year?: number | null
         }
         Update: {
           content?: string
@@ -325,8 +330,9 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
-          title?: string
+          title?: string | null
           updated_at?: string
+          year?: number | null
         }
         Relationships: []
       }
