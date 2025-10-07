@@ -139,6 +139,84 @@ serve(async (req) => {
         payment_date: new Date().toISOString()
       })
 
+    // Get user details for email
+    const { data: userProfile } = await supabaseClient
+      .from('user_roles')
+      .select('full_name, email')
+      .eq('user_id', user.id)
+      .single()
+
+    const userEmail = userProfile?.email || user.email
+    const userName = userProfile?.full_name || 'Member'
+
+    // Send confirmation email to user
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.get('Authorization') || '',
+        },
+        body: JSON.stringify({
+          to: userEmail,
+          subject: 'Payment Confirmation - ISPB Membership',
+          html: `
+            <h2>Payment Successful!</h2>
+            <p>Dear ${userName},</p>
+            <p>Thank you for your payment. Your membership has been successfully activated.</p>
+            <h3>Payment Details:</h3>
+            <ul>
+              <li><strong>Amount:</strong> ₹${membership.amount}</li>
+              <li><strong>Payment ID:</strong> ${razorpay_payment_id}</li>
+              <li><strong>Membership Type:</strong> ${membership.membership_type}</li>
+              <li><strong>Valid From:</strong> ${validFrom}</li>
+              ${validUntil ? `<li><strong>Valid Until:</strong> ${validUntil}</li>` : ''}
+            </ul>
+            <p>You can now access all membership benefits.</p>
+            <br>
+            <p>Best regards,<br>ISPB Team</p>
+          `
+        })
+      })
+    } catch (emailError) {
+      console.error('Failed to send user email:', emailError)
+    }
+
+    // Send notification email to admin
+    try {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': req.headers.get('Authorization') || '',
+        },
+        body: JSON.stringify({
+          to: 'ispbtnau@gmail.com',
+          subject: 'New Membership Payment Received',
+          html: `
+            <h2>New Payment Received</h2>
+            <p>A new membership payment has been received.</p>
+            <h3>Member Details:</h3>
+            <ul>
+              <li><strong>Name:</strong> ${userName}</li>
+              <li><strong>Email:</strong> ${userEmail}</li>
+            </ul>
+            <h3>Payment Details:</h3>
+            <ul>
+              <li><strong>Amount:</strong> ₹${membership.amount}</li>
+              <li><strong>Payment ID:</strong> ${razorpay_payment_id}</li>
+              <li><strong>Order ID:</strong> ${razorpay_order_id}</li>
+              <li><strong>Membership Type:</strong> ${membership.membership_type}</li>
+              <li><strong>Valid From:</strong> ${validFrom}</li>
+              ${validUntil ? `<li><strong>Valid Until:</strong> ${validUntil}</li>` : ''}
+            </ul>
+          `
+        })
+      })
+    } catch (emailError) {
+      console.error('Failed to send admin email:', emailError)
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: 'Payment verified successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

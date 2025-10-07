@@ -44,11 +44,10 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
     year: '',
     category: 'research',
     cover_image_url: '',
-    price: '',
-    link: '',
-    pdf_url: '',
-    pdf_file_url: ''
+    price: ''
   });
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const resetForm = () => {
     setFormData({
@@ -59,11 +58,10 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
       year: '',
       category: 'research',
       cover_image_url: '',
-      price: '',
-      link: '',
-      pdf_url: '',
-      pdf_file_url: ''
+      price: ''
     });
+    setPdfFile(null);
+    setUploadProgress(0);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -73,15 +71,60 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast.error('Please select a PDF file');
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+        toast.error('File size should be less than 50MB');
+        return;
+      }
+      setPdfFile(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      let pdfFileUrl = editingPublication?.pdf_file_url || '';
+
+      // Upload PDF file if selected
+      if (pdfFile) {
+        const fileExt = 'pdf';
+        const fileName = `${Date.now()}-${pdfFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('publications')
+          .upload(filePath, pdfFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error('Failed to upload PDF file');
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('publications')
+          .getPublicUrl(filePath);
+
+        pdfFileUrl = urlData.publicUrl;
+        setUploadProgress(100);
+      }
+
       const publicationData = {
         ...formData,
         year: formData.year ? parseInt(formData.year) : null,
         price: formData.price ? parseFloat(formData.price) : null,
+        pdf_file_url: pdfFileUrl,
         status: 'published',
         is_featured: false
       };
@@ -113,6 +156,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
       toast.error('Error saving publication: ' + message);
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -126,11 +170,9 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
       year: publication.year?.toString() || '',
       category: publication.category || 'research',
       cover_image_url: publication.cover_image_url || '',
-      price: publication.price?.toString() || '',
-      link: publication.link || '',
-      pdf_url: publication.pdf_url || '',
-      pdf_file_url: publication.pdf_file_url || ''
+      price: publication.price?.toString() || ''
     });
+    setPdfFile(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -153,119 +195,150 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
   };
 
   const PublicationForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Title *</label>
-          <Input
-            placeholder="Publication Title"
-            value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
-            required
-          />
+    <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto p-1">
+      <div className="space-y-6">
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary border-b pb-2">Basic Information</h3>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Title *</label>
+              <Input
+                placeholder="Publication Title"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                required
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium block mb-1">Description</label>
+              <Textarea
+                placeholder="Publication Description"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={3}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
-        
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium">Description</label>
-          <Textarea
-            placeholder="Publication Description"
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            rows={3}
-          />
+
+        {/* Publication Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary border-b pb-2">Publication Details</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Authors</label>
+              <Input
+                placeholder="Author names"
+                value={formData.authors}
+                onChange={(e) => handleInputChange('authors', e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium block mb-1">Journal</label>
+              <Input
+                placeholder="Journal name"
+                value={formData.journal}
+                onChange={(e) => handleInputChange('journal', e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium block mb-1">Year</label>
+              <Input
+                type="number"
+                placeholder="2024"
+                value={formData.year}
+                onChange={(e) => handleInputChange('year', e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium block mb-1">Category</label>
+              <select
+                className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+              >
+                <option value="research">Research</option>
+                <option value="review">Review</option>
+                <option value="book">Book</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
         </div>
-        
-        <div>
-          <label className="text-sm font-medium">Authors</label>
-          <Input
-            placeholder="Author names"
-            value={formData.authors}
-            onChange={(e) => handleInputChange('authors', e.target.value)}
-          />
+
+        {/* Media & Pricing */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary border-b pb-2">Media & Pricing</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium block mb-1">Cover Image URL</label>
+              <Input
+                type="url"
+                placeholder="https://example.com/cover.jpg"
+                value={formData.cover_image_url}
+                onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium block mb-1">Price (₹)</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="500.00"
+                value={formData.price}
+                onChange={(e) => handleInputChange('price', e.target.value)}
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
-        
-        <div>
-          <label className="text-sm font-medium">Journal</label>
-          <Input
-            placeholder="Journal name"
-            value={formData.journal}
-            onChange={(e) => handleInputChange('journal', e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Year</label>
-          <Input
-            type="number"
-            placeholder="2024"
-            value={formData.year}
-            onChange={(e) => handleInputChange('year', e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Category</label>
-          <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            value={formData.category}
-            onChange={(e) => handleInputChange('category', e.target.value)}
-          >
-            <option value="research">Research</option>
-            <option value="review">Review</option>
-            <option value="book">Book</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Cover Image URL (Optional)</label>
-          <Input
-            type="url"
-            placeholder="https://example.com/cover.jpg"
-            value={formData.cover_image_url}
-            onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Price (₹) (Optional)</label>
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="500.00"
-            value={formData.price}
-            onChange={(e) => handleInputChange('price', e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Buy Link (Optional)</label>
-          <Input
-            type="url"
-            placeholder="https://store.example.com/publication"
-            value={formData.link}
-            onChange={(e) => handleInputChange('link', e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">PDF URL (Optional)</label>
-          <Input
-            type="url"
-            placeholder="https://example.com/publication.pdf"
-            value={formData.pdf_url}
-            onChange={(e) => handleInputChange('pdf_url', e.target.value)}
-          />
-        </div>
-        
-        <div className="sm:col-span-2">
-          <label className="text-sm font-medium">PDF File URL (Optional)</label>
-          <Input
-            type="url"
-            placeholder="https://example.com/files/publication.pdf"
-            value={formData.pdf_file_url}
-            onChange={(e) => handleInputChange('pdf_file_url', e.target.value)}
-          />
+
+        {/* PDF Upload */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary border-b pb-2">PDF Document</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium block mb-1">Upload PDF File *</label>
+              <Input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="w-full cursor-pointer"
+              />
+              {pdfFile && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Selected: {pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+              {editingPublication?.pdf_file_url && !pdfFile && (
+                <p className="text-sm text-green-600 mt-1">
+                  ✓ PDF file already uploaded
+                </p>
+              )}
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="mt-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
       
@@ -353,22 +426,11 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
                     <TableCell>
                       {publication.price ? `₹${publication.price}` : 'Free'}
                     </TableCell>
-                    <TableCell>
+                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        {publication.link && (
+                        {publication.pdf_file_url && (
                           <a 
-                            href={publication.link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Buy Link
-                          </a>
-                        )}
-                        {publication.pdf_url && (
-                          <a 
-                            href={publication.pdf_url} 
+                            href={publication.pdf_file_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-green-600 hover:text-green-800 text-xs flex items-center gap-1"

@@ -231,11 +231,11 @@ const Publications = () => {
                         </Button>
                       )}
                       
-                      {(publication.pdf_url || publication.pdf_file_url) && (
+                      {publication.pdf_file_url && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(publication.pdf_url || publication.pdf_file_url, '_blank')}
+                          onClick={() => window.open(publication.pdf_file_url, '_blank')}
                           className="flex items-center justify-center gap-2"
                         >
                           <FileText className="h-4 w-4" />
