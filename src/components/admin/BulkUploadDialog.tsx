@@ -134,17 +134,44 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
       // Convert date string to proper format if provided
       if (record.date_of_enrollment) {
         try {
-          // Handle DD.MM.YYYY format
-          if (record.date_of_enrollment.includes('.')) {
-            const parts = record.date_of_enrollment.split('.');
+          const dateStr = record.date_of_enrollment.trim();
+          let day, month, year;
+          
+          // Handle DD.MM.YYYY or DD.MM.YY format (with dots)
+          if (dateStr.includes('.')) {
+            const parts = dateStr.split('.');
             if (parts.length === 3) {
-              const [day, month, year] = parts;
-              record.date_of_enrollment = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+              day = parts[0].padStart(2, '0');
+              month = parts[1].padStart(2, '0');
+              year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+              record.date_of_enrollment = `${year}-${month}-${day}`;
             }
-          } else {
-            const date = new Date(record.date_of_enrollment);
+          }
+          // Handle DD/MM/YYYY or D/MM/YY format (with slashes)
+          else if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+              day = parts[0].padStart(2, '0');
+              month = parts[1].padStart(2, '0');
+              year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+              record.date_of_enrollment = `${year}-${month}-${day}`;
+            }
+          }
+          // Handle DD-MM-YY or D-MM-YY format (with dashes)
+          else if (dateStr.includes('-') && dateStr.split('-').length === 3) {
+            const parts = dateStr.split('-');
+            day = parts[0].padStart(2, '0');
+            month = parts[1].padStart(2, '0');
+            year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+            record.date_of_enrollment = `${year}-${month}-${day}`;
+          }
+          // Try parsing as standard date format
+          else {
+            const date = new Date(dateStr);
             if (!isNaN(date.getTime())) {
               record.date_of_enrollment = date.toISOString().split('T')[0];
+            } else {
+              record.date_of_enrollment = null;
             }
           }
         } catch (e) {
