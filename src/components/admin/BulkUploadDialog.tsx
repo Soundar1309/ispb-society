@@ -243,13 +243,17 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     try {
       const data = parseCsvData(csvContent);
       
+      // Use upsert to update existing records and insert new ones
       const { error } = await supabase
         .from('life_members')
-        .insert(data);
+        .upsert(data, {
+          onConflict: 'life_member_no',
+          ignoreDuplicates: false
+        });
 
       if (error) throw error;
 
-      toast.success(`Successfully uploaded ${data.length} life members`);
+      toast.success(`Successfully uploaded ${data.length} life members (new records added and existing records updated)`);
       setSelectedFile(null);
       setCsvContent('');
       if (fileInputRef.current) {
