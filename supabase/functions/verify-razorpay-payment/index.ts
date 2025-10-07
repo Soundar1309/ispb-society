@@ -14,6 +14,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Verifying payment...')
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -23,13 +25,17 @@ serve(async (req) => {
     const { data: { user } } = await supabaseClient.auth.getUser()
     
     if (!user) {
+      console.error('Unauthorized: No user found')
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, membershipId } = await req.json()
+    const requestBody = await req.json()
+    console.log('Payment verification request:', { ...requestBody, razorpay_signature: '***' })
+    
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, membershipId } = requestBody
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
       return new Response(
@@ -64,37 +70,47 @@ serve(async (req) => {
     )
 
     if (expectedSignature !== razorpay_signature) {
+      console.error('Invalid signature')
       return new Response(
         JSON.stringify({ error: 'Invalid signature' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get membership plan details
-    const { data: membership } = await supabaseClient
-      .from('memberships')
-      .select('*, membership_plans(*)')
-      .eq('id', membershipId)
-      .single()
+    console.log('Signature verified successfully')
 
-    if (!membership) {
+    // Get membership plan details
+    const { data: membership, error: membershipFetchError } = await supabaseClient
+      .from('memberships')
+      .select('*')
+      .eq('id', membershipId)
+      .maybeSingle()
+
+    if (membershipFetchError || !membership) {
+      console.error('Error fetching membership:', membershipFetchError)
+
       return new Response(
         JSON.stringify({ error: 'Membership not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('Membership found:', membership.id)
+
     // Calculate validity dates
     const validFrom = new Date().toISOString().split('T')[0]
     let validUntil = null
     
-    if (membership.membership_plans?.duration_months > 0) {
-      const endDate = new Date()
-      endDate.setMonth(endDate.getMonth() + membership.membership_plans.duration_months)
-      validUntil = endDate.toISOString().split('T')[0]
-    }
+    // For lifetime, set to 1 year from now (will be auto-renewed)
+    // For annual, set to 1 year from now
+    const endDate = new Date()
+    endDate.setFullYear(endDate.getFullYear() + 1)
+    validUntil = endDate.toISOString().split('T')[0]
+    
+    console.log('Validity dates:', { validFrom, validUntil })
 
     // Update membership
+    console.log('Updating membership status to active')
     const { error: updateError } = await supabaseClient
       .from('memberships')
       .update({
@@ -109,13 +125,16 @@ serve(async (req) => {
     if (updateError) {
       console.error('Error updating membership:', updateError)
       return new Response(
-        JSON.stringify({ error: 'Failed to update membership' }),
+        JSON.stringify({ error: 'Failed to update membership', details: updateError }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('Membership updated successfully')
+
     // Update order
-    await supabaseClient
+    console.log('Updating order status')
+    const { error: orderUpdateError } = await supabaseClient
       .from('orders')
       .update({
         razorpay_payment_id: razorpay_payment_id,
@@ -124,8 +143,15 @@ serve(async (req) => {
       })
       .eq('razorpay_order_id', razorpay_order_id)
 
+    if (orderUpdateError) {
+      console.error('Error updating order:', orderUpdateError)
+    } else {
+      console.log('Order updated successfully')
+    }
+
     // Create payment tracking record
-    await supabaseClient
+    console.log('Creating payment tracking record')
+    const { error: paymentTrackingError } = await supabaseClient
       .from('payment_tracking')
       .insert({
         membership_id: membershipId,
@@ -138,6 +164,12 @@ serve(async (req) => {
         payment_status: 'paid',
         payment_date: new Date().toISOString()
       })
+
+    if (paymentTrackingError) {
+      console.error('Error creating payment tracking:', paymentTrackingError)
+    } else {
+      console.log('Payment tracking created successfully')
+    }
 
     // Get user details for email
     const { data: userProfile } = await supabaseClient
