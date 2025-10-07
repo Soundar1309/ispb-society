@@ -243,17 +243,30 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     try {
       const data = parseCsvData(csvContent);
       
+      // Deduplicate data by life_member_no (keep the last occurrence)
+      const deduplicatedData = Array.from(
+        data.reduce((map, item) => {
+          map.set(item.life_member_no, item);
+          return map;
+        }, new Map<string, any>()).values()
+      );
+      
+      const duplicateCount = data.length - deduplicatedData.length;
+      if (duplicateCount > 0) {
+        toast.info(`Removed ${duplicateCount} duplicate entries from CSV`);
+      }
+      
       // Use upsert to update existing records and insert new ones
       const { error } = await supabase
         .from('life_members')
-        .upsert(data, {
+        .upsert(deduplicatedData as any[], {
           onConflict: 'life_member_no',
           ignoreDuplicates: false
         });
 
       if (error) throw error;
 
-      toast.success(`Successfully uploaded ${data.length} life members (new records added and existing records updated)`);
+      toast.success(`Successfully uploaded ${deduplicatedData.length} life members (new records added and existing records updated)`);
       setSelectedFile(null);
       setCsvContent('');
       if (fileInputRef.current) {
