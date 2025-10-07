@@ -18,6 +18,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
   const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [csvContent, setCsvContent] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const downloadTemplate = () => {
@@ -71,14 +72,25 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     document.body.removeChild(link);
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'text/csv') {
-      setSelectedFile(file);
-      setErrors([]);
+      try {
+        // Read the file immediately to avoid permission issues later
+        const text = await file.text();
+        setCsvContent(text);
+        setSelectedFile(file);
+        setErrors([]);
+      } catch (error) {
+        console.error('Error reading file:', error);
+        toast.error('Error reading file. Please try again.');
+        setSelectedFile(null);
+        setCsvContent('');
+      }
     } else {
       toast.error('Please select a valid CSV file');
       setSelectedFile(null);
+      setCsvContent('');
     }
   };
 
@@ -220,7 +232,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
+    if (!selectedFile || !csvContent) {
       toast.error('Please select a CSV file');
       return;
     }
@@ -229,8 +241,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     setErrors([]);
 
     try {
-      const csvText = await selectedFile.text();
-      const data = parseCsvData(csvText);
+      const data = parseCsvData(csvContent);
       
       const { error } = await supabase
         .from('life_members')
@@ -240,6 +251,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
 
       toast.success(`Successfully uploaded ${data.length} life members`);
       setSelectedFile(null);
+      setCsvContent('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
