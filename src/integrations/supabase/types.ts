@@ -374,7 +374,12 @@ export type Database = {
       }
       memberships: {
         Row: {
+          admin_review_notes: string | null
+          admin_reviewed_at: string | null
+          admin_reviewed_by: string | null
           amount: number | null
+          application_documents: Json | null
+          application_status: string | null
           created_at: string | null
           currency: string | null
           id: string
@@ -391,7 +396,12 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          admin_review_notes?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewed_by?: string | null
           amount?: number | null
+          application_documents?: Json | null
+          application_status?: string | null
           created_at?: string | null
           currency?: string | null
           id?: string
@@ -408,7 +418,12 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          admin_review_notes?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewed_by?: string | null
           amount?: number | null
+          application_documents?: Json | null
+          application_status?: string | null
           created_at?: string | null
           currency?: string | null
           id?: string

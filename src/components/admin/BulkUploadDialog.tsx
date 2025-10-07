@@ -83,7 +83,7 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
   };
 
   const parseCsvData = (csvText: string) => {
-    const lines = csvText.trim().split('\n');
+    const lines = csvText.trim().split('\n').filter(line => line.trim());
     if (lines.length < 2) {
       throw new Error('CSV must have at least a header row and one data row');
     }
@@ -97,42 +97,67 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     }
 
     const data = [];
-    const parseErrors = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim());
-      if (values.length !== headers.length) {
-        parseErrors.push(`Row ${i + 1}: Column count mismatch`);
-        continue;
+      const line = lines[i];
+      if (!line.trim()) continue;
+
+      // Parse CSV handling quoted fields and commas
+      const values: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let char of line) {
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          values.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
       }
+      values.push(current.trim());
 
       const record: any = {};
       headers.forEach((header, index) => {
-        record[header] = values[index] || null;
+        const value = values[index] || '';
+        // Treat empty strings as null
+        record[header] = value === '' ? null : value;
       });
 
       if (!record.name || !record.life_member_no) {
-        parseErrors.push(`Row ${i + 1}: Life member number and name are required`);
+        console.warn(`Row ${i + 1}: Skipping - name and life_member_no are required`);
         continue;
       }
 
       // Convert date string to proper format if provided
       if (record.date_of_enrollment) {
         try {
-          const date = new Date(record.date_of_enrollment);
-          if (!isNaN(date.getTime())) {
-            record.date_of_enrollment = date.toISOString().split('T')[0];
+          // Handle DD.MM.YYYY format
+          if (record.date_of_enrollment.includes('.')) {
+            const parts = record.date_of_enrollment.split('.');
+            if (parts.length === 3) {
+              const [day, month, year] = parts;
+              record.date_of_enrollment = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
+          } else {
+            const date = new Date(record.date_of_enrollment);
+            if (!isNaN(date.getTime())) {
+              record.date_of_enrollment = date.toISOString().split('T')[0];
+            }
           }
         } catch (e) {
-          // Keep original value if date parsing fails
+          // Keep as null if date parsing fails
+          record.date_of_enrollment = null;
         }
       }
 
       data.push(record);
     }
 
-    if (parseErrors.length > 0) {
-      throw new Error(`Parsing errors:\n${parseErrors.join('\n')}`);
+    if (data.length === 0) {
+      throw new Error('No valid data rows found in CSV');
     }
 
     return data;

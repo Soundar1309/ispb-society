@@ -29,8 +29,13 @@ const AuthPage = () => {
 
     try {
       if (isForgotPassword) {
+        // Get the official domain - you'll need to replace this with your actual domain
+        const officialDomain = window.location.hostname.includes('lovable.app') 
+          ? window.location.origin 
+          : window.location.origin; // Replace with your actual domain when deployed
+        
         const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-          redirectTo: `${window.location.origin}/auth?reset=true`
+          redirectTo: `${officialDomain}/auth?reset=true`
         });
 
         if (error) throw error;
@@ -45,11 +50,16 @@ const AuthPage = () => {
           return;
         }
 
+        // Get the official domain - you'll need to replace this with your actual domain
+        const officialDomain = window.location.hostname.includes('lovable.app') 
+          ? window.location.origin 
+          : window.location.origin; // Replace with your actual domain when deployed
+        
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${officialDomain}/`,
             data: {
               full_name: formData.fullName
             }

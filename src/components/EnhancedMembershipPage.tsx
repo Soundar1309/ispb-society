@@ -10,12 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { CreditCard, Calendar, CheckCircle, User, Edit, Save, X } from 'lucide-react';
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 const EnhancedMembershipPage = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);

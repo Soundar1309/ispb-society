@@ -111,7 +111,7 @@ const Membership = () => {
                 </div>
 
                 <button 
-                  onClick={() => window.location.href = '/member'}
+                  onClick={() => window.location.href = '/membership-application'}
                   className="w-full bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
                 >
                   Apply Now

@@ -6,7 +6,6 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Users } from 'lucide-react';
-import MembershipStatusCard from '@/components/life-members/MembershipStatusCard';
 import StatisticsCards from '@/components/life-members/StatisticsCards';
 import SearchAndFilter from '@/components/life-members/SearchAndFilter';
 import MemberCard from '@/components/life-members/MemberCard';
@@ -24,17 +23,6 @@ interface LifeMember {
   mobile: string | null;
 }
 
-interface UserMembership {
-  id: string;
-  membership_type: string;
-  status: string;
-  payment_status: string;
-  valid_from: string;
-  valid_until: string;
-  amount: number;
-  is_manual: boolean;
-}
-
 const LifeMembers = () => {
   const { user } = useAuth();
   const [lifeMembers, setLifeMembers] = useState<LifeMember[]>([]);
@@ -44,15 +32,10 @@ const LifeMembers = () => {
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [specializationFilter, setSpecializationFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [userMembership, setUserMembership] = useState<UserMembership | null>(null);
-  const [membershipLoading, setMembershipLoading] = useState(false);
   const membersPerPage = 6;
 
   useEffect(() => {
     fetchLifeMembers();
-    if (user) {
-      fetchUserMembership();
-    }
   }, [user]);
 
   useEffect(() => {
@@ -81,38 +64,6 @@ const LifeMembers = () => {
     }
   };
 
-  const fetchUserMembership = async () => {
-    if (!user?.id) return;
-    
-    setMembershipLoading(true);
-    try {
-      console.log('Fetching membership for user:', user.id);
-      
-      const { data, error } = await supabase
-        .from('memberships')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (error) {
-        console.error('Error fetching user membership:', error);
-        toast.error('Failed to load membership status');
-      } else {
-        console.log('Membership data:', data);
-        if (data && data.length > 0) {
-          setUserMembership(data[0]);
-        } else {
-          setUserMembership(null);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching membership:', error);
-      toast.error('An unexpected error occurred while fetching membership');
-    } finally {
-      setMembershipLoading(false);
-    }
-  };
 
   const filterMembers = () => {
     let filtered = lifeMembers;
@@ -171,15 +122,6 @@ const LifeMembers = () => {
           </p>
         </div>
 
-        {/* Membership Status Card */}
-        <div className="animate-scale-in">
-          <MembershipStatusCard
-            user={user}
-            userMembership={userMembership}
-            membershipLoading={membershipLoading}
-            onRefresh={fetchUserMembership}
-          />
-        </div>
 
         {/* Statistics */}
         <div className="animate-fade-in">

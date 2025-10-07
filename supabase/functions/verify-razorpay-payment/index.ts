@@ -97,17 +97,8 @@ serve(async (req) => {
 
     console.log('Membership found:', membership.id)
 
-    // Calculate validity dates
-    const validFrom = new Date().toISOString().split('T')[0]
-    let validUntil = null
-    
-    // For lifetime, set to 1 year from now (will be auto-renewed)
-    // For annual, set to 1 year from now
-    const endDate = new Date()
-    endDate.setFullYear(endDate.getFullYear() + 1)
-    validUntil = endDate.toISOString().split('T')[0]
-    
-    console.log('Validity dates:', { validFrom, validUntil })
+    // No longer setting validity dates as per requirements
+    console.log('Activating membership without validity dates')
 
     // Update membership
     console.log('Updating membership status to active')
@@ -117,8 +108,7 @@ serve(async (req) => {
         status: 'active',
         payment_status: 'paid',
         razorpay_payment_id: razorpay_payment_id,
-        valid_from: validFrom,
-        valid_until: validUntil
+        application_status: 'active'
       })
       .eq('id', membershipId)
 
@@ -201,8 +191,7 @@ serve(async (req) => {
               <li><strong>Amount:</strong> ₹${membership.amount}</li>
               <li><strong>Payment ID:</strong> ${razorpay_payment_id}</li>
               <li><strong>Membership Type:</strong> ${membership.membership_type}</li>
-              <li><strong>Valid From:</strong> ${validFrom}</li>
-              ${validUntil ? `<li><strong>Valid Until:</strong> ${validUntil}</li>` : ''}
+              ${membership.member_code ? `<li><strong>Member Code:</strong> ${membership.member_code}</li>` : ''}
             </ul>
             <p>You can now access all membership benefits.</p>
             <br>
@@ -239,8 +228,7 @@ serve(async (req) => {
               <li><strong>Payment ID:</strong> ${razorpay_payment_id}</li>
               <li><strong>Order ID:</strong> ${razorpay_order_id}</li>
               <li><strong>Membership Type:</strong> ${membership.membership_type}</li>
-              <li><strong>Valid From:</strong> ${validFrom}</li>
-              ${validUntil ? `<li><strong>Valid Until:</strong> ${validUntil}</li>` : ''}
+              ${membership.member_code ? `<li><strong>Member Code:</strong> ${membership.member_code}</li>` : ''}
             </ul>
           `
         })
