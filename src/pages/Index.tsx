@@ -10,6 +10,7 @@ import ContactUs from '@/components/ContactUs';
 import AuthPage from '@/components/AuthPage';
 import UserDashboard from '@/components/UserDashboard';
 import MemberPage from '@/components/MemberPage';
+import PaymentIntegration from '@/components/PaymentIntegration';
 import AdminPanel from '@/components/AdminPanel';
 import AdminLogin from '@/components/AdminLogin';
 import LifeMembers from '@/components/LifeMembers';
@@ -53,6 +54,14 @@ const Index = () => {
         element={
           <ProtectedRoute>
             <MemberPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/payment" 
+        element={
+          <ProtectedRoute>
+            <PaymentIntegration />
           </ProtectedRoute>
         } 
       />

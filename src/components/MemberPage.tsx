@@ -10,8 +10,16 @@ import { CreditCard, Calendar, CheckCircle } from 'lucide-react';
 
 const MemberPage = () => {
   const { user } = useAuth();
-  const [userRole, setUserRole] = useState<any>(null);
-  const [memberships, setMemberships] = useState([]);
+  type MembershipRecord = {
+    id: string;
+    membership_type: string;
+    valid_from: string;
+    valid_until: string;
+    amount: number;
+    status: 'active' | 'pending' | 'failed' | 'expired' | 'cancelled' | string;
+    payment_status: 'paid' | 'manual' | 'pending' | 'failed' | string;
+  };
+  const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
   const [selectedMembershipType, setSelectedMembershipType] = useState('');
 
   const membershipPlans = [
@@ -31,35 +39,19 @@ const MemberPage = () => {
   ];
 
   useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user]);
-
-  const fetchUserData = async () => {
     if (!user) return;
+    (async () => {
+      // Fetch active memberships
+      const { data: membershipData } = await supabase
+        .from('memberships')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
-    // Fetch user role data
-    const { data: userRoleData } = await supabase
-      .from('user_roles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (userRoleData) {
-      setUserRole(userRoleData);
-    }
-
-    // Fetch active memberships
-    const { data: membershipData } = await supabase
-      .from('memberships')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
-
-    setMemberships(membershipData || []);
-  };
+      setMemberships((membershipData as MembershipRecord[]) || []);
+    })();
+  }, [user]);
 
   const handleSelectPlan = (membershipType: string) => {
     // Check if user already has active membership
@@ -69,7 +61,8 @@ const MemberPage = () => {
     }
 
     setSelectedMembershipType(membershipType);
-    toast.info('Payment integration coming soon! Please contact admin for manual membership activation.');
+    // Redirect to payment page to initiate Razorpay flow
+    window.location.href = `/payment?type=${encodeURIComponent(membershipType)}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -120,7 +113,7 @@ const MemberPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {memberships.map((membership: any) => (
+              {memberships.map((membership: MembershipRecord) => (
                 <div key={membership.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h3 className="font-semibold capitalize">{membership.membership_type}</h3>

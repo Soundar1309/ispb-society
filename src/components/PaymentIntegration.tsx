@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,32 +8,73 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { CreditCard, CheckCircle } from 'lucide-react';
 
+type RazorpayHandlerResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayFailedPayload = {
+  error?: {
+    code?: string;
+    description?: string;
+    source?: string;
+    step?: string;
+    reason?: string;
+  };
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  order_id: string;
+  handler: (response: RazorpayHandlerResponse) => void;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+  modal?: { ondismiss?: () => void };
+};
+
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: 'payment.failed', handler: (response: RazorpayFailedPayload) => void) => void;
+};
+
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
   }
 }
 
 const PaymentIntegration = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
 
-  const membershipPlan = {
-    type: 'annual',
-    title: 'Annual Membership',
-    price: 5000,
-    duration: '1 Year',
-    features: [
-      'Access to all journals and publications',
-      'Full conference access and discounts',
-      'Professional networking opportunities',
-      'Research support and collaboration',
-      'Expert consultations',
-      'Publication opportunities',
-      'Priority event registration',
-      'Member directory access'
-    ]
-  };
+  const membershipPlan = useMemo(() => {
+    const type = searchParams.get('type') || 'annual';
+    const map: Record<string, { title: string; price: number; duration: string; }> = {
+      annual: { title: 'Annual Membership', price: 5000, duration: '1 Year' },
+      lifetime: { title: 'Lifetime Membership', price: 5000, duration: 'Lifetime' }
+    };
+    const picked = map[type] || map.annual;
+    return {
+      type,
+      ...picked,
+      features: [
+        'Access to all journals and publications',
+        'Full conference access and discounts',
+        'Professional networking opportunities',
+        'Research support and collaboration',
+        'Expert consultations',
+        'Publication opportunities',
+        'Priority event registration',
+        'Member directory access'
+      ]
+    };
+  }, [searchParams]);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -60,31 +102,36 @@ const PaymentIntegration = () => {
         return;
       }
 
-      // Create order
-      const { data, error } = await supabase.functions.invoke('create-order', {
-        body: { membershipType: membershipPlan.type, amount: membershipPlan.price }
+      // Create order via Supabase Edge Function (server uses env for keys)
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
+        body: { membershipPlanId: membershipPlan.type, amount: membershipPlan.price }
       });
 
-      if (error) throw error;
+      if (orderError || !orderData) {
+        console.error('Order creation failed:', orderError, orderData);
+        throw orderError || new Error('Failed to create order');
+      }
 
-      const options = {
-        key: 'rzp_test_your_key_here', // Replace with your Razorpay key
-        amount: membershipPlan.price * 100, // Amount in paise
-        currency: 'INR',
+      const options: RazorpayOptions = {
+        key: orderData.keyId,
+        amount: orderData.amount, // already in paise from server
+        currency: orderData.currency || 'INR',
         name: 'Indian Society of Plant Breeders',
         description: `${membershipPlan.title}`,
-        order_id: data.orderId,
-        handler: async (response: any) => {
+        order_id: orderData.orderId,
+        handler: async (response: RazorpayHandlerResponse) => {
           try {
-            const verifyResult = await supabase.functions.invoke('verify-payment', {
+            const { error: verifyError, data: verifyData } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
-                orderId: data.orderId,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                membershipId: orderData.membershipId
               }
             });
 
-            if (verifyResult.data?.success) {
+            if (verifyError) throw verifyError;
+            if (verifyData?.success) {
               toast.success('Payment successful! Membership activated.');
             } else {
               toast.error('Payment verification failed');
@@ -92,6 +139,11 @@ const PaymentIntegration = () => {
           } catch (error) {
             console.error('Payment verification error:', error);
             toast.error('Payment verification failed');
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            toast.message('Payment cancelled');
           }
         },
         prefill: {
@@ -104,10 +156,17 @@ const PaymentIntegration = () => {
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: RazorpayFailedPayload) {
+        console.error('Razorpay payment.failed:', response?.error);
+        const reason = response?.error?.description || response?.error?.reason || 'Payment failed';
+        toast.error(reason);
+      });
       rzp.open();
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Payment initialization failed');
+      const err = error as { name?: string; message?: string } | undefined;
+      const msg = err?.message || 'Payment initialization failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -85,11 +85,14 @@ interface ContentItem {
   is_active: boolean;
 }
 
+// Payload used when creating/updating content items
+type ContentUpsert = Pick<ContentItem, 'title' | 'content' | 'year' | 'is_active'>;
+
 interface AdminContentTabProps {
   mandates: ContentItem[];
   activities: ContentItem[];
-  onAddContent: (data: any, type: 'mandate' | 'activity') => void;
-  onUpdateContent: (id: string, data: any, type: 'mandate' | 'activity') => void;
+  onAddContent: (data: ContentUpsert, type: 'mandate' | 'activity') => void;
+  onUpdateContent: (id: string, data: ContentUpsert, type: 'mandate' | 'activity') => void;
   onDeleteContent: (id: string, type: 'mandate' | 'activity') => void;
 }
 
