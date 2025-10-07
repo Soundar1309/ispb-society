@@ -107,9 +107,10 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
 
       resetForm();
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving publication:', error);
-      toast.error('Error saving publication: ' + error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error('Error saving publication: ' + message);
     } finally {
       setIsSubmitting(false);
     }
@@ -144,9 +145,10 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
       if (error) throw error;
       toast.success('Publication deleted successfully');
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting publication:', error);
-      toast.error('Error deleting publication: ' + error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error('Error deleting publication: ' + message);
     }
   };
 
@@ -405,7 +407,7 @@ const AdminPublicationsTab = ({ publications, onRefresh }: AdminPublicationsTabP
         )}
 
         {editingPublication && (
-          <Dialog open={!!editingPublication} onOpenChange={() => setEditingPublication(null)}>
+          <Dialog open={!!editingPublication} onOpenChange={(open) => { if (!open) setEditingPublication(null); }}>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
                 <DialogTitle>Edit Publication</DialogTitle>

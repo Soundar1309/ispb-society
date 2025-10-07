@@ -28,8 +28,8 @@ interface PaymentRecord {
 
 interface AdminPaymentTabProps {
   payments: PaymentRecord[];
-  onAddPayment: (paymentData: any) => void;
-  onUpdatePayment: (paymentId: string, paymentData: any) => void;
+  onAddPayment: (paymentData: unknown) => void;
+  onUpdatePayment: (paymentId: string, paymentData: unknown) => void;
 }
 
 const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPaymentTabProps) => {
@@ -164,7 +164,7 @@ const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPayme
         type="number"
         placeholder="Amount"
         value={formData.amount}
-        onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+        onChange={(e) => setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })}
         required
       />
       <Input
@@ -278,7 +278,7 @@ const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPayme
         </Table>
 
         {editingPayment && (
-          <Dialog open={!!editingPayment} onOpenChange={() => setEditingPayment(null)}>
+          <Dialog open={!!editingPayment} onOpenChange={(open) => { if (!open) setEditingPayment(null); }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit Payment Record</DialogTitle>

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,71 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+
+// Memoized Quill to prevent re-render on unrelated form updates (e.g., Title/Year typing)
+const MemoQuill = memo(
+  ({ value, onChange }: { value: string; onChange: (content: string) => void }) => (
+    <ReactQuill
+      theme="snow"
+      value={value}
+      onChange={onChange}
+      className="bg-background"
+      modules={{
+        toolbar: [
+          [{ header: [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ align: [] }],
+          ['link'],
+          ['clean']
+        ]
+      }}
+    />
+  ),
+  (prev, next) => prev.value === next.value
+);
+
+interface ContentFormState {
+  title: string;
+  content: string;
+  year: number | null;
+}
+
+interface ContentFormProps {
+  formData: ContentFormState;
+  editingItem: ContentItem | null;
+  activeTab: 'mandates' | 'activities';
+  onInputChange: (field: string, value: string | number | null) => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+function ContentForm({ formData, editingItem, activeTab, onInputChange, onSubmit }: ContentFormProps) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <Input
+        placeholder="Title (optional)"
+        value={formData.title}
+        onChange={(e) => onInputChange('title', e.target.value)}
+      />
+      <Input
+        type="number"
+        placeholder="Year (optional)"
+        value={formData.year ?? ''}
+        onChange={(e) => onInputChange('year', e.target.value ? parseInt(e.target.value) : null)}
+      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Content</label>
+        <MemoQuill
+          value={formData.content}
+          onChange={(content) => onInputChange('content', content)}
+        />
+      </div>
+      <Button type="submit">
+        {editingItem ? 'Update' : 'Add'} {activeTab === 'mandates' ? 'Mandate' : 'Activity'}
+      </Button>
+    </form>
+  );
+}
 
 interface ContentItem {
   id: string;
@@ -52,7 +117,7 @@ const AdminContentTab = ({
     });
   };
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -76,8 +141,9 @@ const AdminContentTab = ({
     resetForm();
   };
 
-  const handleEdit = (item: ContentItem) => {
-    setEditingItem(item);
+  const handleEdit = (item: ContentItem, type: 'mandate' | 'activity') => {
+    // Ensure the editing item has a valid type from context, since DB rows may not include it
+    setEditingItem({ ...item, type });
     setFormData({
       title: item.title || '',
       content: item.content,
@@ -91,43 +157,7 @@ const AdminContentTab = ({
     }
   };
 
-  const ContentForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        placeholder="Title (optional)"
-        value={formData.title}
-        onChange={(e) => handleInputChange('title', e.target.value)}
-      />
-      <Input
-        type="number"
-        placeholder="Year (optional)"
-        value={formData.year || ''}
-        onChange={(e) => handleInputChange('year', e.target.value ? parseInt(e.target.value) : null)}
-      />
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Content</label>
-        <ReactQuill
-          theme="snow"
-          value={formData.content}
-          onChange={(content) => handleInputChange('content', content)}
-          className="bg-background"
-          modules={{
-            toolbar: [
-              [{ 'header': [1, 2, 3, false] }],
-              ['bold', 'italic', 'underline', 'strike'],
-              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-              [{ 'align': [] }],
-              ['link'],
-              ['clean']
-            ]
-          }}
-        />
-      </div>
-      <Button type="submit">
-        {editingItem ? 'Update' : 'Add'} {activeTab === 'mandates' ? 'Mandate' : 'Activity'}
-      </Button>
-    </form>
-  );
+  
 
   const ContentTable = ({ items, type }: { items: ContentItem[], type: 'mandate' | 'activity' }) => (
     <Table>
@@ -154,7 +184,7 @@ const AdminContentTab = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleEdit(item)}
+                  onClick={() => handleEdit(item, type)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -193,7 +223,13 @@ const AdminContentTab = ({
                 <DialogTitle>Add New {activeTab === 'mandates' ? 'Mandate' : 'Activity'}</DialogTitle>
                 <DialogDescription>Create new content item</DialogDescription>
               </DialogHeader>
-              <ContentForm />
+              <ContentForm 
+                formData={formData}
+                editingItem={editingItem}
+                activeTab={activeTab}
+                onInputChange={handleInputChange}
+                onSubmit={handleSubmit}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -213,13 +249,19 @@ const AdminContentTab = ({
         </Tabs>
 
         {editingItem && (
-          <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+          <Dialog open={!!editingItem} onOpenChange={(open) => { if (!open) setEditingItem(null); }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit {editingItem.type === 'mandate' ? 'Mandate' : 'Activity'}</DialogTitle>
                 <DialogDescription>Update content details</DialogDescription>
               </DialogHeader>
-              <ContentForm />
+              <ContentForm 
+                formData={formData}
+                editingItem={editingItem}
+                activeTab={activeTab}
+                onInputChange={handleInputChange}
+                onSubmit={handleSubmit}
+              />
             </DialogContent>
           </Dialog>
         )}

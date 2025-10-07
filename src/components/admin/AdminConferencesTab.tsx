@@ -105,9 +105,10 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
 
       resetForm();
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving conference:', error);
-      toast.error('Error saving conference: ' + error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error('Error saving conference: ' + message);
     } finally {
       setIsSubmitting(false);
     }
@@ -142,9 +143,10 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
       if (error) throw error;
       toast.success('Conference deleted successfully');
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting conference:', error);
-      toast.error('Error deleting conference: ' + error.message);
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error('Error deleting conference: ' + message);
     }
   };
 
@@ -488,7 +490,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
         )}
 
         {editingConference && (
-          <Dialog open={!!editingConference} onOpenChange={() => setEditingConference(null)}>
+          <Dialog open={!!editingConference} onOpenChange={(open) => { if (!open) setEditingConference(null); }}>
             <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-xl">Edit Conference</DialogTitle>
