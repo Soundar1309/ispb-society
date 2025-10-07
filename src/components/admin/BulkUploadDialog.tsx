@@ -89,11 +89,36 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
     }
 
     const headers = lines[0].split(',').map(h => h.trim());
-    const requiredHeaders = ['life_member_no', 'name'];
-    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
     
-    if (missingHeaders.length > 0) {
-      throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`);
+    // Create a mapping of CSV headers to database columns
+    const headerMap: { [key: string]: string } = {
+      'Life Member No.': 'life_member_no',
+      'life_member_no': 'life_member_no',
+      'Name of the Member': 'name',
+      'name': 'name',
+      'Address': 'address',
+      'address': 'address',
+      'Occupation': 'occupation',
+      'occupation': 'occupation',
+      'Date of enrollment': 'date_of_enrollment',
+      'date_of_enrollment': 'date_of_enrollment',
+      'Email': 'email',
+      'email': 'email',
+      'Mobile': 'mobile',
+      'mobile': 'mobile',
+      'Image link': 'image_url',
+      'image_url': 'image_url'
+    };
+    
+    // Map headers to database column names
+    const mappedHeaders = headers.map(h => headerMap[h] || h);
+    
+    // Check for required fields
+    const hasLifeMemberNo = mappedHeaders.includes('life_member_no');
+    const hasName = mappedHeaders.includes('name');
+    
+    if (!hasLifeMemberNo || !hasName) {
+      throw new Error('CSV must have "Life Member No." and "Name of the Member" columns');
     }
 
     const data = [];
@@ -120,10 +145,14 @@ const BulkUploadDialog = ({ isOpen, onClose, onSuccess }: BulkUploadDialogProps)
       values.push(current.trim());
 
       const record: any = {};
-      headers.forEach((header, index) => {
+      mappedHeaders.forEach((mappedHeader, index) => {
+        // Skip S.No. column
+        if (mappedHeader === 'S.No.' || mappedHeader === 's.no.') return;
+        
         const value = values[index] || '';
-        // Treat empty strings as null
-        record[header] = value === '' ? null : value;
+        // Treat empty strings as null, remove BOM character if present
+        const cleanValue = value.replace(/^\uFEFF/, '').trim();
+        record[mappedHeader] = cleanValue === '' ? null : cleanValue;
       });
 
       if (!record.name || !record.life_member_no) {
