@@ -145,74 +145,80 @@ const LifeMembers = () => {
             <div className="space-y-4">
               {currentMembers.map((member, index) => (
                 <Card 
-                  key={member.id} 
-                  className="hover:shadow-lg transition-all duration-300 animate-fade-in border-l-4 border-green-500"
+                  key={member.id}
+                  className="border-l-4 border-green-500 hover:shadow-md transition-all animate-fade-in"
                   style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-4">
                       {/* Profile Image */}
                       <div className="flex-shrink-0">
-                        <div className="relative">
-                          <img 
-                            src={member.image_url || '/placeholder.svg'} 
-                            alt={member.name}
-                            className="w-20 h-20 rounded-full object-cover border-4 border-green-100 shadow-md"
-                          />
+                        <img 
+                          src={member.image_url || '/placeholder.svg'} 
+                          alt={member.name}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border-2 border-gray-200"
+                        />
+                      </div>
+                      
+                      {/* Member Details */}
+                      <div className="flex-1 min-w-0">
+                        {/* Name and Member Number Row - Top */}
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
+                            {member.name}
+                          </h3>
                           {member.life_member_no && (
-                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg">
+                            <span className="px-3 py-1.5 text-xs sm:text-sm font-bold bg-green-100 text-green-800 rounded-md border-2 border-green-300 whitespace-nowrap shadow-sm">
                               {member.life_member_no}
-                            </div>
+                            </span>
                           )}
                         </div>
-                      </div>
-
-                      {/* Member Details */}
-                      <div className="flex-1 min-w-0 space-y-2">
-                        {/* Name - Prominent */}
-                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                          {member.name}
-                        </h3>
-
+                        
                         {/* Contact Info - Highlighted */}
-                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                           {member.email && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-green-600 font-semibold">📧</span>
-                              <a href={`mailto:${member.email}`} className="text-blue-600 hover:underline font-medium">
+                            <div className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">📧</span>
+                              <a 
+                                href={`mailto:${member.email}`}
+                                className="text-sm font-semibold text-blue-600 hover:underline truncate"
+                              >
                                 {member.email}
                               </a>
                             </div>
                           )}
                           {member.mobile && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-green-600 font-semibold">📱</span>
-                              <a href={`tel:${member.mobile}`} className="text-blue-600 hover:underline font-medium">
+                            <div className="flex items-center gap-2">
+                              <span className="text-green-600 text-base">📱</span>
+                              <a 
+                                href={`tel:${member.mobile}`}
+                                className="text-sm font-semibold text-green-700 hover:underline"
+                              >
                                 {member.mobile}
                               </a>
                             </div>
                           )}
                         </div>
-
+                        
                         {/* Additional Details */}
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                        <div className="space-y-1 text-sm text-gray-600">
                           {member.occupation && (
-                            <span className="inline-flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                               <span className="text-gray-400">💼</span>
-                              {member.occupation}
-                            </span>
+                              <span>{member.occupation}</span>
+                            </div>
                           )}
                           {member.address && (
-                            <span className="inline-flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                               <span className="text-gray-400">📍</span>
-                              {member.address}
-                            </span>
+                              <span>{member.address}</span>
+                            </div>
                           )}
                           {member.date_of_enrollment && (
-                            <span className="inline-flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                               <span className="text-gray-400">📅</span>
-                              Enrolled: {new Date(member.date_of_enrollment).toLocaleDateString('en-IN')}
-                            </span>
+                              <span>Enrolled: {new Date(member.date_of_enrollment).toLocaleDateString('en-IN')}</span>
+                            </div>
                           )}
                         </div>
                       </div>

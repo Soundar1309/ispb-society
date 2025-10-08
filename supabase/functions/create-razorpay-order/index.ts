@@ -57,6 +57,49 @@ serve(async (req) => {
 
     console.log('Creating Razorpay order for user:', user.id)
 
+    // Check if user has an approved application
+    const { data: existingApp } = await supabaseClient
+      .from('memberships')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('application_status', 'approved')
+      .eq('payment_status', 'pending')
+      .maybeSingle()
+
+    let membershipId: string
+
+    if (existingApp) {
+      // User has approved application, use it for payment
+      console.log('Found existing approved application:', existingApp.id)
+      membershipId = existingApp.id
+    } else {
+      // No approved application, create a new membership for direct payment
+      console.log('No approved application found, creating new membership')
+      const { data: newMembership, error: membershipError } = await supabaseClient
+        .from('memberships')
+        .insert({
+          user_id: user.id,
+          membership_type: membershipPlanId,
+          amount: amount,
+          status: 'pending',
+          payment_status: 'pending',
+          application_status: 'active',
+          currency: 'INR'
+        })
+        .select()
+        .maybeSingle()
+
+      if (membershipError || !newMembership) {
+        console.error('Error creating membership:', membershipError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to create membership record', details: membershipError }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      membershipId = newMembership.id
+      console.log('Membership created:', membershipId)
+    }
+
     // Create Razorpay order
     const razorpayOrder = {
       amount: amount * 100, // Convert to paise
@@ -88,38 +131,22 @@ serve(async (req) => {
     const order = await response.json()
     console.log('Razorpay order created:', order.id)
 
-    // Create membership record
-    console.log('Creating membership record for user:', user.id)
-    const { data: membership, error: membershipError } = await supabaseClient
+    // Update membership with order ID
+    const { error: updateError } = await supabaseClient
       .from('memberships')
-      .insert({
-        user_id: user.id,
-        membership_type: membershipPlanId,
-        amount: amount,
-        status: 'pending',
-        payment_status: 'pending',
-        razorpay_order_id: order.id,
-        currency: 'INR'
-      })
-      .select()
-      .maybeSingle()
+      .update({ razorpay_order_id: order.id })
+      .eq('id', membershipId)
 
-    if (membershipError || !membership) {
-      console.error('Error creating membership:', membershipError)
-      return new Response(
-        JSON.stringify({ error: 'Failed to create membership record', details: membershipError }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (updateError) {
+      console.error('Error updating membership with order ID:', updateError)
     }
-
-    console.log('Membership created:', membership.id)
 
     // Create order record
     const { error: orderError } = await supabaseClient
       .from('orders')
       .insert({
         user_id: user.id,
-        membership_id: membership.id,
+        membership_id: membershipId,
         razorpay_order_id: order.id,
         amount: amount,
         currency: 'INR',
@@ -139,7 +166,7 @@ serve(async (req) => {
         amount: order.amount,
         currency: order.currency,
         keyId: razorpayKeyId,
-        membershipId: membership.id
+        membershipId: membershipId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

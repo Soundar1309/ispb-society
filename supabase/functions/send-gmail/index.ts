@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,27 +25,83 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Gmail SMTP password not configured");
     }
 
-    const client = new SmtpClient();
-
-    // Connect to Gmail SMTP server
-    await client.connectTLS({
+    // Connect to Gmail SMTP with TLS
+    const conn = await Deno.connect({
       hostname: "smtp.gmail.com",
       port: 587,
-      username: "ispbtnau@gmail.com",
-      password: smtpPassword,
     });
-
-    // Send email
-    await client.send({
-      from: "ISPB <ispbtnau@gmail.com>",
-      to: to,
-      subject: subject,
-      content: html,
-      html: html,
-    });
-
-    // Close connection
-    await client.close();
+    
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    
+    // Upgrade to TLS
+    const tlsConn = await Deno.startTls(conn, { hostname: "smtp.gmail.com" });
+    
+    // Helper function to read response
+    const readResponse = async () => {
+      const buffer = new Uint8Array(4096);
+      const n = await tlsConn.read(buffer);
+      if (n === null) return "";
+      return decoder.decode(buffer.subarray(0, n));
+    };
+    
+    // Read initial banner
+    const banner = await readResponse();
+    console.log("Banner:", banner);
+    
+    // Send EHLO
+    await tlsConn.write(encoder.encode("EHLO localhost\r\n"));
+    const ehlo = await readResponse();
+    console.log("EHLO response:", ehlo);
+    
+    // Send AUTH LOGIN
+    await tlsConn.write(encoder.encode("AUTH LOGIN\r\n"));
+    await readResponse();
+    
+    // Send username (base64)
+    await tlsConn.write(encoder.encode(btoa("ispbtnau@gmail.com") + "\r\n"));
+    await readResponse();
+    
+    // Send password (base64)
+    await tlsConn.write(encoder.encode(btoa(smtpPassword) + "\r\n"));
+    const authResp = await readResponse();
+    console.log("Auth response:", authResp);
+    
+    if (!authResp.includes("235")) {
+      throw new Error("Authentication failed");
+    }
+    
+    // Send MAIL FROM
+    await tlsConn.write(encoder.encode(`MAIL FROM:<ispbtnau@gmail.com>\r\n`));
+    await readResponse();
+    
+    // Send RCPT TO
+    await tlsConn.write(encoder.encode(`RCPT TO:<${to}>\r\n`));
+    await readResponse();
+    
+    // Send DATA
+    await tlsConn.write(encoder.encode("DATA\r\n"));
+    await readResponse();
+    
+    // Send email content
+    const emailContent = [
+      `From: "ISPB" <ispbtnau@gmail.com>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=utf-8`,
+      ``,
+      html,
+      `.`
+    ].join("\r\n") + "\r\n";
+    
+    await tlsConn.write(encoder.encode(emailContent));
+    const contentResp = await readResponse();
+    console.log("Content response:", contentResp);
+    
+    // Send QUIT
+    await tlsConn.write(encoder.encode("QUIT\r\n"));
+    tlsConn.close();
 
     console.log("Email sent successfully to:", to);
 
