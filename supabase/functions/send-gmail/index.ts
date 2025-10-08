@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import nodemailer from "npm:nodemailer@6.9.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,27 +31,28 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Gmail SMTP password not configured");
     }
 
-    console.log("Connecting to SMTP server...");
-    const client = new SmtpClient();
-
-    await client.connectTLS({
-      hostname: "smtp.gmail.com",
-      port: 465,
-      username: "ispbtnau@gmail.com",
-      password: smtpPassword,
+    console.log("Creating nodemailer transporter...");
+    
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, // Use STARTTLS
+      auth: {
+        user: "ispbtnau@gmail.com",
+        pass: smtpPassword,
+      },
     });
 
-    console.log("Connected to SMTP, sending email...");
+    console.log("Sending email via nodemailer...");
 
-    await client.send({
-      from: "ispbtnau@gmail.com",
+    const info = await transporter.sendMail({
+      from: '"ISPB" <ispbtnau@gmail.com>',
       to: to,
       subject: subject,
-      content: html,
       html: html,
     });
 
-    await client.close();
+    console.log("Email sent successfully. Message ID:", info.messageId);
     
     console.log("Email sent successfully to:", to);
 
