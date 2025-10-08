@@ -47,12 +47,13 @@ const MembershipApplication = () => {
     setIsLoading(true);
 
     try {
-      // Check for existing application
+      // Check for existing application (submitted or approved)
       const { data: existingApp } = await supabase
         .from('memberships')
-        .select('id')
+        .select('id, application_status')
         .eq('user_id', user?.id)
-        .single();
+        .in('application_status', ['submitted', 'approved'])
+        .maybeSingle();
 
       if (existingApp) {
         toast.error('You have already submitted an application. Please check your dashboard for status.');

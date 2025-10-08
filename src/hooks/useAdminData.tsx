@@ -118,10 +118,7 @@ export const useAdminData = () => {
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
-        supabase.from('memberships').select(`
-          *,
-          user_roles!memberships_user_id_fkey(full_name, email, phone, institution)
-        `).eq('application_status', 'submitted').order('created_at', { ascending: false }),
+        supabase.from('memberships').select('*').eq('application_status', 'submitted').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('mandates').select('*').order('display_order', { ascending: true }),
@@ -189,7 +186,25 @@ export const useAdminData = () => {
       }
       
       setUsers(membersWithUserData);
-      setApplications(applicationsRes.data || []);
+      
+      // Fetch user roles for applications
+      const applicationsWithUserData = [];
+      if (applicationsRes.data && userRolesRes.data) {
+        for (const app of applicationsRes.data) {
+          const userRole = (userRolesRes.data as UserRole[]).find(ur => ur.user_id === app.user_id);
+          applicationsWithUserData.push({
+            ...app,
+            user_roles: userRole ? {
+              full_name: userRole.full_name,
+              email: userRole.email,
+              phone: userRole.phone,
+              institution: userRole.institution,
+              designation: userRole.designation
+            } : null
+          });
+        }
+      }
+      setApplications(applicationsWithUserData);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       setMandates(mandatesRes.data || []);
