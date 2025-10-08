@@ -4,11 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Loader2, Users } from 'lucide-react';
 import StatisticsCards from '@/components/life-members/StatisticsCards';
-import SearchAndFilter from '@/components/life-members/SearchAndFilter';
-import MemberCard from '@/components/life-members/MemberCard';
 import MembershipCTA from '@/components/life-members/MembershipCTA';
 
 interface LifeMember {
@@ -29,10 +28,8 @@ const LifeMembers = () => {
   const [filteredMembers, setFilteredMembers] = useState<LifeMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [institutionFilter, setInstitutionFilter] = useState('all');
-  const [specializationFilter, setSpecializationFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const membersPerPage = 6;
+  const membersPerPage = 10;
 
   useEffect(() => {
     fetchLifeMembers();
@@ -40,7 +37,7 @@ const LifeMembers = () => {
 
   useEffect(() => {
     filterMembers();
-  }, [lifeMembers, searchTerm, institutionFilter, specializationFilter]);
+  }, [lifeMembers, searchTerm]);
 
   const fetchLifeMembers = async () => {
     try {
@@ -75,18 +72,6 @@ const LifeMembers = () => {
         member.address?.toLowerCase().includes(searchLower) ||
         member.occupation?.toLowerCase().includes(searchLower) ||
         member.life_member_no?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (institutionFilter && institutionFilter !== 'all') {
-      filtered = filtered.filter(member =>
-        member.address?.toLowerCase().includes(institutionFilter.toLowerCase())
-      );
-    }
-
-    if (specializationFilter && specializationFilter !== 'all') {
-      filtered = filtered.filter(member =>
-        member.occupation?.toLowerCase().includes(specializationFilter.toLowerCase())
       );
     }
 
@@ -128,21 +113,25 @@ const LifeMembers = () => {
           <StatisticsCards lifeMembers={lifeMembers} />
         </div>
 
-        {/* Search and Filter */}
-        <div className="animate-slide-in-right">
-          <SearchAndFilter
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            institutionFilter={institutionFilter}
-            setInstitutionFilter={setInstitutionFilter}
-            specializationFilter={specializationFilter}
-            setSpecializationFilter={setSpecializationFilter}
-            lifeMembers={lifeMembers}
-          />
-        </div>
+        {/* Search */}
+        <Card className="mb-6 sm:mb-8 animate-slide-in-right">
+          <CardContent className="p-4 sm:p-6">
+            <div className="relative">
+              <Input
+                placeholder="Search by name, address, occupation, or member number..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Members List */}
-        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+        <div className="space-y-3 mb-6 sm:mb-8">
           {currentMembers.length === 0 ? (
             <Card className="py-12 animate-fade-in">
               <CardContent className="text-center">
@@ -153,17 +142,50 @@ const LifeMembers = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {currentMembers.map((member, index) => (
-                <div 
-                  key={member.id} 
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <MemberCard member={member} />
+            <Card>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  {currentMembers.map((member, index) => (
+                    <div 
+                      key={member.id} 
+                      className="p-4 hover:bg-gray-50 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={member.image_url || '/placeholder.svg'} 
+                            alt={member.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-semibold text-gray-900 truncate">{member.name}</h3>
+                            {member.life_member_no && (
+                              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
+                                {member.life_member_no}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                            {member.occupation && <span>{member.occupation}</span>}
+                            {member.address && <span>• {member.address}</span>}
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
+                            {member.email && <span>📧 {member.email}</span>}
+                            {member.mobile && <span>📱 {member.mobile}</span>}
+                            {member.date_of_enrollment && (
+                              <span>📅 Enrolled: {new Date(member.date_of_enrollment).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 

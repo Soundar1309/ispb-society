@@ -66,6 +66,7 @@ export const useAdminData = () => {
   const [users, setUsers] = useState<MemberWithUserData[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [applications, setApplications] = useState([]);
   const [conferences, setConferences] = useState([]);
   const [messages, setMessages] = useState([]);
   const [mandates, setMandates] = useState([]);
@@ -102,7 +103,8 @@ export const useAdminData = () => {
       const [
         userRolesRes, 
         membershipsRes,
-        conferencesRes, 
+        applicationsRes,
+        conferencesRes,
         messagesRes,
         mandatesRes,
         activitiesRes,
@@ -116,6 +118,10 @@ export const useAdminData = () => {
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
+        supabase.from('memberships').select(`
+          *,
+          user_roles!memberships_user_id_fkey(full_name, email, phone, institution)
+        `).eq('application_status', 'submitted').order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('mandates').select('*').order('display_order', { ascending: true }),
@@ -183,6 +189,7 @@ export const useAdminData = () => {
       }
       
       setUsers(membersWithUserData);
+      setApplications(applicationsRes.data || []);
       setConferences(conferencesRes.data || []);
       setMessages(messagesRes.data || []);
       setMandates(mandatesRes.data || []);
@@ -363,6 +370,7 @@ export const useAdminData = () => {
     users,
     userRoles,
     memberships,
+    applications,
     conferences,
     messages,
     mandates,

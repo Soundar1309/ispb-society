@@ -17,9 +17,11 @@ import {
   MessageSquare, 
   CreditCard,
   ChevronRight,
-  Settings
+  Settings,
+  FileText
 } from 'lucide-react';
 import AdminStats from './AdminStats';
+import AdminApplicationsTab from './AdminApplicationsTab';
 import AdminMembersTab from './AdminMembersTab';
 import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
@@ -51,6 +53,7 @@ interface AdminDashboardProps {
   publications?: any[];
   galleryItems?: any[];
   officeBearers?: any[];
+  applications?: any[];
   refreshData: () => void;
   updateUserRole: (userId: string, newRole: string) => Promise<void>;
   addMembership: (membershipData: any) => void;
@@ -73,6 +76,7 @@ const AdminDashboard = ({
   publications = [],
   galleryItems = [],
   officeBearers = [],
+  applications = [],
   refreshData,
   updateUserRole,
   addMembership,
@@ -99,6 +103,13 @@ const AdminDashboard = ({
     {
       title: 'User Management',
       items: [
+        { 
+          id: 'applications', 
+          label: 'Applications', 
+          icon: FileText,
+          description: 'Review membership applications',
+          count: applications?.length || 0
+        },
         { 
           id: 'members', 
           label: 'Members', 
@@ -293,9 +304,16 @@ const AdminDashboard = ({
     switch (activeTab) {
       case 'dashboard':
         return <AdminStats stats={stats} />;
+      case 'applications':
+        return (
+          <AdminApplicationsTab
+            applications={applications}
+            onRefresh={refreshData}
+          />
+        );
       case 'users':
         return (
-          <UserManagement 
+          <UserManagement
             users={userRoles}
             userRoles={userRoles}
             onChangeUserRole={updateUserRole}

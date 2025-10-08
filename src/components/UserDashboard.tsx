@@ -15,6 +15,7 @@ const UserDashboard = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -72,6 +73,16 @@ const UserDashboard = () => {
       .order('created_at', { ascending: false });
 
     setMemberships(membershipData || []);
+
+    // Fetch membership applications
+    const { data: applicationData } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('application_status', 'submitted')
+      .order('created_at', { ascending: false });
+
+    setApplications(applicationData || []);
 
     // Fetch conference registrations
     const { data: regData } = await supabase
@@ -261,6 +272,7 @@ const UserDashboard = () => {
         <Tabs defaultValue="profile" className="space-y-4">
           <TabsList>
             <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="memberships">Memberships</TabsTrigger>
             <TabsTrigger value="conferences">Conferences</TabsTrigger>
           </TabsList>
@@ -373,6 +385,43 @@ const UserDashboard = () => {
                       <p className="text-gray-700">{userRole?.specialization || 'Not provided'}</p>
                     )}
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="applications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Membership Applications</CardTitle>
+                <CardDescription>Track your membership application status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {applications.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No pending applications</p>
+                  ) : (
+                    applications.map((app: any) => (
+                      <div key={app.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-semibold capitalize">{app.membership_type} Membership</h3>
+                          <Badge className={getStatusColor(app.application_status)}>
+                            {app.application_status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p>Amount: ₹{app.amount}</p>
+                          <p>Submitted: {new Date(app.created_at).toLocaleDateString()}</p>
+                          {app.admin_review_notes && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded">
+                              <p className="font-medium">Admin Notes:</p>
+                              <p>{app.admin_review_notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

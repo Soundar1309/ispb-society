@@ -19,6 +19,7 @@ const AdminPanel = () => {
     publications,
     galleryItems,
     officeBearers,
+    applications,
     refreshData,
     updateUserRole,
     addMembership,
@@ -43,6 +44,7 @@ const AdminPanel = () => {
         publications={publications}
         galleryItems={galleryItems}
         officeBearers={officeBearers}
+        applications={applications}
         refreshData={refreshData}
         updateUserRole={updateUserRole}
         addMembership={addMembership}
