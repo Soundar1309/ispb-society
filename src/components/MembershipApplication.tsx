@@ -47,6 +47,19 @@ const MembershipApplication = () => {
     setIsLoading(true);
 
     try {
+      // Check for existing application
+      const { data: existingApp } = await supabase
+        .from('memberships')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (existingApp) {
+        toast.error('You have already submitted an application. Please check your dashboard for status.');
+        setIsLoading(false);
+        return;
+      }
+
       // Update user role with application data
       const { error: roleError } = await supabase
         .from('user_roles')
@@ -115,18 +128,54 @@ const MembershipApplication = () => {
             to: 'ispbtnau@gmail.com',
             subject: 'New Membership Application Received',
             html: `
-              <h2>New Membership Application</h2>
-              <p>A new membership application has been submitted.</p>
-              <h3>Applicant Details:</h3>
-              <ul>
-                <li><strong>Name:</strong> ${applicationData.full_name}</li>
-                <li><strong>Email:</strong> ${applicationData.email}</li>
-                <li><strong>Phone:</strong> ${applicationData.phone}</li>
-                <li><strong>Institution:</strong> ${applicationData.institution}</li>
-                <li><strong>Designation:</strong> ${applicationData.designation}</li>
-                <li><strong>Membership Type:</strong> ${applicationData.membership_type}</li>
-              </ul>
-              <p>Please review and approve the application in the admin panel.</p>
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #059669;">New Membership Application</h2>
+                <p>A new membership application has been submitted.</p>
+                <h3 style="color: #374151;">Applicant Details:</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.full_name}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Email:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.email}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Phone:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.phone}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Institution:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.institution}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Designation:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.designation}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Membership Type:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.membership_type}</td></tr>
+                </table>
+                <p style="margin-top: 20px; padding: 15px; background-color: #f3f4f6; border-radius: 8px;">
+                  Please review and approve the application in the admin panel.
+                </p>
+              </div>
+            `
+          }
+        });
+
+        // Send confirmation email to user
+        await supabase.functions.invoke('send-gmail', {
+          body: {
+            to: applicationData.email,
+            subject: 'ISPB - Application Received',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #059669;">Application Received Successfully!</h2>
+                <p>Dear ${applicationData.full_name},</p>
+                <p>Thank you for applying for ISPB membership. We have received your application and it is now under review.</p>
+                <h3 style="color: #374151;">Application Details:</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Membership Type:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.membership_type}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Institution:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${applicationData.institution}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Status:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">Under Review</td></tr>
+                </table>
+                <div style="margin-top: 20px; padding: 15px; background-color: #dbeafe; border-radius: 8px;">
+                  <h4 style="margin-top: 0; color: #1e40af;">What's Next?</h4>
+                  <ul style="margin-bottom: 0;">
+                    <li>Your application will be reviewed within 7-10 working days</li>
+                    <li>You'll receive an email once approved</li>
+                    <li>Payment link will be sent after approval</li>
+                    <li>Membership confirmation will be sent after payment</li>
+                  </ul>
+                </div>
+                <p style="margin-top: 20px; color: #6b7280;">For any queries, please contact us at ispbtnau@gmail.com</p>
+                <p style="color: #6b7280;">Best regards,<br><strong>ISPB Team</strong></p>
+              </div>
             `
           }
         });

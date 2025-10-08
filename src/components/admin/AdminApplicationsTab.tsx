@@ -81,25 +81,34 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
         await supabase.functions.invoke('send-gmail', {
           body: {
             to: selectedApp.user_roles?.email,
-            subject: 'Membership Application Approved - Payment Required',
+            subject: 'ISPB - Membership Application Approved',
             html: `
-              <h2>Your Membership Application Has Been Approved!</h2>
-              <p>Dear ${selectedApp.user_roles?.full_name},</p>
-              <p>Congratulations! Your ${selectedApp.membership_type} membership application has been approved by our membership committee.</p>
-              
-              <h3>Next Steps:</h3>
-              <p>To complete your membership, please proceed with the payment:</p>
-              <ul>
-                <li><strong>Membership Type:</strong> ${selectedApp.membership_type}</li>
-                <li><strong>Amount:</strong> ₹${selectedApp.amount}</li>
-              </ul>
-              
-              <p>Please visit the membership portal to complete your payment:</p>
-              <p><a href="${window.location.origin}/enhanced-membership" style="background: #22c55e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Complete Payment</a></p>
-              
-              ${reviewNotes ? `<p><strong>Admin Notes:</strong> ${reviewNotes}</p>` : ''}
-              
-              <p>Best regards,<br>ISPB Team</p>
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #059669;">Membership Application Approved!</h2>
+                <p>Dear ${selectedApp.user_roles?.full_name},</p>
+                <p>We are pleased to inform you that your membership application has been approved.</p>
+                <div style="margin: 20px 0; padding: 15px; background-color: #d1fae5; border-radius: 8px; border-left: 4px solid #059669;">
+                  <h3 style="margin-top: 0; color: #065f46;">Next Steps:</h3>
+                  <ol style="margin-bottom: 0;">
+                    <li>Click the link below to proceed with payment</li>
+                    <li>Complete the payment process</li>
+                    <li>You'll receive your membership confirmation</li>
+                  </ol>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Membership Type:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${selectedApp.membership_type}</td></tr>
+                  <tr><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>Amount to Pay:</strong></td><td style="padding: 8px; border-bottom: 1px solid #e5e7eb;"><strong>₹${selectedApp.amount}</strong></td></tr>
+                </table>
+                ${reviewNotes ? `<div style="margin: 20px 0; padding: 15px; background-color: #eff6ff; border-radius: 8px;">
+                  <h4 style="margin-top: 0; color: #1e40af;">Admin Notes:</h4>
+                  <p style="margin-bottom: 0;">${reviewNotes}</p>
+                </div>` : ''}
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${window.location.origin}/enhanced-membership" style="display: inline-block; padding: 12px 30px; background-color: #059669; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Complete Payment</a>
+                </div>
+                <p style="color: #6b7280;">For any queries, please contact us at ispbtnau@gmail.com</p>
+                <p style="color: #6b7280;">Best regards,<br><strong>ISPB Team</strong></p>
+              </div>
             `
           }
         });
@@ -142,14 +151,20 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
         await supabase.functions.invoke('send-gmail', {
           body: {
             to: selectedApp.user_roles?.email,
-            subject: 'Membership Application Update',
+            subject: 'ISPB - Membership Application Update',
             html: `
-              <h2>Membership Application Status</h2>
-              <p>Dear ${selectedApp.user_roles?.full_name},</p>
-              <p>Thank you for your interest in ISPB membership. After careful review, we are unable to approve your application at this time.</p>
-              ${reviewNotes ? `<p><strong>Reason:</strong> ${reviewNotes}</p>` : ''}
-              <p>If you have any questions or would like to reapply in the future, please contact us.</p>
-              <p>Best regards,<br>ISPB Team</p>
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #dc2626;">Regarding Your Membership Application</h2>
+                <p>Dear ${selectedApp.user_roles?.full_name},</p>
+                <p>Thank you for your interest in ISPB membership.</p>
+                <p>After careful review, we regret to inform you that we are unable to process your application at this time.</p>
+                ${reviewNotes ? `<div style="margin: 20px 0; padding: 15px; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+                  <h4 style="margin-top: 0; color: #991b1b;">Review Notes:</h4>
+                  <p style="margin-bottom: 0;">${reviewNotes}</p>
+                </div>` : ''}
+                <p style="margin-top: 20px;">If you have any questions or would like to discuss this decision, please feel free to contact us at ispbtnau@gmail.com</p>
+                <p style="color: #6b7280;">Best regards,<br><strong>ISPB Team</strong></p>
+              </div>
             `
           }
         });

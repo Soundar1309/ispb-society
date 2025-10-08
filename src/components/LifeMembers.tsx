@@ -29,7 +29,7 @@ const LifeMembers = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const membersPerPage = 10;
+  const membersPerPage = 50;
 
   useEffect(() => {
     fetchLifeMembers();
@@ -142,50 +142,85 @@ const LifeMembers = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {currentMembers.map((member, index) => (
-                    <div 
-                      key={member.id} 
-                      className="p-4 hover:bg-gray-50 transition-colors animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex-shrink-0">
+            <div className="space-y-4">
+              {currentMembers.map((member, index) => (
+                <Card 
+                  key={member.id} 
+                  className="hover:shadow-lg transition-all duration-300 animate-fade-in border-l-4 border-green-500"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      {/* Profile Image */}
+                      <div className="flex-shrink-0">
+                        <div className="relative">
                           <img 
                             src={member.image_url || '/placeholder.svg'} 
                             alt={member.name}
-                            className="w-16 h-16 rounded-full object-cover"
+                            className="w-20 h-20 rounded-full object-cover border-4 border-green-100 shadow-md"
                           />
+                          {member.life_member_no && (
+                            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg">
+                              {member.life_member_no}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-lg font-semibold text-gray-900 truncate">{member.name}</h3>
-                            {member.life_member_no && (
-                              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded">
-                                {member.life_member_no}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
-                            {member.occupation && <span>{member.occupation}</span>}
-                            {member.address && <span>• {member.address}</span>}
-                          </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
-                            {member.email && <span>📧 {member.email}</span>}
-                            {member.mobile && <span>📱 {member.mobile}</span>}
-                            {member.date_of_enrollment && (
-                              <span>📅 Enrolled: {new Date(member.date_of_enrollment).toLocaleDateString()}</span>
-                            )}
-                          </div>
+                      </div>
+
+                      {/* Member Details */}
+                      <div className="flex-1 min-w-0 space-y-2">
+                        {/* Name - Prominent */}
+                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                          {member.name}
+                        </h3>
+
+                        {/* Contact Info - Highlighted */}
+                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                          {member.email && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-green-600 font-semibold">📧</span>
+                              <a href={`mailto:${member.email}`} className="text-blue-600 hover:underline font-medium">
+                                {member.email}
+                              </a>
+                            </div>
+                          )}
+                          {member.mobile && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-green-600 font-semibold">📱</span>
+                              <a href={`tel:${member.mobile}`} className="text-blue-600 hover:underline font-medium">
+                                {member.mobile}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Additional Details */}
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                          {member.occupation && (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-gray-400">💼</span>
+                              {member.occupation}
+                            </span>
+                          )}
+                          {member.address && (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-gray-400">📍</span>
+                              {member.address}
+                            </span>
+                          )}
+                          {member.date_of_enrollment && (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-gray-400">📅</span>
+                              Enrolled: {new Date(member.date_of_enrollment).toLocaleDateString('en-IN')}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
 

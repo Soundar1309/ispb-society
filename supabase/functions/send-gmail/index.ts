@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,76 +20,33 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { to, subject, html }: EmailRequest = await req.json();
 
-    const smtpConfig = {
-      server: "smtp.gmail.com",
-      port: 587,
-      username: "ispbtnau@gmail.com",
-      password: Deno.env.get("GMAIL_SMTP_PASSWORD"),
-    };
-
-    if (!smtpConfig.password) {
+    const smtpPassword = Deno.env.get("GMAIL_SMTP_PASSWORD");
+    
+    if (!smtpPassword) {
       throw new Error("Gmail SMTP password not configured");
     }
 
-    // Create email message in MIME format
-    const message = [
-      `From: ISPB <${smtpConfig.username}>`,
-      `To: ${to}`,
-      `Subject: ${subject}`,
-      "MIME-Version: 1.0",
-      "Content-Type: text/html; charset=UTF-8",
-      "",
-      html,
-    ].join("\r\n");
+    const client = new SmtpClient();
 
-    // Connect to SMTP server and send email
-    const conn = await Deno.connect({
-      hostname: smtpConfig.server,
-      port: smtpConfig.port,
+    // Connect to Gmail SMTP server
+    await client.connectTLS({
+      hostname: "smtp.gmail.com",
+      port: 587,
+      username: "ispbtnau@gmail.com",
+      password: smtpPassword,
     });
 
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
+    // Send email
+    await client.send({
+      from: "ISPB <ispbtnau@gmail.com>",
+      to: to,
+      subject: subject,
+      content: html,
+      html: html,
+    });
 
-    // Helper to read response
-    const readResponse = async () => {
-      const buffer = new Uint8Array(1024);
-      const n = await conn.read(buffer);
-      return decoder.decode(buffer.subarray(0, n || 0));
-    };
-
-    // Helper to send command
-    const sendCommand = async (command: string) => {
-      await conn.write(encoder.encode(command + "\r\n"));
-      return await readResponse();
-    };
-
-    // SMTP conversation
-    await readResponse(); // Read welcome message
-    await sendCommand(`EHLO ${smtpConfig.server}`);
-    await sendCommand("STARTTLS");
-
-    // Upgrade to TLS
-    const tlsConn = await Deno.startTls(conn, { hostname: smtpConfig.server });
-
-    const tlsSendCommand = async (command: string) => {
-      await tlsConn.write(encoder.encode(command + "\r\n"));
-      const buffer = new Uint8Array(1024);
-      const n = await tlsConn.read(buffer);
-      return decoder.decode(buffer.subarray(0, n || 0));
-    };
-
-    await tlsSendCommand(`EHLO ${smtpConfig.server}`);
-    await tlsSendCommand("AUTH LOGIN");
-    await tlsSendCommand(btoa(smtpConfig.username));
-    await tlsSendCommand(btoa(smtpConfig.password));
-    await tlsSendCommand(`MAIL FROM:<${smtpConfig.username}>`);
-    await tlsSendCommand(`RCPT TO:<${to}>`);
-    await tlsSendCommand("DATA");
-    await tlsSendCommand(message + "\r\n.");
-    await tlsSendCommand("QUIT");
-
-    tlsConn.close();
+    // Close connection
+    await client.close();
 
     console.log("Email sent successfully to:", to);
 
