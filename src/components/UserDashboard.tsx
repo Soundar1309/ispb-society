@@ -268,6 +268,49 @@ const UserDashboard = () => {
           </Card>
         </div>
 
+        {/* Active Membership Card - Show if payment is paid and has member code */}
+        {memberships.some((m: any) => m.payment_status === 'paid' && m.member_code) && (
+          <Card className="mb-8 overflow-hidden border-2 border-green-200">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+              <div className="flex items-center justify-between text-white">
+                <div>
+                  <p className="text-sm opacity-90">Your Membership Status</p>
+                  <p className="text-2xl font-bold">✅ ACTIVE MEMBER</p>
+                </div>
+                <Badge className="bg-white text-green-700 hover:bg-white text-lg px-4 py-2">
+                  Life Member
+                </Badge>
+              </div>
+            </div>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="text-center md:text-left">
+                  <p className="text-sm text-gray-600 mb-2">Life Member Number</p>
+                  <p className="text-4xl font-bold text-green-700 tracking-wider">
+                    {memberships.find((m: any) => m.member_code)?.member_code}
+                  </p>
+                </div>
+                <div className="text-center md:text-right">
+                  <p className="text-sm text-gray-600 mb-1">Member Since</p>
+                  <p className="text-xl font-semibold text-gray-800">
+                    {new Date(memberships.find((m: any) => m.member_code)?.created_at).toLocaleDateString('en-IN', { 
+                      year: 'numeric', 
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                  <p className="text-sm text-green-600 mt-2">
+                    Valid Until: {new Date(memberships.find((m: any) => m.member_code)?.valid_until).toLocaleDateString('en-IN', { 
+                      year: 'numeric', 
+                      month: 'long'
+                    })}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Dashboard Tabs */}
         <Tabs defaultValue="profile" className="space-y-4">
           <TabsList>
@@ -442,8 +485,13 @@ const UserDashboard = () => {
                       <div key={membership.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h3 className="font-semibold capitalize">{membership.membership_type}</h3>
+                          {membership.member_code && (
+                            <p className="text-lg font-bold text-green-700 mt-1">
+                              {membership.member_code}
+                            </p>
+                          )}
                           <p className="text-sm text-gray-600">
-                            Valid: {membership.valid_from} to {membership.valid_until}
+                            Valid: {membership.valid_from || 'N/A'} to {membership.valid_until || 'N/A'}
                           </p>
                           <p className="text-sm text-gray-500">Amount: ₹{membership.amount}</p>
                           {membership.is_manual && (
