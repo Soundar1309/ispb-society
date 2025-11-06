@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Download, FileText } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -286,6 +286,46 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                     <p>₹{selectedApp.amount}</p>
                   </div>
                 </div>
+
+                {/* Uploaded Documents Section */}
+                {selectedApp.application_documents && Array.isArray(selectedApp.application_documents) && selectedApp.application_documents.length > 0 && (
+                  <div className="border rounded-lg p-4 bg-muted/50">
+                    <Label className="text-sm font-medium mb-3 block">Uploaded Documents</Label>
+                    <div className="space-y-2">
+                      {selectedApp.application_documents.map((doc: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-background rounded-md border">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-sm font-medium">{doc.name || `Document ${index + 1}`}</p>
+                              {doc.size && (
+                                <p className="text-xs text-muted-foreground">
+                                  {(doc.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = doc.url;
+                              link.download = doc.name || 'document';
+                              link.target = '_blank';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="reviewNotes">Admin Notes</Label>
