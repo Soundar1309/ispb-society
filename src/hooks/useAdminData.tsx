@@ -118,7 +118,7 @@ export const useAdminData = () => {
       ] = await Promise.all([
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.from('memberships').select('*').eq('status', 'active').order('created_at', { ascending: false }),
-        supabase.from('memberships').select('*').eq('application_status', 'submitted').order('created_at', { ascending: false }),
+        supabase.from('memberships').select('*').in('application_status', ['submitted', 'approved', 'rejected']).order('created_at', { ascending: false }),
         supabase.from('conferences').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('mandates').select('*').order('display_order', { ascending: true }),

@@ -221,18 +221,17 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {app.application_status === 'submitted' && (
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setSelectedApp(app);
-                        setIsReviewDialogOpen(true);
-                      }}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Review
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant={app.application_status === 'submitted' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSelectedApp(app);
+                      setIsReviewDialogOpen(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    {app.application_status === 'submitted' ? 'Review' : 'View'}
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -338,25 +337,34 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                   />
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleApprove}
-                    disabled={isProcessing}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {isProcessing ? 'Processing...' : 'Approve & Send Payment Link'}
-                  </Button>
-                  <Button
-                    onClick={handleReject}
-                    disabled={isProcessing}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    {isProcessing ? 'Processing...' : 'Reject'}
-                  </Button>
-                </div>
+                {selectedApp.admin_review_notes && (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <Label className="text-sm font-medium mb-2 block">Previous Admin Notes</Label>
+                    <p className="text-sm text-muted-foreground">{selectedApp.admin_review_notes}</p>
+                  </div>
+                )}
+
+                {selectedApp.application_status === 'submitted' && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleApprove}
+                      disabled={isProcessing}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {isProcessing ? 'Processing...' : 'Approve & Send Payment Link'}
+                    </Button>
+                    <Button
+                      onClick={handleReject}
+                      disabled={isProcessing}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {isProcessing ? 'Processing...' : 'Reject'}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </DialogContent>
