@@ -287,42 +287,64 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                 </div>
 
                 {/* Uploaded Documents Section */}
-                {selectedApp.application_documents && Array.isArray(selectedApp.application_documents) && selectedApp.application_documents.length > 0 && (
+                {selectedApp.application_documents && Array.isArray(selectedApp.application_documents) && selectedApp.application_documents.length > 0 ? (
                   <div className="border rounded-lg p-4 bg-muted/50">
                     <Label className="text-sm font-medium mb-3 block">Uploaded Documents</Label>
                     <div className="space-y-2">
-                      {selectedApp.application_documents.map((doc: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-background rounded-md border">
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-muted-foreground" />
-                            <div>
-                              <p className="text-sm font-medium">{doc.name || `Document ${index + 1}`}</p>
-                              {doc.size && (
-                                <p className="text-xs text-muted-foreground">
-                                  {(doc.size / 1024 / 1024).toFixed(2)} MB
-                                </p>
-                              )}
+                      {selectedApp.application_documents.map((doc: any, index: number) => {
+                        // Handle both old format (string) and new format (object)
+                        const isObject = typeof doc === 'object' && doc.url;
+                        const docName = isObject ? doc.name : doc;
+                        const docUrl = isObject ? doc.url : null;
+                        const docSize = isObject ? doc.size : null;
+
+                        return (
+                          <div key={index} className="flex items-center justify-between p-3 bg-background rounded-md border">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-5 w-5 text-muted-foreground" />
+                              <div>
+                                <p className="text-sm font-medium">{docName || `Document ${index + 1}`}</p>
+                                {docSize && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {(docSize / 1024 / 1024).toFixed(2)} MB
+                                  </p>
+                                )}
+                                {!isObject && (
+                                  <p className="text-xs text-amber-600">Legacy upload - file not in storage</p>
+                                )}
+                              </div>
                             </div>
+                            {docUrl ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = docUrl;
+                                  link.download = docName || 'document';
+                                  link.target = '_blank';
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </Button>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs">
+                                Not Available
+                              </Badge>
+                            )}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const link = document.createElement('a');
-                              link.href = doc.url;
-                              link.download = doc.name || 'document';
-                              link.target = '_blank';
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-4 bg-muted/50 text-center">
+                    <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
                   </div>
                 )}
 

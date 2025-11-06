@@ -104,6 +104,36 @@ const MembershipApplication = () => {
 
       if (!plan) throw new Error('Membership plan not found');
 
+      // Upload documents to storage if any
+      const uploadedDocs = [];
+      if (applicationData.documents.length > 0) {
+        for (const file of applicationData.documents) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user?.id}_${Date.now()}.${fileExt}`;
+          const filePath = `application-documents/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('publications')
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error('File upload error:', uploadError);
+            throw new Error(`Failed to upload ${file.name}`);
+          }
+
+          const { data: urlData } = supabase.storage
+            .from('publications')
+            .getPublicUrl(filePath);
+
+          uploadedDocs.push({
+            name: file.name,
+            url: urlData.publicUrl,
+            size: file.size,
+            path: filePath
+          });
+        }
+      }
+
       // Create membership application
       const { data: membership, error: membershipError } = await supabase
         .from('memberships')
@@ -114,7 +144,7 @@ const MembershipApplication = () => {
           status: 'pending',
           payment_status: 'pending',
           application_status: 'submitted',
-          application_documents: applicationData.documents.map(f => f.name),
+          application_documents: uploadedDocs,
           currency: 'INR'
         })
         .select()
