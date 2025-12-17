@@ -170,7 +170,8 @@ const EnhancedMembershipPage = () => {
         body: {
           membershipPlanId: membership.membership_type,
           amount: membership.amount,
-          membershipId: membership.id
+          membershipId: membership.id,
+          userId: user?.id
         }
       });
 
@@ -194,7 +195,8 @@ const EnhancedMembershipPage = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                membershipId: orderData.membershipId
+                membershipId: orderData.membershipId,
+                userId: user?.id
               }
             });
 
