@@ -699,18 +699,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      deactivate_expired_memberships: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_member_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_admin: {
-        Args: { user_uuid?: string }
-        Returns: boolean
-      }
+      deactivate_expired_memberships: { Args: never; Returns: undefined }
+      generate_member_code: { Args: never; Returns: string }
+      is_admin: { Args: { user_uuid?: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
