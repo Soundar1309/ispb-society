@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -276,6 +277,23 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
     setDateFilter('all');
   };
 
+  const handleDeletePayment = async (paymentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', paymentId);
+
+      if (error) throw error;
+
+      setAllPayments(prev => prev.filter(p => p.id !== paymentId));
+      toast.success('Payment record deleted successfully');
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      toast.error('Error deleting payment record');
+    }
+  };
+
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || membershipTypeFilter !== 'all' || dateFilter !== 'all';
 
   return (
@@ -412,19 +430,20 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                 <TableHead className="font-semibold">Amount</TableHead>
                 <TableHead className="font-semibold">Payment ID</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={7} className="text-center py-12">
                     <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-slate-400" />
                     <p className="text-slate-500">Loading payments...</p>
                   </TableCell>
                 </TableRow>
               ) : filteredPayments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={7} className="text-center py-12">
                     <CreditCard className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                     <p className="text-slate-500">
                       {hasActiveFilters ? 'No payments match your filters' : 'No payment records found'}
@@ -482,6 +501,33 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(payment.status)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this payment record for {payment.user_name}? 
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeletePayment(payment.id)}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))
