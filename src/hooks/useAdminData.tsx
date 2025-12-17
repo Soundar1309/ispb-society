@@ -129,10 +129,10 @@ export const useAdminData = () => {
         `).eq('status', 'paid').order('created_at', { ascending: false }),
         supabase.from('membership_plans').select('*').order('price', { ascending: true }),
         supabase.from('life_members').select('*').order('created_at', { ascending: false }),
+        // Orders list (no FK relationship exists to user_roles, so we enrich client-side)
         supabase.from('orders').select(`
           *,
-          user_roles!orders_user_id_fkey(full_name, email),
-          memberships!orders_membership_id_fkey(membership_type, status)
+          memberships(membership_type, status)
         `).order('created_at', { ascending: false }),
         supabase.from('publications').select('*').order('year', { ascending: false }),
         supabase.from('gallery').select('*').order('display_order', { ascending: true }),
@@ -237,7 +237,17 @@ export const useAdminData = () => {
       
       setMembershipPlans(membershipPlansRes.data || []);
       setLifeMembers(lifeMembersRes.data || []);
-      setOrders(ordersRes.data || []);
+
+      // Enrich orders with user profile info (AdminOrdersTab expects `profiles`)
+      const ordersWithProfiles = (ordersRes.data || []).map((order: any) => {
+        const userRole = (userRolesRes.data as UserRole[] | null)?.find((ur) => ur.user_id === order.user_id);
+        return {
+          ...order,
+          profiles: userRole ? { full_name: userRole.full_name || 'Unknown User', email: userRole.email || '' } : undefined,
+        };
+      });
+
+      setOrders(ordersWithProfiles);
       setPublications(publicationsRes.data || []);
       setGalleryItems(galleryRes.data || []);
       setOfficeBearers(officeBearersRes.data || []);
