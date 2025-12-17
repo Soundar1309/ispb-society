@@ -15,6 +15,7 @@ const EnhancedMembershipPage = () => {
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [membershipPlans, setMembershipPlans] = useState<any[]>([]);
+  const [approvedApplication, setApprovedApplication] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -30,8 +31,23 @@ const EnhancedMembershipPage = () => {
       fetchUserRole();
       fetchMemberships();
       fetchMembershipPlans();
+      fetchApprovedApplication();
     }
   }, [user]);
+
+  const fetchApprovedApplication = async () => {
+    const { data } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('user_id', user?.id)
+      .eq('application_status', 'approved')
+      .eq('payment_status', 'pending')
+      .maybeSingle();
+    
+    if (data) {
+      setApprovedApplication(data);
+    }
+  };
 
   const fetchUserRole = async () => {
     const { data, error } = await supabase
@@ -128,9 +144,14 @@ const EnhancedMembershipPage = () => {
     });
   };
 
-  const handlePurchaseMembership = async (plan: any) => {
+  const handlePurchaseMembership = async (membership: any) => {
     if (memberships.length > 0) {
       toast.error('You already have an active membership');
+      return;
+    }
+
+    if (!membership || membership.application_status !== 'approved') {
+      toast.error('Your application must be approved before payment');
       return;
     }
 
@@ -144,11 +165,12 @@ const EnhancedMembershipPage = () => {
         return;
       }
 
-      // Create order
+      // Create order using the approved membership
       const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
         body: {
-          membershipPlanId: plan.plan_type,
-          amount: plan.price
+          membershipPlanId: membership.membership_type,
+          amount: membership.amount,
+          membershipId: membership.id
         }
       });
 
@@ -162,7 +184,7 @@ const EnhancedMembershipPage = () => {
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'ISPB Membership',
-        description: plan.title,
+        description: `${membership.membership_type} Membership`,
         order_id: orderData.orderId,
         handler: async (response: any) => {
           try {
@@ -400,52 +422,50 @@ const EnhancedMembershipPage = () => {
 
           {/* Membership Plans Section */}
           <div className="lg:col-span-2">
-            {memberships.length === 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Choose Your Membership</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {membershipPlans.map((plan) => (
-                    <Card key={plan.id} className="relative">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <CreditCard className="h-5 w-5" />
-                          {plan.title}
-                        </CardTitle>
-                        <CardDescription>
-                          {plan.duration_months > 0 ? `${plan.duration_months} months` : 'Lifetime'}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="text-3xl font-bold text-green-600">
-                          ₹{plan.price}
-                          {plan.duration_months > 0 && (
-                            <span className="text-sm text-gray-500">
-                              /{plan.duration_months > 12 ? 'year' : `${plan.duration_months}mo`}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <ul className="space-y-2">
-                          {plan.features.map((feature: string, index: number) => (
-                            <li key={index} className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span className="text-sm">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
+            {memberships.length === 0 && approvedApplication && (
+              <Card className="border-green-200 bg-green-50 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-green-800">Application Approved!</CardTitle>
+                  <CardDescription className="text-green-700">Complete your payment to activate membership</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-white rounded-lg border border-green-200">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-gray-600">Membership Type</p>
+                        <p className="font-medium capitalize">{approvedApplication.membership_type}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">Amount</p>
+                        <p className="text-2xl font-bold text-green-600">₹{approvedApplication.amount}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => handlePurchaseMembership(approvedApplication)}
+                    disabled={isLoading}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {isLoading ? 'Processing...' : `Complete Payment - ₹${approvedApplication.amount}`}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-                        <Button 
-                          onClick={() => handlePurchaseMembership(plan)}
-                          disabled={isLoading}
-                          className="w-full"
-                        >
-                          {isLoading ? 'Processing...' : `Purchase ₹${plan.price}`}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
+            {memberships.length === 0 && !approvedApplication && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="text-blue-800">Apply for Membership</CardTitle>
+                  <CardDescription className="text-blue-700">Submit your application to become an ISPB member</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">To become a member, you need to submit an application that will be reviewed by our membership committee.</p>
+                  <Button asChild className="w-full">
+                    <a href="/membership-application">Apply for Membership</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
             )}
 
             {/* Member Benefits */}
