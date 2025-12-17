@@ -1,14 +1,8 @@
-
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Edit, Download } from 'lucide-react';
+import { Download, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PaymentRecord {
@@ -20,6 +14,8 @@ interface PaymentRecord {
   payment_method?: string;
   payment_status: string;
   payment_date?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
   notes?: string;
   created_at: string;
   user_name?: string;
@@ -28,85 +24,36 @@ interface PaymentRecord {
 
 interface AdminPaymentTabProps {
   payments: PaymentRecord[];
-  onAddPayment: (paymentData: unknown) => void;
-  onUpdatePayment: (paymentId: string, paymentData: unknown) => void;
+  onAddPayment?: (paymentData: unknown) => void;
+  onUpdatePayment?: (paymentId: string, paymentData: unknown) => void;
 }
 
-const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPaymentTabProps) => {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingPayment, setEditingPayment] = useState<PaymentRecord | null>(null);
-  const [formData, setFormData] = useState({
-    user_id: '',
-    membership_id: '',
-    amount: 0,
-    payment_method: '',
-    payment_status: 'pending',
-    notes: ''
-  });
-
-  const resetForm = () => {
-    setFormData({
-      user_id: '',
-      membership_id: '',
-      amount: 0,
-      payment_method: '',
-      payment_status: 'pending',
-      notes: ''
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const paymentData = {
-      ...formData,
-      payment_date: formData.payment_status === 'paid' ? new Date().toISOString() : null
-    };
-
-    if (editingPayment) {
-      onUpdatePayment(editingPayment.id, paymentData);
-      setEditingPayment(null);
-    } else {
-      onAddPayment(paymentData);
-      setIsAddDialogOpen(false);
-    }
-    resetForm();
-  };
-
-  const handleEdit = (payment: PaymentRecord) => {
-    setEditingPayment(payment);
-    setFormData({
-      user_id: payment.user_id,
-      membership_id: payment.membership_id || '',
-      amount: payment.amount,
-      payment_method: payment.payment_method || '',
-      payment_status: payment.payment_status,
-      notes: payment.notes || ''
-    });
-  };
-
+const AdminPaymentTab = ({ payments }: AdminPaymentTabProps) => {
   const exportPaymentsCSV = () => {
     try {
       const headers = [
         'Date',
-        'User ID',
         'User Name',
         'Membership Type',
         'Amount',
         'Currency',
         'Payment Method',
         'Status',
+        'Razorpay Payment ID',
+        'Razorpay Order ID',
         'Notes'
       ];
 
       const csvData = payments.map(payment => [
         payment.created_at ? new Date(payment.created_at).toLocaleDateString() : 'N/A',
-        payment.user_id || 'N/A',
         payment.user_name || 'N/A',
         payment.membership_type || 'N/A',
         payment.amount?.toString() || '0',
         payment.currency || 'INR',
-        payment.payment_method || 'N/A',
+        payment.payment_method || 'Razorpay',
         payment.payment_status || 'N/A',
+        payment.razorpay_payment_id || 'N/A',
+        payment.razorpay_order_id || 'N/A',
         payment.notes || 'N/A'
       ]);
 
@@ -147,123 +94,92 @@ const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPayme
     }
   };
 
-  const PaymentForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        placeholder="User ID"
-        value={formData.user_id}
-        onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-        required
-      />
-      <Input
-        placeholder="Membership ID (optional)"
-        value={formData.membership_id}
-        onChange={(e) => setFormData({ ...formData, membership_id: e.target.value })}
-      />
-      <Input
-        type="number"
-        placeholder="Amount"
-        value={formData.amount}
-        onChange={(e) => setFormData({ ...formData, amount: e.target.value ? parseFloat(e.target.value) : 0 })}
-        required
-      />
-      <Input
-        placeholder="Payment Method"
-        value={formData.payment_method}
-        onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-      />
-      <Select value={formData.payment_status} onValueChange={(value) => setFormData({ ...formData, payment_status: value })}>
-        <SelectTrigger>
-          <SelectValue placeholder="Payment Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="pending">Pending</SelectItem>
-          <SelectItem value="paid">Paid</SelectItem>
-          <SelectItem value="failed">Failed</SelectItem>
-        </SelectContent>
-      </Select>
-      <Textarea
-        placeholder="Notes (optional)"
-        value={formData.notes}
-        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-        rows={3}
-      />
-      <Button type="submit">
-        {editingPayment ? 'Update' : 'Add'} Payment
-      </Button>
-    </form>
-  );
+  const totalPaid = payments
+    .filter(p => p.payment_status === 'paid')
+    .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  const totalPending = payments
+    .filter(p => p.payment_status === 'pending')
+    .reduce((sum, p) => sum + (p.amount || 0), 0);
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Payment Tracking</CardTitle>
-            <CardDescription>Manage and track membership payments</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Payment Records
+            </CardTitle>
+            <CardDescription>View all membership payment transactions</CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={exportPaymentsCSV} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Payment
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Payment Record</DialogTitle>
-                  <DialogDescription>Create new payment tracking record</DialogDescription>
-                </DialogHeader>
-                <PaymentForm />
-              </DialogContent>
-            </Dialog>
-          </div>
+          <Button onClick={exportPaymentsCSV} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+            <p className="text-sm text-green-600 font-medium">Total Collected</p>
+            <p className="text-2xl font-bold text-green-700">₹{totalPaid.toLocaleString()}</p>
+            <p className="text-xs text-green-500">{payments.filter(p => p.payment_status === 'paid').length} payments</p>
+          </div>
+          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-sm text-yellow-600 font-medium">Pending Amount</p>
+            <p className="text-2xl font-bold text-yellow-700">₹{totalPending.toLocaleString()}</p>
+            <p className="text-xs text-yellow-500">{payments.filter(p => p.payment_status === 'pending').length} payments</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-600 font-medium">Total Transactions</p>
+            <p className="text-2xl font-bold text-blue-700">{payments.length}</p>
+            <p className="text-xs text-blue-500">All time</p>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>User</TableHead>
+              <TableHead>Membership</TableHead>
               <TableHead>Amount</TableHead>
-              <TableHead>Method</TableHead>
+              <TableHead>Payment ID</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {payments.map((payment) => (
               <TableRow key={payment.id}>
                 <TableCell>
-                  {payment.created_at ? new Date(payment.created_at).toLocaleDateString() : 'N/A'}
+                  {payment.created_at ? new Date(payment.created_at).toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                  }) : 'N/A'}
                 </TableCell>
                 <TableCell>
                   <div>
                     <div className="font-medium">{payment.user_name || 'Unknown User'}</div>
-                    <div className="text-xs text-gray-500">{payment.user_id}</div>
                   </div>
                 </TableCell>
-                <TableCell>₹{payment.amount}</TableCell>
-                <TableCell>{payment.payment_method || 'N/A'}</TableCell>
+                <TableCell className="capitalize">
+                  {payment.membership_type || 'N/A'}
+                </TableCell>
+                <TableCell className="font-medium">
+                  ₹{payment.amount?.toLocaleString() || 0}
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs font-mono text-gray-500">
+                    {payment.razorpay_payment_id || 'N/A'}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(payment.payment_status)}>
                     {payment.payment_status}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(payment)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -276,18 +192,6 @@ const AdminPaymentTab = ({ payments, onAddPayment, onUpdatePayment }: AdminPayme
             )}
           </TableBody>
         </Table>
-
-        {editingPayment && (
-          <Dialog open={!!editingPayment} onOpenChange={(open) => { if (!open) setEditingPayment(null); }}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Payment Record</DialogTitle>
-                <DialogDescription>Update payment details</DialogDescription>
-              </DialogHeader>
-              <PaymentForm />
-            </DialogContent>
-          </Dialog>
-        )}
       </CardContent>
     </Card>
   );

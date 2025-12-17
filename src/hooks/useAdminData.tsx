@@ -123,11 +123,10 @@ export const useAdminData = () => {
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('mandates').select('*').order('display_order', { ascending: true }),
         supabase.from('activities').select('*').order('display_order', { ascending: true }),
-        supabase.from('payment_tracking').select(`
+        supabase.from('orders').select(`
           *,
-          user_roles!payment_tracking_user_id_fkey(full_name),
-          memberships(membership_type)
-        `).order('created_at', { ascending: false }),
+          memberships(membership_type, user_id)
+        `).eq('status', 'paid').order('created_at', { ascending: false }),
         supabase.from('membership_plans').select('*').order('price', { ascending: true }),
         supabase.from('life_members').select('*').order('created_at', { ascending: false }),
         supabase.from('orders').select(`
@@ -209,7 +208,33 @@ export const useAdminData = () => {
       setMessages(messagesRes.data || []);
       setMandates(mandatesRes.data || []);
       setActivities(activitiesRes.data || []);
-      setPayments(paymentsRes.data || []);
+      
+      // Format payments data from orders
+      const formattedPayments = [];
+      if (paymentsRes.data && userRolesRes.data) {
+        for (const order of paymentsRes.data) {
+          const userRole = order.memberships?.user_id 
+            ? (userRolesRes.data as UserRole[]).find(ur => ur.user_id === order.memberships.user_id)
+            : (userRolesRes.data as UserRole[]).find(ur => ur.user_id === order.user_id);
+          
+          formattedPayments.push({
+            id: order.id,
+            membership_id: order.membership_id,
+            user_id: order.user_id,
+            amount: order.amount,
+            currency: order.currency || 'INR',
+            payment_method: order.payment_method || 'Razorpay',
+            payment_status: order.status,
+            razorpay_payment_id: order.razorpay_payment_id,
+            razorpay_order_id: order.razorpay_order_id,
+            created_at: order.created_at,
+            user_name: userRole?.full_name || 'Unknown User',
+            membership_type: order.memberships?.membership_type || 'N/A'
+          });
+        }
+      }
+      setPayments(formattedPayments);
+      
       setMembershipPlans(membershipPlansRes.data || []);
       setLifeMembers(lifeMembersRes.data || []);
       setOrders(ordersRes.data || []);
