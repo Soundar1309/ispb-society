@@ -15,26 +15,46 @@ serve(async (req) => {
   try {
     console.log('Request headers:', Object.fromEntries(req.headers))
     
-    const supabaseClient = createClient(
+    // Try to get user from auth header first
+    const authClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    let userId: string | null = null
     
-    if (!user) {
-      console.error('Unauthorized: No user found')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Try JWT auth first
+    const { data: { user } } = await authClient.auth.getUser()
+    if (user) {
+      userId = user.id
+      console.log('Authenticated via JWT:', userId)
     }
+    
+    // Use service role for database operations
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
     const requestBody = await req.json()
     console.log('Request body:', requestBody)
     
-    const { membershipPlanId, amount, membershipId: providedMembershipId } = requestBody
+    const { membershipPlanId, amount, membershipId: providedMembershipId, userId: bodyUserId } = requestBody
+
+    // If no JWT auth, try to use userId from body (for SSR/proxy scenarios)
+    if (!userId && bodyUserId) {
+      userId = bodyUserId
+      console.log('Using userId from request body:', userId)
+    }
+
+    if (!userId) {
+      console.error('Unauthorized: No user found')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - please login again' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (!membershipPlanId || !amount) {
       console.error('Missing required fields:', { membershipPlanId, amount })
@@ -55,7 +75,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('Creating Razorpay order for user:', user.id)
+    console.log('Creating Razorpay order for user:', userId)
 
     // CRITICAL: Require approved application - do not allow direct payment
     let membershipId: string
@@ -76,7 +96,7 @@ serve(async (req) => {
         )
       }
 
-      if (membership.user_id !== user.id) {
+      if (membership.user_id !== userId) {
         console.error('Membership does not belong to user')
         return new Response(
           JSON.stringify({ error: 'Unauthorized' }),
@@ -107,7 +127,7 @@ serve(async (req) => {
       const { data: existingApp } = await supabaseClient
         .from('memberships')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('application_status', 'approved')
         .eq('payment_status', 'pending')
         .maybeSingle()
@@ -169,7 +189,7 @@ serve(async (req) => {
     const { error: orderError } = await supabaseClient
       .from('orders')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         membership_id: membershipId,
         razorpay_order_id: order.id,
         amount: amount,

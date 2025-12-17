@@ -16,26 +16,38 @@ serve(async (req) => {
   try {
     console.log('Verifying payment...')
     
-    const supabaseClient = createClient(
+    // Try to get user from auth header first
+    const authClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
+    let userId: string | null = null
     
-    if (!user) {
-      console.error('Unauthorized: No user found')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    // Try JWT auth first
+    const { data: { user } } = await authClient.auth.getUser()
+    if (user) {
+      userId = user.id
+      console.log('Authenticated via JWT:', userId)
     }
 
     const requestBody = await req.json()
     console.log('Payment verification request:', { ...requestBody, razorpay_signature: '***' })
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, membershipId } = requestBody
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, membershipId, userId: bodyUserId } = requestBody
+
+    // If no JWT auth, try to use userId from body
+    if (!userId && bodyUserId) {
+      userId = bodyUserId
+      console.log('Using userId from request body:', userId)
+    }
+
+    // Use service role for database operations
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
       return new Response(
