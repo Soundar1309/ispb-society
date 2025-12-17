@@ -34,7 +34,7 @@ serve(async (req) => {
     const requestBody = await req.json()
     console.log('Request body:', requestBody)
     
-    const { membershipPlanId, amount } = requestBody
+    const { membershipPlanId, amount, membershipId: providedMembershipId } = requestBody
 
     if (!membershipPlanId || !amount) {
       console.error('Missing required fields:', { membershipPlanId, amount })
@@ -57,47 +57,71 @@ serve(async (req) => {
 
     console.log('Creating Razorpay order for user:', user.id)
 
-    // Check if user has an approved application
-    const { data: existingApp } = await supabaseClient
-      .from('memberships')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('application_status', 'approved')
-      .eq('payment_status', 'pending')
-      .maybeSingle()
-
+    // CRITICAL: Require approved application - do not allow direct payment
     let membershipId: string
 
-    if (existingApp) {
-      // User has approved application, use it for payment
-      console.log('Found existing approved application:', existingApp.id)
-      membershipId = existingApp.id
-    } else {
-      // No approved application, create a new membership for direct payment
-      console.log('No approved application found, creating new membership')
-      const { data: newMembership, error: membershipError } = await supabaseClient
+    if (providedMembershipId) {
+      // Verify the provided membership is approved and belongs to the user
+      const { data: membership, error: fetchError } = await supabaseClient
         .from('memberships')
-        .insert({
-          user_id: user.id,
-          membership_type: membershipPlanId,
-          amount: amount,
-          status: 'pending',
-          payment_status: 'pending',
-          application_status: 'active',
-          currency: 'INR'
-        })
-        .select()
+        .select('id, application_status, payment_status, user_id')
+        .eq('id', providedMembershipId)
         .maybeSingle()
 
-      if (membershipError || !newMembership) {
-        console.error('Error creating membership:', membershipError)
+      if (fetchError || !membership) {
+        console.error('Membership not found:', providedMembershipId)
         return new Response(
-          JSON.stringify({ error: 'Failed to create membership record', details: membershipError }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Membership not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      membershipId = newMembership.id
-      console.log('Membership created:', membershipId)
+
+      if (membership.user_id !== user.id) {
+        console.error('Membership does not belong to user')
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (membership.application_status !== 'approved') {
+        console.error('Application not approved yet:', membership.application_status)
+        return new Response(
+          JSON.stringify({ error: 'Your application must be approved before payment' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (membership.payment_status === 'paid') {
+        console.error('Payment already completed')
+        return new Response(
+          JSON.stringify({ error: 'Payment already completed for this membership' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      membershipId = membership.id
+      console.log('Using provided approved membership:', membershipId)
+    } else {
+      // Check if user has any approved application pending payment
+      const { data: existingApp } = await supabaseClient
+        .from('memberships')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('application_status', 'approved')
+        .eq('payment_status', 'pending')
+        .maybeSingle()
+
+      if (!existingApp) {
+        console.error('No approved application found for user')
+        return new Response(
+          JSON.stringify({ error: 'You must submit an application and get it approved before payment' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      membershipId = existingApp.id
+      console.log('Found existing approved application:', membershipId)
     }
 
     // Create Razorpay order
