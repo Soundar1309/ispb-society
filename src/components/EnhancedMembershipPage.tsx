@@ -466,7 +466,6 @@ const EnhancedMembershipPage = () => {
                 </CardContent>
               </Card>
             )}
-            )}
 
             {/* Member Benefits */}
             <Card className="mt-8">
