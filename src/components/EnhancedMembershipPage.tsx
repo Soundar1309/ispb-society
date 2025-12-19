@@ -77,7 +77,7 @@ const EnhancedMembershipPage = () => {
       .from('memberships')
       .select('*')
       .eq('user_id', user?.id)
-      .in('payment_status', ['paid', 'active', 'manual'])
+      .in('payment_status', ['paid', 'manual'])
       .eq('status', 'active')
       .order('created_at', { ascending: false });
 
@@ -176,7 +176,9 @@ const EnhancedMembershipPage = () => {
       });
 
       if (orderError || !orderData) {
-        throw new Error('Failed to create order');
+        console.error('Order creation failed:', orderError, orderData);
+        const errorMsg = orderData?.error || orderData?.details || orderError?.message || 'Failed to create order';
+        throw new Error(errorMsg);
       }
 
       // Configure Razorpay options
@@ -189,8 +191,7 @@ const EnhancedMembershipPage = () => {
         order_id: orderData.orderId,
         handler: async (response: any) => {
           try {
-            // Verify payment
-            const { error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
+            const { error: verifyError, data: verifyData } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -200,16 +201,21 @@ const EnhancedMembershipPage = () => {
               }
             });
 
-            if (verifyError) {
-              throw new Error('Payment verification failed');
-            }
+            if (verifyError) throw verifyError;
 
-            toast.success('Membership activated successfully!');
-            fetchMemberships();
-          } catch (error) {
+            if (verifyData?.success) {
+              toast.success('Membership activated successfully!');
+              await Promise.all([fetchMemberships(), fetchApprovedApplication()]);
+            } else {
+              toast.error(verifyData?.error || 'Payment verification failed');
+            }
+          } catch (error: any) {
             console.error('Payment verification error:', error);
-            toast.error('Payment verification failed');
+            toast.error(error?.message || 'Payment verification failed');
           }
+        },
+        modal: {
+          ondismiss: () => toast.message('Payment cancelled')
         },
         prefill: {
           name: userRole?.full_name || '',
@@ -222,10 +228,14 @@ const EnhancedMembershipPage = () => {
       };
 
       const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', (payload: any) => {
+        console.error('Razorpay payment.failed:', payload?.error);
+        toast.error(payload?.error?.description || payload?.error?.reason || 'Payment failed');
+      });
       paymentObject.open();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initiating payment:', error);
-      toast.error('Failed to initiate payment');
+      toast.error(error?.message || 'Failed to initiate payment');
     } finally {
       setIsLoading(false);
     }
@@ -424,6 +434,22 @@ const EnhancedMembershipPage = () => {
 
           {/* Membership Plans Section */}
           <div className="lg:col-span-2">
+            {memberships.length > 0 && (
+              <Card className="border-green-200 bg-green-50 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-green-800">Membership Active</CardTitle>
+                  <CardDescription className="text-green-700">
+                    You already have an active <span className="font-medium capitalize">{memberships[0]?.membership_type}</span> membership.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="outline" className="w-full">
+                    <a href="/user-dashboard">Go to Dashboard</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {memberships.length === 0 && approvedApplication && (
               <Card className="border-green-200 bg-green-50 mb-6">
                 <CardHeader>
