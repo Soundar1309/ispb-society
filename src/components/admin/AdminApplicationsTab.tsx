@@ -286,9 +286,9 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                     <Label className="text-sm font-medium mb-3 block">Uploaded Documents</Label>
                     <div className="space-y-2">
                       {selectedApp.application_documents.map((doc: any, index: number) => {
-                        // Handle both old format (string) and new format (object)
-                        const isObject = typeof doc === 'object' && doc.url;
-                        const docName = isObject ? doc.name : doc;
+                        // Handle both old format (string) and new format (object with path/url)
+                        const isObject = typeof doc === 'object' && doc !== null;
+                        const docName = isObject ? (doc.name || `Document ${index + 1}`) : String(doc);
                         const docUrl = isObject ? doc.url : null;
                         const docSize = isObject ? doc.size : null;
 
