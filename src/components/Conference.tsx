@@ -8,6 +8,8 @@ import { Calendar, MapPin, FileText, DollarSign, ExternalLink, User, Mail, Phone
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { LoadingSkeleton, PageLoader } from '@/components/ui/loading-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Conference {
   id: string;
@@ -105,11 +107,8 @@ const Conference = () => {
 
       if (error) throw error;
 
-      // If payment is required, redirect to payment gateway
       if (selectedConference.fee && selectedConference.fee > 0) {
-        // Create Razorpay order here
         toast.success('Registration initiated. Proceeding to payment...');
-        // Add Razorpay integration here
       } else {
         toast.success('Registration completed successfully!');
         setShowRegistration(false);
@@ -135,10 +134,35 @@ const Conference = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-12 bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading conferences...</p>
+      <div className="min-h-screen py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Conferences & Events</h1>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Explore our upcoming conferences, workshops, and past events
+            </p>
+          </div>
+          <div className="space-y-8">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                <div className="bg-gradient-to-r from-green-600/20 to-green-700/20 p-6">
+                  <Skeleton className="h-8 w-2/3 mb-2" />
+                  <Skeleton className="h-5 w-1/2" />
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                  <div className="flex gap-4">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-10 w-40" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

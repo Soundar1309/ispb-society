@@ -1,8 +1,30 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// Dynamic import to handle Resend - using fetch-based approach for Deno compatibility
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+async function sendEmail(to: string, subject: string, html: string) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "ISPB <noreply@yourdomain.com>",
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Resend API error: ${error}`);
+  }
+  
+  return response.json();
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,12 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { to, subject, html, type }: EmailRequest = await req.json();
 
-    const emailResponse = await resend.emails.send({
-      from: "ISPB <noreply@yourdomain.com>", // Update this with your verified domain
-      to: [to],
-      subject: subject,
-      html: html,
-    });
+    const emailResponse = await sendEmail(to, subject, html);
 
     console.log("Email sent successfully:", emailResponse);
 

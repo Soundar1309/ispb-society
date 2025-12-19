@@ -7,6 +7,7 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const {
+    loading,
     stats,
     users,
     userRoles,
@@ -32,6 +33,7 @@ const AdminPanel = () => {
   return (
     <AdminAccessControl>
       <AdminDashboard
+        loading={loading}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         stats={stats}

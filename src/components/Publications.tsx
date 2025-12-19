@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, FileText, ExternalLink, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 interface Publication {
   id: string;
@@ -100,7 +100,13 @@ const Publications = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">Loading publications...</div>
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Publications</h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              Explore our research publications and scientific contributions to plant breeding
+            </p>
+          </div>
+          <LoadingSkeleton variant="list" count={6} />
         </div>
       </div>
     );

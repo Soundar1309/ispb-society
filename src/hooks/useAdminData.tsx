@@ -57,6 +57,7 @@ interface MemberWithUserData {
 }
 
 export const useAdminData = (activeTab: string = 'dashboard') => {
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     membershipEnrolled: 0,
@@ -103,10 +104,8 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
   };
 
   const fetchTabSpecificData = async () => {
+    setLoading(true);
     try {
-      // Don't fetch if not needed or already fetching?
-      // For now, simple switch case.
-
       // Common data needed for multiple tabs - memoize or fetch only once if possible
       // But for simplicity/speed now, we just fetch what is needed for the ACTIVE tab.
 
@@ -280,6 +279,8 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     } catch (error) {
       console.error(`Error fetching data for tab ${activeTab}:`, error);
       toast.error('Error loading data');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -452,6 +453,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
   }, []);
 
   return {
+    loading,
     stats,
     users,
     userRoles,

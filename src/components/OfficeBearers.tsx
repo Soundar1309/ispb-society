@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 interface OfficeBearer {
   id: string;
@@ -43,7 +43,13 @@ const OfficeBearers = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">Loading office bearers...</div>
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Office Bearers</h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              Meet our distinguished office bearers who guide the Indian Society of Plant Breeders
+            </p>
+          </div>
+          <LoadingSkeleton variant="profile" count={8} />
         </div>
       </div>
     );

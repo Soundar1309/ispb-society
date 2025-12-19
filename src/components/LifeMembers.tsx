@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,9 +5,11 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Loader2, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import StatisticsCards from '@/components/life-members/StatisticsCards';
 import MembershipCTA from '@/components/life-members/MembershipCTA';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LifeMember {
   id: string;
@@ -85,10 +86,36 @@ const LifeMembers = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-green-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading life members...</p>
+      <div className="min-h-screen py-6 sm:py-8 lg:py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Life Members & Membership
+            </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto px-4">
+              Honoring our distinguished life members and providing membership services for ISPB.
+            </p>
+          </div>
+          
+          {/* Statistics skeleton */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-xl p-4 shadow-sm animate-pulse">
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ))}
+          </div>
+          
+          {/* Search skeleton */}
+          <Card className="mb-6 sm:mb-8">
+            <CardContent className="p-4 sm:p-6">
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+          
+          {/* Members list skeleton */}
+          <LoadingSkeleton variant="list" count={8} />
         </div>
       </div>
     );
