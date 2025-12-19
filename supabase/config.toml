@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.verify-payment]
 verify_jwt = true
+
+[functions.generate-invoice]
+verify_jwt = false

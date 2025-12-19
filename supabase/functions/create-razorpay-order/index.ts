@@ -79,12 +79,13 @@ serve(async (req) => {
 
     // CRITICAL: Require approved application - do not allow direct payment
     let membershipId: string
+    let existingOrderId: string | null = null
 
     if (providedMembershipId) {
       // Verify the provided membership is approved and belongs to the user
       const { data: membership, error: fetchError } = await supabaseClient
         .from('memberships')
-        .select('id, application_status, payment_status, user_id')
+        .select('id, application_status, payment_status, user_id, razorpay_order_id')
         .eq('id', providedMembershipId)
         .maybeSingle()
 
@@ -121,12 +122,13 @@ serve(async (req) => {
       }
 
       membershipId = membership.id
+      existingOrderId = membership.razorpay_order_id
       console.log('Using provided approved membership:', membershipId)
     } else {
       // Check if user has any approved application pending payment
       const { data: existingApp } = await supabaseClient
         .from('memberships')
-        .select('id')
+        .select('id, razorpay_order_id')
         .eq('user_id', userId)
         .eq('application_status', 'approved')
         .eq('payment_status', 'pending')
@@ -141,7 +143,48 @@ serve(async (req) => {
       }
 
       membershipId = existingApp.id
+      existingOrderId = existingApp.razorpay_order_id
       console.log('Found existing approved application:', membershipId)
+    }
+
+    // PAYMENT RETRY: Check if there's an existing pending order to reuse
+    if (existingOrderId) {
+      console.log('Checking existing order for reuse:', existingOrderId)
+      
+      // Verify order status with Razorpay
+      try {
+        const orderStatusResponse = await fetch(`https://api.razorpay.com/v1/orders/${existingOrderId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`,
+          },
+        })
+
+        if (orderStatusResponse.ok) {
+          const existingOrder = await orderStatusResponse.json()
+          
+          // Reuse order if it's still created (not paid or expired)
+          if (existingOrder.status === 'created') {
+            console.log('Reusing existing Razorpay order:', existingOrderId)
+            
+            return new Response(
+              JSON.stringify({
+                orderId: existingOrderId,
+                amount: existingOrder.amount,
+                currency: existingOrder.currency,
+                keyId: razorpayKeyId,
+                membershipId: membershipId,
+                reused: true
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+          console.log('Existing order not reusable, status:', existingOrder.status)
+        }
+      } catch (orderCheckError) {
+        console.error('Error checking existing order:', orderCheckError)
+        // Continue to create a new order
+      }
     }
 
     // Create Razorpay order

@@ -349,6 +349,24 @@ serve(async (req) => {
       console.error('Failed to send admin email:', emailError)
     }
 
+    // Generate invoice PDF
+    try {
+      console.log('Generating invoice...')
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-invoice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          membershipId: membershipId,
+          userId: userId
+        }),
+      })
+      console.log('Invoice generation triggered')
+    } catch (invoiceError) {
+      console.error('Failed to generate invoice:', invoiceError)
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: 'Payment verified successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

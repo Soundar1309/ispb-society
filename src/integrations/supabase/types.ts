@@ -483,6 +483,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           id: string
+          invoice_url: string | null
           membership_id: string | null
           payment_method: string | null
           razorpay_order_id: string | null
@@ -496,6 +497,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           id?: string
+          invoice_url?: string | null
           membership_id?: string | null
           payment_method?: string | null
           razorpay_order_id?: string | null
@@ -509,6 +511,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           id?: string
+          invoice_url?: string | null
           membership_id?: string | null
           payment_method?: string | null
           razorpay_order_id?: string | null
@@ -526,6 +529,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_settings: {
+        Row: {
+          id: string
+          is_enabled: boolean | null
+          is_test_mode: boolean | null
+          razorpay_key_id: string | null
+          razorpay_key_secret_encrypted: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean | null
+          is_test_mode?: boolean | null
+          razorpay_key_id?: string | null
+          razorpay_key_secret_encrypted?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean | null
+          is_test_mode?: boolean | null
+          razorpay_key_id?: string | null
+          razorpay_key_secret_encrypted?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       payment_tracking: {
         Row: {
