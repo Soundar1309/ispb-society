@@ -69,7 +69,7 @@ const MembershipApplication = () => {
       .select('*')
       .eq('user_id', user?.id)
       .single();
-    
+
     if (data) {
       setApplicationData(prev => ({
         ...prev,
@@ -89,7 +89,7 @@ const MembershipApplication = () => {
       .select('*')
       .eq('is_active', true)
       .order('price', { ascending: true });
-    
+
     if (data) {
       setMembershipPlans(data);
     }
@@ -142,17 +142,19 @@ const MembershipApplication = () => {
       // Update user role with application data
       const { error: roleError } = await supabase
         .from('user_roles')
-        .upsert({
-          user_id: user?.id,
+        .update({
           full_name: applicationData.full_name,
           email: applicationData.email,
           phone: applicationData.phone,
           institution: applicationData.institution,
           designation: applicationData.designation,
           specialization: applicationData.specialization,
+          // Don't override role here loosely, if they are already admin/member it stays?
+          // But requirement says 'role: member'
           role: 'member',
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        })
+        .eq('user_id', user?.id);
 
       if (roleError) throw roleError;
 
@@ -164,11 +166,11 @@ const MembershipApplication = () => {
       const uploadedDocs = [];
       for (const file of applicationData.documents) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user?.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-        const filePath = `application-documents/${fileName}`;
+        const fileName = `${user?.id}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const filePath = fileName; // Path inside the bucket
 
         const { error: uploadError } = await supabase.storage
-          .from('publications')
+          .from('application-documents')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -176,15 +178,14 @@ const MembershipApplication = () => {
           throw new Error(`Failed to upload ${file.name}`);
         }
 
-        const { data: urlData } = supabase.storage
-          .from('publications')
-          .getPublicUrl(filePath);
-
+        // For private buckets, we don't store a public URL.
+        // We store the path and generate signed URLs on demand.
         uploadedDocs.push({
           name: file.name,
-          url: urlData.publicUrl,
+          url: null, // No public URL
           size: file.size,
-          path: filePath
+          path: filePath,
+          bucket: 'application-documents'
         });
       }
 
@@ -288,7 +289,7 @@ const MembershipApplication = () => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-      
+
       const validFiles = files.filter(file => {
         if (!allowedTypes.includes(file.type)) {
           toast.error(`Invalid file type: ${file.name}. Only PDF, JPG, and PNG are allowed.`);
@@ -296,7 +297,7 @@ const MembershipApplication = () => {
         }
         return true;
       });
-      
+
       setApplicationData({ ...applicationData, documents: validFiles });
     }
   };
@@ -516,9 +517,8 @@ const MembershipApplication = () => {
           <div className="flex items-center justify-between">
             {STEPS.map((s, index) => (
               <div key={s.step} className="flex flex-col items-center flex-1">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  currentStep >= s.step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${currentStep >= s.step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
                   {currentStep > s.step ? <CheckCircle className="h-6 w-6" /> : s.step}
                 </div>
                 <p className={`text-xs mt-2 text-center ${currentStep >= s.step ? 'text-green-600' : 'text-gray-500'}`}>
@@ -540,13 +540,13 @@ const MembershipApplication = () => {
               <CardDescription>Complete your membership application details</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={(e) => { 
-                e.preventDefault(); 
+              <form onSubmit={(e) => {
+                e.preventDefault();
                 if (!applicationData.membership_type) {
                   toast.error('Please select a membership type');
                   return;
                 }
-                setCurrentStep(2); 
+                setCurrentStep(2);
               }} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -604,11 +604,11 @@ const MembershipApplication = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="membership_type">Membership Type *</Label>
-                  <Select 
-                    value={applicationData.membership_type} 
+                  <Select
+                    value={applicationData.membership_type}
                     onValueChange={(value) => setApplicationData({ ...applicationData, membership_type: value })}
                   >
                     <SelectTrigger>
@@ -699,8 +699,8 @@ const MembershipApplication = () => {
                 <Button variant="outline" onClick={() => setCurrentStep(1)} className="flex-1">
                   Back
                 </Button>
-                <Button 
-                  onClick={handleSubmitApplication} 
+                <Button
+                  onClick={handleSubmitApplication}
                   disabled={isLoading || applicationData.documents.length === 0}
                   className="flex-1"
                 >

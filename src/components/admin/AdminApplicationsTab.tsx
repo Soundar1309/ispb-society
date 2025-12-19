@@ -246,7 +246,7 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
               <DialogTitle>Review Application</DialogTitle>
               <DialogDescription>Review and approve or reject this membership application</DialogDescription>
             </DialogHeader>
-            
+
             {selectedApp && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -303,42 +303,68 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
                                     {(docSize / 1024 / 1024).toFixed(2)} MB
                                   </p>
                                 )}
-                                {!isObject && (
-                                  <p className="text-xs text-amber-600">Legacy upload - file not in storage</p>
-                                )}
                               </div>
                             </div>
-                            {docUrl ? (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => window.open(docUrl, '_blank')}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  if (docUrl) {
+                                    window.open(docUrl, '_blank');
+                                  } else if (doc.path) {
+                                    try {
+                                      const bucket = doc.bucket || 'application-documents';
+                                      const { data, error } = await supabase.storage
+                                        .from(bucket)
+                                        .createSignedUrl(doc.path, 3600);
+
+                                      if (error) throw error;
+                                      if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                                    } catch (err) {
+                                      toast.error('Failed to open document');
+                                      console.error(err);
+                                    }
+                                  }
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  let downloadUrl = docUrl;
+                                  if (!downloadUrl && doc.path) {
+                                    try {
+                                      const bucket = doc.bucket || 'application-documents';
+                                      const { data, error } = await supabase.storage
+                                        .from(bucket)
+                                        .createSignedUrl(doc.path, 3600);
+                                      if (error) throw error;
+                                      downloadUrl = data?.signedUrl;
+                                    } catch (err) {
+                                      console.error(err);
+                                      toast.error('Failed to generate download link');
+                                      return;
+                                    }
+                                  }
+
+                                  if (downloadUrl) {
                                     const link = document.createElement('a');
-                                    link.href = docUrl;
+                                    link.href = downloadUrl;
                                     link.download = docName || 'document';
                                     document.body.appendChild(link);
                                     link.click();
                                     document.body.removeChild(link);
-                                  }}
-                                >
-                                  <Download className="h-4 w-4 mr-1" />
-                                  Download
-                                </Button>
-                              </div>
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">
-                                Not Available
-                              </Badge>
-                            )}
+                                  }
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-1" />
+                                Download
+                              </Button>
+                            </div>
                           </div>
                         );
                       })}
