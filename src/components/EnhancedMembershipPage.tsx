@@ -19,6 +19,7 @@ const EnhancedMembershipPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState<{ is_enabled: boolean; is_test_mode: boolean } | null>(null);
   const [profileData, setProfileData] = useState({
     full_name: '',
     phone: '',
@@ -33,8 +34,25 @@ const EnhancedMembershipPage = () => {
       fetchMemberships();
       fetchMembershipPlans();
       fetchApprovedApplication();
+      fetchPaymentSettings();
     }
   }, [user]);
+
+  const fetchPaymentSettings = async () => {
+    try {
+      const { data } = await supabase
+        .from('payment_settings')
+        .select('is_enabled, is_test_mode')
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setPaymentSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching payment settings:', error);
+    }
+  };
 
   const fetchApprovedApplication = async () => {
     const { data } = await supabase
@@ -148,6 +166,12 @@ const EnhancedMembershipPage = () => {
   const handlePurchaseMembership = async (membership: any) => {
     if (memberships.length > 0) {
       toast.error('You already have an active membership');
+      return;
+    }
+
+    // Check if payments are enabled
+    if (paymentSettings && !paymentSettings.is_enabled) {
+      toast.error('Payment gateway is currently disabled. Please try again later.');
       return;
     }
 

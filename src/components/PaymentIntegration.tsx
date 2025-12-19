@@ -53,15 +53,35 @@ const PaymentIntegration = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [approvedMembership, setApprovedMembership] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [paymentSettings, setPaymentSettings] = useState<{ is_enabled: boolean; is_test_mode: boolean } | null>(null);
 
   useEffect(() => {
     if (user) {
-      fetchApprovedMembership();
-      fetchUserProfile();
+      Promise.all([
+        fetchApprovedMembership(),
+        fetchUserProfile(),
+        fetchPaymentSettings()
+      ]).finally(() => setPageLoading(false));
     } else {
       setPageLoading(false);
     }
   }, [user]);
+
+  const fetchPaymentSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_settings')
+        .select('is_enabled, is_test_mode')
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setPaymentSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching payment settings:', error);
+    }
+  };
 
   const fetchApprovedMembership = async () => {
     try {
@@ -77,8 +97,8 @@ const PaymentIntegration = () => {
         console.error('Error fetching membership:', error);
       }
       setApprovedMembership(data);
-    } finally {
-      setPageLoading(false);
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -113,6 +133,12 @@ const PaymentIntegration = () => {
 
     if (!approvedMembership) {
       toast.error('You need an approved membership application to proceed');
+      return;
+    }
+
+    // Check if payments are enabled
+    if (paymentSettings && !paymentSettings.is_enabled) {
+      toast.error('Payment gateway is currently disabled. Please try again later.');
       return;
     }
 
