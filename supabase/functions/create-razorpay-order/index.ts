@@ -64,8 +64,29 @@ serve(async (req) => {
       )
     }
 
-    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID')
+    // Get payment settings from database
+    const { data: paymentSettings } = await supabaseClient
+      .from('payment_settings')
+      .select('razorpay_key_id, is_test_mode, is_enabled')
+      .limit(1)
+      .maybeSingle()
+
+    // Check if payments are enabled
+    if (paymentSettings && !paymentSettings.is_enabled) {
+      console.error('Payments are disabled')
+      return new Response(
+        JSON.stringify({ error: 'Payment gateway is currently disabled' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Use key from DB settings if available, otherwise fall back to env
+    const razorpayKeyId = paymentSettings?.razorpay_key_id || Deno.env.get('RAZORPAY_KEY_ID')
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    const isTestMode = paymentSettings?.is_test_mode ?? true
+
+    console.log('Payment mode:', isTestMode ? 'TEST' : 'LIVE')
+    console.log('Using Razorpay Key ID:', razorpayKeyId?.substring(0, 15) + '...')
 
     if (!razorpayKeyId || !razorpayKeySecret) {
       console.error('Razorpay credentials not configured')
@@ -73,6 +94,14 @@ serve(async (req) => {
         JSON.stringify({ error: 'Razorpay credentials not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    }
+
+    // Validate key matches mode
+    const keyIsTest = razorpayKeyId.startsWith('rzp_test_')
+    if (isTestMode && !keyIsTest) {
+      console.warn('Test mode enabled but using live key - proceeding anyway')
+    } else if (!isTestMode && keyIsTest) {
+      console.warn('Live mode enabled but using test key - proceeding anyway')
     }
 
     console.log('Creating Razorpay order for user:', userId)
