@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Image } from 'lucide-react';
 import { toast } from 'sonner';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 
 interface GalleryItem {
   id: string;
@@ -38,9 +38,15 @@ const Gallery = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">Loading gallery...</div>
+      <div className="min-h-screen bg-gray-50 py-12 flex flex-col items-center">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-12">Gallery</h1>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Explore our visual collection of events, activities, and memorable moments
+            </p>
+          </div>
+          <LoadingSkeleton variant="grid" count={8} />
         </div>
       </div>
     );

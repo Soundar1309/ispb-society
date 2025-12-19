@@ -37,8 +37,11 @@ import UserManagement from './UserManagement';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AdminDashboardProps {
+  loading?: boolean;
   stats: any;
   users: any[];
   userRoles: any[];
@@ -64,6 +67,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard = ({
+  loading = false,
   stats,
   users,
   userRoles,
@@ -304,6 +308,24 @@ const AdminDashboard = ({
   };
 
   const renderTabContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-8 w-16" />
+              </div>
+            ))}
+          </div>
+          {/* Content skeleton */}
+          <LoadingSkeleton variant="table" count={5} />
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return <AdminStats stats={stats} />;
