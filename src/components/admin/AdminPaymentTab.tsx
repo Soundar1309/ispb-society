@@ -22,6 +22,7 @@ interface PaymentRecord {
   razorpay_order_id: string | null;
   created_at: string;
   updated_at: string;
+  invoice_url: string | null;
   // Joined data
   user_name: string;
   user_email: string;
@@ -90,6 +91,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
           razorpay_order_id: order.razorpay_order_id,
           created_at: order.created_at,
           updated_at: order.updated_at,
+          invoice_url: order.invoice_url || null,
           user_name: userRole?.full_name || 'Unknown User',
           user_email: userRole?.email || 'N/A',
           membership_type: membership?.membership_type || 'N/A',
@@ -291,6 +293,39 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
     } catch (error) {
       console.error('Error deleting payment:', error);
       toast.error('Error deleting payment record');
+    }
+  };
+
+  const handleGenerateInvoice = async (payment: PaymentRecord) => {
+    try {
+      toast.loading('Generating invoice...');
+      const { data, error } = await supabase.functions.invoke('generate-invoice', {
+        body: {
+          orderId: payment.id,
+          membershipId: payment.membership_id,
+          userId: payment.user_id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.invoiceUrl) {
+        window.open(data.invoiceUrl, '_blank');
+        toast.dismiss();
+        toast.success('Invoice generated successfully');
+        fetchPayments(); // Refresh to get updated invoice_url
+      } else if (data?.invoiceHtml) {
+        // Open HTML invoice in new tab
+        const blob = new Blob([data.invoiceHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        toast.dismiss();
+        toast.success('Invoice generated');
+      }
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      toast.dismiss();
+      toast.error('Failed to generate invoice');
     }
   };
 
@@ -503,31 +538,50 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                       {getStatusBadge(payment.status)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                            <Trash2 className="h-4 w-4" />
+                      <div className="flex items-center justify-end gap-1">
+                        {payment.status === 'paid' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (payment.invoice_url) {
+                                window.open(payment.invoice_url, '_blank');
+                              } else {
+                                handleGenerateInvoice(payment);
+                              }
+                            }}
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            title={payment.invoice_url ? 'Download Invoice' : 'Generate Invoice'}
+                          >
+                            <FileText className="h-4 w-4" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this payment record for {payment.user_name}? 
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeletePayment(payment.id)}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this payment record for {payment.user_name}? 
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeletePayment(payment.id)}
+                                className="bg-red-500 hover:bg-red-600"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
