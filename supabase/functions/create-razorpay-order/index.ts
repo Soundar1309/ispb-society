@@ -14,7 +14,7 @@ serve(async (req) => {
 
   try {
     console.log('Request headers:', Object.fromEntries(req.headers))
-    
+
     // Try to get user from auth header first
     const authClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -23,14 +23,14 @@ serve(async (req) => {
     )
 
     let userId: string | null = null
-    
+
     // Try JWT auth first
     const { data: { user } } = await authClient.auth.getUser()
     if (user) {
       userId = user.id
       console.log('Authenticated via JWT:', userId)
     }
-    
+
     // Use service role for database operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -39,7 +39,7 @@ serve(async (req) => {
 
     const requestBody = await req.json()
     console.log('Request body:', requestBody)
-    
+
     const { membershipPlanId, amount, membershipId: providedMembershipId, userId: bodyUserId } = requestBody
 
     // If no JWT auth, try to use userId from body (for SSR/proxy scenarios)
@@ -67,7 +67,7 @@ serve(async (req) => {
     // Get payment settings from database
     const { data: paymentSettings } = await supabaseClient
       .from('payment_settings')
-      .select('razorpay_key_id, is_test_mode, is_enabled')
+      .select('razorpay_key_id, razorpay_key_secret_encrypted, is_test_mode, is_enabled')
       .limit(1)
       .maybeSingle()
 
@@ -82,7 +82,7 @@ serve(async (req) => {
 
     // Use key from DB settings if available, otherwise fall back to env
     const razorpayKeyId = paymentSettings?.razorpay_key_id || Deno.env.get('RAZORPAY_KEY_ID')
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted || Deno.env.get('RAZORPAY_KEY_SECRET')
     const isTestMode = paymentSettings?.is_test_mode ?? true
 
     console.log('Payment mode:', isTestMode ? 'TEST' : 'LIVE')
@@ -179,7 +179,7 @@ serve(async (req) => {
     // PAYMENT RETRY: Check if there's an existing pending order to reuse
     if (existingOrderId) {
       console.log('Checking existing order for reuse:', existingOrderId)
-      
+
       // Verify order status with Razorpay
       try {
         const orderStatusResponse = await fetch(`https://api.razorpay.com/v1/orders/${existingOrderId}`, {
@@ -191,11 +191,11 @@ serve(async (req) => {
 
         if (orderStatusResponse.ok) {
           const existingOrder = await orderStatusResponse.json()
-          
+
           // Reuse order if it's still created (not paid or expired)
           if (existingOrder.status === 'created') {
             console.log('Reusing existing Razorpay order:', existingOrderId)
-            
+
             return new Response(
               JSON.stringify({
                 orderId: existingOrderId,

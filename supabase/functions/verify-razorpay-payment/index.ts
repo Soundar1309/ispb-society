@@ -72,7 +72,14 @@ serve(async (req) => {
       )
     }
 
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    // Get payment settings to fetch the secret key
+    const { data: paymentSettings } = await supabaseClient
+      .from('payment_settings')
+      .select('razorpay_key_secret_encrypted')
+      .limit(1)
+      .maybeSingle()
+
+    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted || Deno.env.get('RAZORPAY_KEY_SECRET')
 
     if (!razorpayKeySecret) {
       return new Response(
@@ -143,11 +150,11 @@ serve(async (req) => {
     const validUntil =
       membership.membership_type === 'lifetime'
         ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0]
+          .toISOString()
+          .split('T')[0]
         : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0]
+          .toISOString()
+          .split('T')[0]
 
     // Generate member code manually to avoid trigger ambiguity issue
     let memberCode = membership.member_code
