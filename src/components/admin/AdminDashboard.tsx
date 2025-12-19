@@ -3,18 +3,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  Users, 
-  Crown, 
-  UserCheck, 
-  Calendar, 
-  BookOpen, 
-  Image, 
-  Award, 
-  MessageSquare, 
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Users,
+  Crown,
+  UserCheck,
+  Calendar,
+  BookOpen,
+  Image,
+  Award,
+  MessageSquare,
   CreditCard,
   ChevronRight,
   Settings,
@@ -59,6 +59,8 @@ interface AdminDashboardProps {
   addMembership: (membershipData: any) => void;
   updateMembership: (membershipId: string, membershipData: any) => void;
   deleteMembership: (membershipId: string) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
 const AdminDashboard = ({
@@ -81,9 +83,10 @@ const AdminDashboard = ({
   updateUserRole,
   addMembership,
   updateMembership,
-  deleteMembership
+  deleteMembership,
+  activeTab,
+  setActiveTab
 }: AdminDashboardProps) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -92,9 +95,9 @@ const AdminDashboard = ({
     {
       title: 'Overview',
       items: [
-        { 
-          id: 'dashboard', 
-          label: 'Dashboard', 
+        {
+          id: 'dashboard',
+          label: 'Dashboard',
           icon: LayoutDashboard,
           description: 'System overview and analytics'
         }
@@ -103,37 +106,37 @@ const AdminDashboard = ({
     {
       title: 'User Management',
       items: [
-        { 
-          id: 'applications', 
-          label: 'Applications', 
+        {
+          id: 'applications',
+          label: 'Applications',
           icon: FileText,
           description: 'Review membership applications',
           count: applications?.length || 0
         },
-        { 
-          id: 'members', 
-          label: 'Members', 
+        {
+          id: 'members',
+          label: 'Members',
           icon: Users,
           description: 'Manage member accounts',
           count: users?.length || 0
         },
-        { 
-          id: 'life-members', 
-          label: 'Life Members', 
+        {
+          id: 'life-members',
+          label: 'Life Members',
           icon: Crown,
           description: 'Lifetime membership holders',
           count: lifeMembers?.length || 0
         },
-        { 
-          id: 'membership-plans', 
-          label: 'Membership Plans', 
+        {
+          id: 'membership-plans',
+          label: 'Membership Plans',
           icon: Settings,
           description: 'Manage membership plans',
           count: membershipPlans?.length || 0
         },
-        { 
-          id: 'users', 
-          label: 'User Roles', 
+        {
+          id: 'users',
+          label: 'User Roles',
           icon: UserCheck,
           description: 'Manage user permissions'
         }
@@ -142,37 +145,37 @@ const AdminDashboard = ({
     {
       title: 'Content Management',
       items: [
-        { 
-          id: 'conferences', 
-          label: 'Conferences', 
+        {
+          id: 'conferences',
+          label: 'Conferences',
           icon: Calendar,
           description: 'Event management',
           count: conferences?.length || 0
         },
-        { 
-          id: 'publications', 
-          label: 'Publications', 
+        {
+          id: 'publications',
+          label: 'Publications',
           icon: BookOpen,
           description: 'Research publications',
           count: publications?.length || 0
         },
-        { 
-          id: 'gallery', 
-          label: 'Gallery', 
+        {
+          id: 'gallery',
+          label: 'Gallery',
           icon: Image,
           description: 'Image gallery management',
           count: galleryItems?.length || 0
         },
-        { 
-          id: 'office-bearers', 
-          label: 'Office Bearers', 
+        {
+          id: 'office-bearers',
+          label: 'Office Bearers',
           icon: Award,
           description: 'Leadership team',
           count: officeBearers?.length || 0
         },
-        { 
-          id: 'content', 
-          label: 'Mandates & Activities', 
+        {
+          id: 'content',
+          label: 'Mandates & Activities',
           icon: BookOpen,
           description: 'Organizational content'
         }
@@ -181,17 +184,17 @@ const AdminDashboard = ({
     {
       title: 'Communication & Finance',
       items: [
-        { 
-          id: 'messages', 
-          label: 'Messages', 
+        {
+          id: 'messages',
+          label: 'Messages',
           icon: MessageSquare,
           description: 'Contact form submissions',
           count: messages?.filter(m => m.status === 'unread')?.length || 0,
           urgent: messages?.filter(m => m.status === 'unread')?.length > 0
         },
-        { 
-          id: 'payments', 
-          label: 'Payments', 
+        {
+          id: 'payments',
+          label: 'Payments',
           icon: CreditCard,
           description: 'Payment tracking',
           count: payments?.length || 0
@@ -321,7 +324,7 @@ const AdminDashboard = ({
         );
       case 'members':
         return (
-          <AdminMembersTab 
+          <AdminMembersTab
             members={users}
             userRoles={userRoles}
             onAddMembership={addMembership}
@@ -331,56 +334,56 @@ const AdminDashboard = ({
         );
       case 'life-members':
         return (
-          <AdminLifeMembersTab 
+          <AdminLifeMembersTab
             lifeMembers={lifeMembers}
             onRefresh={refreshData}
           />
         );
       case 'membership-plans':
         return (
-          <AdminMembershipPlansTab 
+          <AdminMembershipPlansTab
             plans={membershipPlans}
             onRefresh={refreshData}
           />
         );
       case 'publications':
         return (
-          <AdminPublicationsTab 
+          <AdminPublicationsTab
             publications={publications}
             onRefresh={refreshData}
           />
         );
       case 'gallery':
         return (
-          <AdminGalleryTab 
+          <AdminGalleryTab
             galleryItems={galleryItems}
             onRefresh={refreshData}
           />
         );
       case 'office-bearers':
         return (
-          <AdminOfficeBearersTab 
+          <AdminOfficeBearersTab
             officeBearers={officeBearers}
             onRefresh={refreshData}
           />
         );
       case 'conferences':
         return (
-          <AdminConferencesTab 
+          <AdminConferencesTab
             conferences={conferences}
             onRefresh={refreshData}
           />
         );
       case 'messages':
         return (
-          <AdminMessagesTab 
+          <AdminMessagesTab
             messages={messages}
             onMarkMessageRead={handleMarkMessageRead}
           />
         );
       case 'content':
         return (
-          <AdminContentTab 
+          <AdminContentTab
             mandates={mandates}
             activities={activities}
             onAddContent={handleAddContent}
@@ -390,7 +393,7 @@ const AdminDashboard = ({
         );
       case 'payments':
         return (
-          <AdminPaymentTab 
+          <AdminPaymentTab
             payments={payments}
             onAddPayment={handleAddPayment}
             onUpdatePayment={handleUpdatePayment}
@@ -419,7 +422,7 @@ const AdminDashboard = ({
                 Manage your ISPB platform efficiently
               </p>
             </div>
-            
+
             {/* Mobile Menu Toggle */}
             {isMobile && (
               <Button
@@ -454,7 +457,7 @@ const AdminDashboard = ({
                           {section.items.map((item) => {
                             const IconComponent = item.icon;
                             const isActive = activeTab === item.id;
-                            
+
                             return (
                               <button
                                 key={item.id}
@@ -462,16 +465,14 @@ const AdminDashboard = ({
                                   setActiveTab(item.id);
                                   if (isMobile) setIsMobileMenuOpen(false);
                                 }}
-                                className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all group ${
-                                  isActive 
-                                    ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' 
+                                className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all group ${isActive
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
                                     : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
-                                }`}
+                                  }`}
                               >
                                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                                  <IconComponent className={`h-4 w-4 flex-shrink-0 ${
-                                    isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
-                                  }`} />
+                                  <IconComponent className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+                                    }`} />
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-sm truncate">
                                       {item.label}
@@ -483,11 +484,11 @@ const AdminDashboard = ({
                                     )}
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex items-center space-x-2 flex-shrink-0">
                                   {item.count !== undefined && (
-                                    <Badge 
-                                      variant={item.urgent ? "destructive" : "secondary"} 
+                                    <Badge
+                                      variant={item.urgent ? "destructive" : "secondary"}
                                       className="text-xs min-w-[20px] h-5 flex items-center justify-center"
                                     >
                                       {item.count}

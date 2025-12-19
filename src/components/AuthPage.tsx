@@ -39,7 +39,7 @@ const AuthPage = () => {
         });
 
         if (error) throw error;
-        toast.success('Password reset email sent! Check your inbox.');
+        toast.success('Password reset email sent! Check your inbox.'); 
         setIsForgotPassword(false);
         return;
       }

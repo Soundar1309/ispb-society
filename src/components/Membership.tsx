@@ -39,7 +39,7 @@ const Membership = () => {
     },
     {
       step: 2,
-     title: "Upload Documents",
+      title: "Upload Documents",
       description: "Submit required documents as indicated below."
     },
     {
@@ -79,7 +79,7 @@ const Membership = () => {
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Membership</h1>
           <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto px-4">
-            Join the Indian Society of Plant Breeders and be part of India's premier 
+            Join the Indian Society of Plant Breeders and be part of India's premier
             plant breeding community. Connect, learn, and contribute to agricultural innovation.
           </p>
         </div>
@@ -97,7 +97,7 @@ const Membership = () => {
                     {plan.duration_months > 0 ? `${plan.duration_months} months` : 'Lifetime'}
                   </div>
                 </div>
-                
+
                 <div className="mb-4 sm:mb-6">
                   <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
                   <ul className="space-y-2">
@@ -110,7 +110,7 @@ const Membership = () => {
                   </ul>
                 </div>
 
-                <button 
+                <button
                   onClick={() => window.location.href = '/membership-application'}
                   className="w-full bg-green-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm sm:text-base"
                 >
@@ -189,7 +189,7 @@ const Membership = () => {
                 We use Razorpay for secure and convenient online payments
               </p>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
               <div>
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -233,7 +233,7 @@ const Membership = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Email Support</h3>
-                <p className="text-green-600 text-sm sm:text-base">membership@ispb.org.in</p>
+                <p className="text-green-600 text-sm sm:text-base">ISPBtnau@gmail.com</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Office Hours</h3>

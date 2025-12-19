@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
 
 // Memoized Quill to prevent re-render on unrelated form updates (e.g., Title/Year typing)
 const MemoQuill = memo(
@@ -96,12 +97,12 @@ interface AdminContentTabProps {
   onDeleteContent: (id: string, type: 'mandate' | 'activity') => void;
 }
 
-const AdminContentTab = ({ 
-  mandates, 
-  activities, 
-  onAddContent, 
-  onUpdateContent, 
-  onDeleteContent 
+const AdminContentTab = ({
+  mandates,
+  activities,
+  onAddContent,
+  onUpdateContent,
+  onDeleteContent
 }: AdminContentTabProps) => {
   const [activeTab, setActiveTab] = useState<'mandates' | 'activities'>('mandates');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -160,7 +161,7 @@ const AdminContentTab = ({
     }
   };
 
-  
+
 
   const ContentTable = ({ items, type }: { items: ContentItem[], type: 'mandate' | 'activity' }) => (
     <Table>
@@ -176,32 +177,32 @@ const AdminContentTab = ({
         {items
           .sort((a, b) => (b.year || 0) - (a.year || 0))
           .map((item) => (
-          <TableRow key={item.id}>
-            <TableCell>{item.year || '-'}</TableCell>
-            <TableCell className="font-medium">{item.title || '-'}</TableCell>
-            <TableCell className="max-w-md truncate">
-              <div dangerouslySetInnerHTML={{ __html: item.content.substring(0, 100) + '...' }} />
-            </TableCell>
-            <TableCell>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleEdit(item, type)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDelete(item.id, type)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+            <TableRow key={item.id}>
+              <TableCell>{item.year || '-'}</TableCell>
+              <TableCell className="font-medium">{item.title || '-'}</TableCell>
+              <TableCell className="max-w-md truncate">
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.content.substring(0, 100)) + '...' }} />
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(item, type)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(item.id, type)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
       </TableBody>
     </Table>
   );
@@ -226,7 +227,7 @@ const AdminContentTab = ({
                 <DialogTitle>Add New {activeTab === 'mandates' ? 'Mandate' : 'Activity'}</DialogTitle>
                 <DialogDescription>Create new content item</DialogDescription>
               </DialogHeader>
-              <ContentForm 
+              <ContentForm
                 formData={formData}
                 editingItem={editingItem}
                 activeTab={activeTab}
@@ -258,7 +259,7 @@ const AdminContentTab = ({
                 <DialogTitle>Edit {editingItem.type === 'mandate' ? 'Mandate' : 'Activity'}</DialogTitle>
                 <DialogDescription>Update content details</DialogDescription>
               </DialogHeader>
-              <ContentForm 
+              <ContentForm
                 formData={formData}
                 editingItem={editingItem}
                 activeTab={activeTab}

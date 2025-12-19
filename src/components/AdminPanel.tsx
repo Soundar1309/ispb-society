@@ -1,9 +1,11 @@
-
+import { useState } from 'react';
 import AdminAccessControl from './admin/AdminAccessControl';
 import AdminDashboard from './admin/AdminDashboard';
 import { useAdminData } from '@/hooks/useAdminData';
 
 const AdminPanel = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
   const {
     stats,
     users,
@@ -25,11 +27,13 @@ const AdminPanel = () => {
     addMembership,
     updateMembership,
     deleteMembership
-  } = useAdminData();
+  } = useAdminData(activeTab);
 
   return (
     <AdminAccessControl>
       <AdminDashboard
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         stats={stats}
         users={users}
         userRoles={userRoles}

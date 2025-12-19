@@ -186,7 +186,7 @@ const ContactUs = () => {
                   <h3 className="text-lg font-semibold text-gray-900">Visit Us</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                 Centre for Plant Breeding & Genetics, <br /> Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
+                  Centre for Plant Breeding & Genetics, <br /> Tamil Nadu Agricultural University, Coimbatore, Tamil Nadu-641003, India
                 </p>
               </div>
 
@@ -197,7 +197,7 @@ const ContactUs = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
                 </div>
-                <p className="text-gray-700">secretary@ispb.org.in</p>
+                <p className="text-gray-700">ISPBtnau@gmail.com</p>
                 {/* <p className="text-sm text-gray-500 mt-1">We reply within 24 hours</p> */}
               </div>
 
@@ -246,8 +246,8 @@ const ContactUs = () => {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Contacts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Membership', email: 'membership@ispb.org.in', description: 'Applications and renewals', color: 'green' },
-              { title: 'General', email: 'secretary@ispb.org.in', description: 'General inquiries', color: 'purple' }
+              { title: 'Membership', email: 'ISPBtnau@gmail.com', description: 'Applications and renewals', color: 'green' },
+              { title: 'General', email: 'ISPBtnau@gmail.com', description: 'General inquiries', color: 'purple' }
             ].map((contact, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
                 <div className={`w-12 h-12 bg-${contact.color}-100 rounded-full flex items-center justify-center mb-4`}>

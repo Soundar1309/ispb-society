@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import Header from './Header';
 import { Button } from './ui/button';
+import DOMPurify from 'dompurify';
 
 interface ContentItem {
   id: string;
@@ -56,7 +57,7 @@ const MandateActivities = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       <main className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-5xl mx-auto space-y-12">
           {/* Mandate Section */}
@@ -67,7 +68,7 @@ const MandateActivities = () => {
               </h1>
               <div className="h-1 w-24 bg-gradient-to-r from-green-50 to-orange-50 mx-auto rounded-full" />
             </div>
-            
+
             <div className="space-y-6">
               {mandates.map((mandate) => (
                 <div key={mandate.id} className="relative overflow-hidden bg-white p-6 md:p-7 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -83,9 +84,9 @@ const MandateActivities = () => {
                     )}
                   </div>
                   <div className="h-px bg-gradient-to-r from-gray-200 to-transparent mb-3" />
-                  <div 
+                  <div
                     className="mt-1 text-gray-700 leading-relaxed prose prose-sm max-w-none text-justify prose-a:text-emerald-700 prose-strong:text-gray-900"
-                    dangerouslySetInnerHTML={{ __html: mandate.content }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mandate.content) }}
                   />
                 </div>
               ))}
@@ -100,7 +101,7 @@ const MandateActivities = () => {
               </h2>
               <div className="h-1 w-24 bg-gradient-to-r from-green-50 to-orange-50 mx-auto rounded-full" />
             </div>
-            
+
             <div className="space-y-6">
               {activities.map((activity) => (
                 <div key={activity.id} className="relative overflow-hidden bg-white p-6 md:p-7 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -116,9 +117,9 @@ const MandateActivities = () => {
                     )}
                   </div>
                   <div className="h-px bg-gradient-to-r from-gray-200 to-transparent mb-3" />
-                  <div 
+                  <div
                     className="mt-1 text-gray-700 leading-relaxed prose prose-sm max-w-none text-justify prose-a:text-emerald-700 prose-strong:text-gray-900"
-                    dangerouslySetInnerHTML={{ __html: activity.content }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activity.content) }}
                   />
                 </div>
               ))}
