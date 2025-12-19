@@ -18,6 +18,7 @@ const EnhancedMembershipPage = () => {
   const [approvedApplication, setApprovedApplication] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [profileData, setProfileData] = useState({
     full_name: '',
     phone: '',
@@ -43,7 +44,7 @@ const EnhancedMembershipPage = () => {
       .eq('application_status', 'approved')
       .eq('payment_status', 'pending')
       .maybeSingle();
-    
+
     if (data) {
       setApprovedApplication(data);
     }
@@ -109,7 +110,7 @@ const EnhancedMembershipPage = () => {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const { error } = await supabase
         .from('user_roles')
@@ -205,6 +206,7 @@ const EnhancedMembershipPage = () => {
 
             if (verifyData?.success) {
               toast.success('Membership activated successfully!');
+              setShowSuccess(true);
               await Promise.all([fetchMemberships(), fetchApprovedApplication()]);
             } else {
               toast.error(verifyData?.error || 'Payment verification failed');
@@ -269,6 +271,47 @@ const EnhancedMembershipPage = () => {
           <CardContent>
             <Button asChild className="w-full">
               <a href="/auth">Login</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full bg-white shadow-lg border-green-200">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl text-green-800">Payment Successful!</CardTitle>
+            <CardDescription className="text-gray-600 text-lg">
+              Welcome to the ISPB family.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-center space-y-2">
+              <p className="text-gray-600">
+                Your membership has been activated successfully. You can now access all member benefits.
+              </p>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                <p className="text-sm text-green-800 font-medium">Transaction ID</p>
+                <p className="text-green-700 font-mono text-sm break-all">
+                  {approvedApplication?.razorpay_payment_id || 'Completed'}
+                </p>
+              </div>
+            </div>
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+              onClick={() => {
+                setShowSuccess(false);
+                // Optionally redirect to dashboard or just show the active state
+                window.location.href = '/user-dashboard'; // Assuming dashboard exists logic
+              }}
+            >
+              Go to Dashboard
             </Button>
           </CardContent>
         </Card>
@@ -375,10 +418,10 @@ const EnhancedMembershipPage = () => {
                         <Save className="w-4 h-4 mr-2" />
                         {isLoading ? 'Saving...' : 'Save'}
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setIsEditing(false)} 
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
                         className="flex-1"
                       >
                         <X className="w-4 h-4 mr-2" />
@@ -469,7 +512,7 @@ const EnhancedMembershipPage = () => {
                       </div>
                     </div>
                   </div>
-                  <Button 
+                  <Button
                     onClick={() => handlePurchaseMembership(approvedApplication)}
                     disabled={isLoading}
                     className="w-full bg-green-600 hover:bg-green-700"
