@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { startOfMonth, subMonths } from 'date-fns';
 
 interface AdminStats {
   totalUsers: number;
   membershipEnrolled: number;
   unreadMessages: number;
+  totalRevenue: number;
+  revenueGrowth: number;
+  membershipGrowth: number;
 }
 
 interface UserRole {
@@ -61,7 +65,10 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     membershipEnrolled: 0,
-    unreadMessages: 0
+    unreadMessages: 0,
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    membershipGrowth: 0
   });
 
   const [users, setUsers] = useState<MemberWithUserData[]>([]);
@@ -85,17 +92,92 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   const fetchStats = async () => {
     try {
-      // Parallelize these count queries
-      const [usersRes, membershipRes, messagesRes] = await Promise.all([
+      const now = new Date();
+      const currentMonthStart = startOfMonth(now);
+      const lastMonthStart = startOfMonth(subMonths(now, 1));
+
+      // Parallelize count queries AND growth data queries
+      const [
+        usersRes,
+        membershipRes,
+        messagesRes,
+        revenueQuery,
+        membershipsGrowthQuery
+      ] = await Promise.all([
         supabase.from('user_roles').select('id', { count: 'exact', head: true }),
         supabase.from('memberships').select('id', { count: 'exact', head: true }).eq('status', 'active').in('payment_status', ['paid', 'manual']),
-        supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('status', 'unread')
+        supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('status', 'unread'),
+        // Fetch paid orders from last month onwards for revenue calc
+        supabase
+          .from('orders')
+          .select('amount, created_at')
+          .eq('status', 'paid')
+          .gte('created_at', lastMonthStart.toISOString()),
+        // Fetch new active memberships from last month onwards for growth calc
+        supabase
+          .from('memberships')
+          .select('created_at')
+          .eq('status', 'active')
+          .gte('created_at', lastMonthStart.toISOString())
       ]);
+
+      // Calculate Revenue Growth
+      let currentMonthRevenue = 0;
+      let lastMonthRevenue = 0;
+      let totalRevenue = 0;
+
+      const { data: allOrders } = await supabase // Use a separate query to get total if needed, or iterate differently. 
+        // Actually, my previous attempt had allCode logic inside.
+        // Re-implementing the logic cleanly:
+        .from('orders')
+        .select('amount, created_at')
+        .eq('status', 'paid');
+
+      if (allOrders) {
+        allOrders.forEach(order => {
+          const amount = Number(order.amount) || 0;
+          totalRevenue += amount;
+
+          const orderDate = new Date(order.created_at);
+          if (orderDate >= currentMonthStart) {
+            currentMonthRevenue += amount;
+          } else if (orderDate >= lastMonthStart && orderDate < currentMonthStart) {
+            lastMonthRevenue += amount;
+          }
+        });
+      }
+
+      const revenueGrowth = lastMonthRevenue > 0
+        ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : (currentMonthRevenue > 0 ? 100 : 0);
+
+      // Calculate Membership Growth
+      const { data: recentMemberships } = membershipsGrowthQuery;
+      let currentMonthMembers = 0;
+      let lastMonthMembers = 0;
+
+      if (recentMemberships) {
+        recentMemberships.forEach(m => {
+          const mDate = new Date(m.created_at);
+          if (mDate >= currentMonthStart) {
+            currentMonthMembers++;
+          } else if (mDate >= lastMonthStart && mDate < currentMonthStart) {
+            lastMonthMembers++;
+          }
+        });
+      }
+
+      const membershipGrowth = lastMonthMembers > 0
+        ? ((currentMonthMembers - lastMonthMembers) / lastMonthMembers) * 100
+        : (currentMonthMembers > 0 ? 100 : 0);
 
       setStats({
         totalUsers: usersRes.count || 0,
         membershipEnrolled: membershipRes.count || 0,
-        unreadMessages: messagesRes.count || 0
+        unreadMessages: messagesRes.count || 0,
+        totalRevenue,
+        revenueGrowth,
+        membershipGrowth
       });
     } catch (error) {
       console.error('Error fetching stats:', error);

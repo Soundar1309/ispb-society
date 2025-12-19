@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ declare global {
 
 const PaymentIntegration = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [approvedMembership, setApprovedMembership] = useState<any>(null);
@@ -187,9 +189,11 @@ const PaymentIntegration = () => {
 
             if (verifyError) throw verifyError;
             if (verifyData?.success) {
-              toast.success('Payment successful! Membership activated.');
+              toast.success('Successfully enrolled the membership');
               // Refresh membership status
               fetchApprovedMembership();
+              // Redirect to dashboard
+              navigate('/dashboard');
             } else {
               toast.error(verifyData?.error || 'Payment verification failed');
             }
@@ -347,7 +351,7 @@ const PaymentIntegration = () => {
                   Your payment information is protected with bank-level security
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-center">
                 <div>
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mx-auto mb-2">

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { AdminSidebarNav } from './AdminSidebarNav';
+import { AdminCommandPalette } from './AdminCommandPalette';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -440,132 +443,75 @@ const AdminDashboard = ({
     .flatMap(section => section.items)
     .find(item => item.id === activeTab);
 
+  const MobileNav = () => (
+    <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="lg:hidden shrink-0">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle navigation menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="p-0 w-[280px]">
+        <AdminSidebarNav
+          sections={menuSections}
+          activeTab={activeTab}
+          onSelectTab={(id) => {
+            setActiveTab(id);
+            setIsMobileMenuOpen(false);
+          }}
+        />
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="responsive-container py-6">
+    <div className="flex h-screen overflow-hidden bg-slate-50">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-72 border-r bg-white h-screen shrink-0">
+        <AdminSidebarNav
+          sections={menuSections}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+        />
+      </aside>
+
+      {/* Main Layout */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Admin Dashboard
-              </h1>
-              <p className="text-slate-600 mt-2">
-                Manage your ISPB platform efficiently
-              </p>
-            </div>
+        <header className="flex items-center gap-4 border-b bg-white px-6 h-16 shrink-0 z-10">
+          <MobileNav />
 
-            {/* Mobile Menu Toggle */}
-            {isMobile && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="self-start bg-white shadow-sm hover:shadow-md transition-shadow"
-              >
-                {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                <span className="ml-2">{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
-              </Button>
+          <div className="flex items-center gap-2 mr-auto">
+            {currentItem?.icon && (
+              <currentItem.icon className="h-5 w-5 text-blue-600 hidden sm:block" />
             )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Navigation */}
-          <div className={`lg:col-span-1 ${isMobile && !isMobileMenuOpen ? 'hidden' : 'block'}`}>
-            <Card className="sticky top-6">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Navigation</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[calc(100vh-12rem)]">
-                  <div className="space-y-6 p-4">
-                    {menuSections.map((section) => (
-                      <div key={section.title}>
-                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
-                          {section.title}
-                        </h3>
-                        <div className="space-y-1">
-                          {section.items.map((item) => {
-                            const IconComponent = item.icon;
-                            const isActive = activeTab === item.id;
-
-                            return (
-                              <button
-                                key={item.id}
-                                onClick={() => {
-                                  setActiveTab(item.id);
-                                  if (isMobile) setIsMobileMenuOpen(false);
-                                }}
-                                className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all group ${isActive
-                                    ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
-                                    : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
-                                  }`}
-                              >
-                                <div className="flex items-center space-x-3 min-w-0 flex-1">
-                                  <IconComponent className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
-                                    }`} />
-                                  <div className="min-w-0 flex-1">
-                                    <div className="font-medium text-sm truncate">
-                                      {item.label}
-                                    </div>
-                                    {item.description && (
-                                      <div className="text-xs text-slate-500 truncate">
-                                        {item.description}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center space-x-2 flex-shrink-0">
-                                  {item.count !== undefined && (
-                                    <Badge
-                                      variant={item.urgent ? "destructive" : "secondary"}
-                                      className="text-xs min-w-[20px] h-5 flex items-center justify-center"
-                                    >
-                                      {item.count}
-                                    </Badge>
-                                  )}
-                                  {isActive && <ChevronRight className="h-3 w-3 text-blue-600" />}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+            <h1 className="text-lg font-semibold text-slate-800">
+              {currentItem?.label || 'Dashboard'}
+            </h1>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader className="border-b">
-                <div className="flex items-center space-x-3">
-                  {currentItem?.icon && (
-                    <currentItem.icon className="h-5 w-5 text-blue-600" />
-                  )}
-                  <div>
-                    <CardTitle className="text-xl">
-                      {currentItem?.label || 'Dashboard'}
-                    </CardTitle>
-                    {currentItem?.description && (
-                      <p className="text-sm text-slate-600 mt-1">
-                        {currentItem.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                {renderTabContent()}
-              </CardContent>
-            </Card>
+          <div className="flex items-center gap-3">
+            <AdminCommandPalette onSelectTab={setActiveTab} />
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/'} className="hidden sm:flex">
+              Go to Site
+            </Button>
           </div>
-        </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Dynamic Description/Header for Tab */}
+            {currentItem?.description && (
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900">{currentItem.label}</h2>
+                <p className="text-slate-500">{currentItem.description}</p>
+              </div>
+            )}
+
+            {renderTabContent()}
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle, Trash2, FileText } from 'lucide-react';
+import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle, Trash2, FileText, Loader2, Eye } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 interface PaymentRecord {
   id: string;
@@ -43,6 +45,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [membershipTypeFilter, setMembershipTypeFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Fetch payments with proper joins
   const fetchPayments = async () => {
@@ -118,7 +121,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           payment.user_name?.toLowerCase().includes(query) ||
           payment.user_email?.toLowerCase().includes(query) ||
           payment.razorpay_payment_id?.toLowerCase().includes(query) ||
@@ -141,7 +144,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
       if (dateFilter !== 'all') {
         const paymentDate = new Date(payment.created_at);
         const now = new Date();
-        
+
         switch (dateFilter) {
           case 'today':
             if (paymentDate.toDateString() !== now.toDateString()) return false;
@@ -216,7 +219,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
 
       const csvContent = [
         headers.join(','),
-        ...csvData.map(row => 
+        ...csvData.map(row =>
           row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
         )
       ].join('\n');
@@ -296,6 +299,157 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
     }
   };
 
+  const handleDownloadInvoice = async (payment: PaymentRecord) => {
+    try {
+      setProcessingId(payment.id);
+      toast.loading('Preparing invoice for download...');
+
+      let htmlContent = '';
+
+      // Always generate fresh invoice to ensure latest design/fixes are applied
+      // This bypasses potentially stale files in storage
+      if (!htmlContent) {
+        const { data, error } = await supabase.functions.invoke('generate-invoice', {
+          body: {
+            orderId: payment.id,
+            membershipId: payment.membership_id,
+            userId: payment.user_id
+          }
+        });
+
+        if (error) throw error;
+        if (data?.invoiceHtml) {
+          htmlContent = data.invoiceHtml;
+          // Refresh list to update invoice_url if newly generated
+          fetchPayments();
+        } else {
+          throw new Error('No invoice data returned');
+        }
+      }
+
+      if (!htmlContent) {
+        throw new Error('Failed to retrieve invoice content');
+      }
+
+      // Create an iframe to render the invoice
+      // We position it ON SCREEN with a high Z-Index to ensure it renders
+      // It will look like a "preview" overlay for a second
+      const iframe = document.createElement('iframe');
+
+      iframe.style.position = 'fixed';
+      iframe.style.top = '0';
+      iframe.style.left = '0'; // Visible!
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.zIndex = '9999';
+      iframe.style.backgroundColor = 'white';
+      iframe.style.border = 'none';
+
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) {
+        throw new Error('Could not create iframe document');
+      }
+
+      doc.open();
+      doc.write(htmlContent);
+      doc.close();
+
+      // Wait for resources to load
+      await new Promise<void>((resolve) => {
+        if (iframe.contentWindow) {
+          iframe.contentWindow.onload = () => resolve();
+        } else {
+          iframe.onload = () => resolve();
+        }
+        setTimeout(resolve, 2000); // 2s timeout
+      });
+
+      // Extra delay for fonts
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const opt = {
+        margin: 10,
+        filename: `ISPB_Invoice_${payment.razorpay_payment_id || payment.id.slice(0, 8)}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollY: 0,
+          windowWidth: 1024
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+      };
+
+      // Generate PDF
+      await html2pdf().set(opt).from(doc.body).save();
+
+      // Cleanup
+      document.body.removeChild(iframe);
+      toast.dismiss();
+      toast.success('Invoice downloaded successfully');
+
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      toast.dismiss();
+      toast.error('Failed to download invoice');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleViewInvoice = async (payment: PaymentRecord) => {
+    try {
+      setProcessingId(payment.id);
+
+      let htmlContent = '';
+      // Always regenerate to ensure latest design
+      // toast.loading('Generating invoice...'); // Loading handled by if check below effectively
+
+      if (!htmlContent) {
+        toast.loading('Generating invoice...');
+        const { data, error } = await supabase.functions.invoke('generate-invoice', {
+          body: {
+            orderId: payment.id,
+            membershipId: payment.membership_id,
+            userId: payment.user_id
+          }
+        });
+
+        if (error) throw error;
+
+        if (data?.invoiceHtml) {
+          htmlContent = data.invoiceHtml;
+          fetchPayments();
+        }
+      }
+
+      if (htmlContent) {
+        // use document.write for reliable rendering
+        const win = window.open('', '_blank');
+        if (win) {
+          win.document.open();
+          win.document.write(htmlContent);
+          win.document.close();
+          toast.dismiss();
+        } else {
+          throw new Error('Popup blocked');
+        }
+      } else {
+        throw new Error('Could not get invoice content');
+      }
+
+    } catch (error) {
+      console.error('Error viewing invoice:', error);
+      toast.dismiss();
+      toast.error('Failed to view invoice');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleGenerateInvoice = async (payment: PaymentRecord) => {
     try {
       toast.loading('Generating invoice...');
@@ -364,7 +518,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
               <CheckCircle className="h-4 w-4 text-green-600" />
               <p className="text-sm text-green-600 font-medium">Total Collected</p>
             </div>
-            <p className="text-2xl font-bold text-green-700">₹{totals.paidAmount.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-green-700">&#8377;{totals.paidAmount.toLocaleString()}</p>
             <p className="text-xs text-green-500">{totals.paidCount} successful payments</p>
           </div>
           <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
@@ -372,7 +526,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
               <Clock className="h-4 w-4 text-yellow-600" />
               <p className="text-sm text-yellow-600 font-medium">Pending</p>
             </div>
-            <p className="text-2xl font-bold text-yellow-700">₹{totals.pendingAmount.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-yellow-700">&#8377;{totals.pendingAmount.toLocaleString()}</p>
             <p className="text-xs text-yellow-500">{totals.pendingCount} awaiting payment</p>
           </div>
           <div className="p-4 bg-red-50 rounded-lg border border-red-200">
@@ -509,10 +663,6 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium text-sm">{payment.user_name}</div>
-                      <div className="text-xs text-slate-500">{payment.user_email}</div>
-                    </TableCell>
-                    <TableCell>
                       <div className="capitalize text-sm">{payment.membership_type}</div>
                       {payment.member_code && (
                         <div className="text-xs text-green-600 font-mono">{payment.member_code}</div>
@@ -520,7 +670,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                     </TableCell>
                     <TableCell>
                       <span className="font-semibold text-sm">
-                        ₹{payment.amount?.toLocaleString() || 0}
+                        &#8377;{payment.amount?.toLocaleString() || 0}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -540,23 +690,34 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         {payment.status === 'paid' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (payment.invoice_url) {
-                                window.open(payment.invoice_url, '_blank');
-                              } else {
-                                handleGenerateInvoice(payment);
-                              }
-                            }}
-                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                            title={payment.invoice_url ? 'Download Invoice' : 'Generate Invoice'}
-                          >
-                            <FileText className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewInvoice(payment)}
+                              disabled={processingId === payment.id}
+                              className="text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                              title="View Invoice"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadInvoice(payment)}
+                              disabled={processingId === payment.id}
+                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                              title="Download Invoice PDF"
+                            >
+                              {processingId === payment.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </>
                         )}
-                        <AlertDialog>
+                        < AlertDialog >
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
                               <Trash2 className="h-4 w-4" />
@@ -566,13 +727,13 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this payment record for {payment.user_name}? 
+                                Are you sure you want to delete this payment record for {payment.user_name}?
                                 This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
+                              <AlertDialogAction
                                 onClick={() => handleDeletePayment(payment.id)}
                                 className="bg-red-500 hover:bg-red-600"
                               >
@@ -597,7 +758,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
           </div>
         )}
       </CardContent>
-    </Card>
+    </Card >
   );
 };
 

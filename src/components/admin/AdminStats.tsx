@@ -1,78 +1,90 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, CreditCard, MessageSquare, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Users, CreditCard, MessageSquare, TrendingUp, ArrowUpRight, DollarSign, Activity, FileText, User, Settings, Calendar } from 'lucide-react';
 
 interface AdminStatsProps {
   stats: {
     totalUsers: number;
     membershipEnrolled: number;
     unreadMessages: number;
+    totalRevenue: number;
+    revenueGrowth: number;
+    membershipGrowth: number;
   };
 }
 
 const AdminStats = ({ stats }: AdminStatsProps) => {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   const statCards = [
     {
-      title: "Total Users",
-      value: stats.totalUsers,
+      title: "Total Revenue",
+      value: formatCurrency(stats.totalRevenue),
+      sub: `${stats.revenueGrowth > 0 ? '+' : ''}${stats.revenueGrowth.toFixed(1)}% from last month`,
+      icon: DollarSign,
+      color: "text-emerald-600",
+      bg: "bg-emerald-100/50",
+      trend: stats.revenueGrowth >= 0 ? 'up' : 'down'
+    },
+    {
+      title: "Active Members",
+      value: stats.membershipEnrolled.toString(),
+      sub: `${stats.membershipGrowth > 0 ? '+' : ''}${stats.membershipGrowth.toFixed(1)}% new this month`,
       icon: Users,
       color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      change: "+12%",
-      changeType: "increase"
+      bg: "bg-blue-100/50",
+      trend: stats.membershipGrowth >= 0 ? 'up' : 'down'
     },
     {
-      title: "Membership Enrolled",
-      value: stats.membershipEnrolled,
-      icon: CreditCard,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      change: "+23%",
-      changeType: "increase"
-    },
-    {
-      title: "Unread Messages",
-      value: stats.unreadMessages,
-      icon: MessageSquare,
+      title: "Pending Actions",
+      value: stats.unreadMessages.toString(),
+      sub: "Unread messages",
+      icon: Activity,
       color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      change: stats.unreadMessages > 0 ? "New" : "Clear",
-      changeType: stats.unreadMessages > 0 ? "warning" : "success"
+      bg: "bg-orange-100/50",
+      trend: 'neutral'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {statCards.map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <Card key={index} className="relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <Icon className={`h-4 w-4 ${stat.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className={`h-3 w-3 ${
-                  stat.changeType === 'increase' ? 'text-green-500' : 
-                  stat.changeType === 'warning' ? 'text-orange-500' : 'text-gray-500'
-                }`} />
-                <span className={`text-xs font-medium ${
-                  stat.changeType === 'increase' ? 'text-green-500' : 
-                  stat.changeType === 'warning' ? 'text-orange-500' : 'text-gray-500'
-                }`}>
-                  {stat.change}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {statCards.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={index} className="border-none shadow-sm hover:shadow-md transition-all duration-200 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between space-x-4">
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 rounded-xl ${stat.bg}`}>
+                      <Icon className={`h-6 w-6 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+                      <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
+                    </div>
+                  </div>
+                  {stat.trend === 'up' && <ArrowUpRight className="h-5 w-5 text-emerald-500" />}
+                  {stat.trend === 'down' && <TrendingUp className="h-5 w-5 text-red-500 rotate-180" />}
+                </div>
+                <div className="mt-4 flex items-center text-sm text-slate-500">
+                  <span className={stat.trend === 'up' ? "text-emerald-600 font-medium" : stat.trend === 'down' ? "text-red-600 font-medium" : ""}>
+                    {stat.sub}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
     </div>
   );
 };

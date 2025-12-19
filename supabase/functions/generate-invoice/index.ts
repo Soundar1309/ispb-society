@@ -209,7 +209,7 @@ serve(async (req) => {
         </tr>
         <tr class="total-row">
           <td>Total:</td>
-          <td>₹${(order?.amount || membership?.amount || 0).toLocaleString()}</td>
+          <td>&#8377;${(order?.amount || membership?.amount || 0).toLocaleString()}</td>
         </tr>
       </table>
     </div>
@@ -241,7 +241,7 @@ serve(async (req) => {
 
     // Store invoice HTML in storage as a file
     const fileName = `${targetUserId}/${invoiceNumber}.html`
-    
+
     const { error: uploadError } = await supabaseClient.storage
       .from('invoices')
       .upload(fileName, invoiceHtml, {
@@ -277,14 +277,15 @@ serve(async (req) => {
         invoiceUrl,
         invoiceHtml
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      }),
+  { headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' } }
     )
 
   } catch (error) {
-    console.error('Error generating invoice:', error)
-    return new Response(
-      JSON.stringify({ error: 'Failed to generate invoice' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
+  console.error('Error generating invoice:', error)
+  return new Response(
+    JSON.stringify({ error: 'Failed to generate invoice' }),
+    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
 })
