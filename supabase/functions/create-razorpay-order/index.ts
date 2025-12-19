@@ -68,6 +68,7 @@ serve(async (req) => {
     const { data: paymentSettings } = await supabaseClient
       .from('payment_settings')
       .select('razorpay_key_id, razorpay_key_secret_encrypted, is_test_mode, is_enabled')
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
@@ -81,8 +82,8 @@ serve(async (req) => {
     }
 
     // Use key from DB settings if available, otherwise fall back to env
-    const razorpayKeyId = paymentSettings?.razorpay_key_id || Deno.env.get('RAZORPAY_KEY_ID')
-    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted || Deno.env.get('RAZORPAY_KEY_SECRET')
+    const razorpayKeyId = paymentSettings?.razorpay_key_id?.trim() || Deno.env.get('RAZORPAY_KEY_ID')?.trim()
+    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted?.trim() || Deno.env.get('RAZORPAY_KEY_SECRET')?.trim()
     const isTestMode = paymentSettings?.is_test_mode ?? true
 
     console.log('Payment mode:', isTestMode ? 'TEST' : 'LIVE')

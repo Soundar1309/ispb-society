@@ -76,10 +76,11 @@ serve(async (req) => {
     const { data: paymentSettings } = await supabaseClient
       .from('payment_settings')
       .select('razorpay_key_secret_encrypted')
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted || Deno.env.get('RAZORPAY_KEY_SECRET')
+    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted?.trim() || Deno.env.get('RAZORPAY_KEY_SECRET')?.trim()
 
     if (!razorpayKeySecret) {
       return new Response(
