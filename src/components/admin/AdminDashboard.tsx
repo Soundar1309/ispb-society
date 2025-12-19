@@ -18,7 +18,8 @@ import {
   CreditCard,
   ChevronRight,
   Settings,
-  FileText
+  FileText,
+  Cog
 } from 'lucide-react';
 import AdminStats from './AdminStats';
 import AdminApplicationsTab from './AdminApplicationsTab';
@@ -27,6 +28,7 @@ import AdminConferencesTab from './AdminConferencesTab';
 import AdminMessagesTab from './AdminMessagesTab';
 import AdminContentTab from './AdminContentTab';
 import AdminPaymentTab from './AdminPaymentTab';
+import AdminPaymentSettingsTab from './AdminPaymentSettingsTab';
 import AdminOrdersTab from './AdminOrdersTab';
 import AdminMembershipPlansTab from './AdminMembershipPlansTab';
 import AdminLifeMembersTab from './AdminLifeMembersTab';
@@ -202,6 +204,12 @@ const AdminDashboard = ({
           icon: CreditCard,
           description: 'Payment tracking',
           count: payments?.length || 0
+        },
+        {
+          id: 'payment-settings',
+          label: 'Payment Settings',
+          icon: Cog,
+          description: 'Razorpay configuration'
         }
       ]
     }
@@ -421,6 +429,8 @@ const AdminDashboard = ({
             onUpdatePayment={handleUpdatePayment}
           />
         );
+      case 'payment-settings':
+        return <AdminPaymentSettingsTab />;
       default:
         return <AdminStats stats={stats} />;
     }
