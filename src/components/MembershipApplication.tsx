@@ -657,21 +657,24 @@ const MembershipApplication = () => {
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">Required Documents:</p>
                     <ul className="list-disc list-inside space-y-1">
-                      <li>Proof of identity (Aadhar Card / PAN Card / Passport)</li>
                       <li>Institutional ID or proof of affiliation</li>
-                      <li>Recent passport size photograph</li>
                     </ul>
                     <p className="mt-2 text-blue-600">Accepted formats: PDF, JPG, PNG</p>
                   </div>
                 </div>
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
-                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <Label htmlFor="documents" className="cursor-pointer">
-                  <p className="text-gray-600 mb-2">Click to upload documents</p>
-                  <p className="text-sm text-gray-500">PDF, JPG, or PNG files only</p>
-                </Label>
+              <label
+                htmlFor="documents"
+                className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors cursor-pointer w-full bg-gray-50/50 hover:bg-gray-50"
+              >
+                <div className="flex flex-col items-center justify-center">
+                  <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                  <div className="space-y-1">
+                    <p className="text-gray-600 font-medium">Click to upload documents</p>
+                    <p className="text-sm text-gray-500">PDF, JPG, or PNG files only</p>
+                  </div>
+                </div>
                 <Input
                   id="documents"
                   type="file"
@@ -680,7 +683,7 @@ const MembershipApplication = () => {
                   className="hidden"
                   accept=".pdf,.jpg,.jpeg,.png"
                 />
-              </div>
+              </label>
 
               {applicationData.documents.length > 0 && (
                 <div className="space-y-2">

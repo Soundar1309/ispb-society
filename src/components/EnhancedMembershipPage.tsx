@@ -308,7 +308,7 @@ const EnhancedMembershipPage = () => {
               onClick={() => {
                 setShowSuccess(false);
                 // Optionally redirect to dashboard or just show the active state
-                window.location.href = '/user-dashboard'; // Assuming dashboard exists logic
+                window.location.href = '/dashboard'; // Assuming dashboard exists logic
               }}
             >
               Go to Dashboard
@@ -487,7 +487,7 @@ const EnhancedMembershipPage = () => {
                 </CardHeader>
                 <CardContent>
                   <Button asChild variant="outline" className="w-full">
-                    <a href="/user-dashboard">Go to Dashboard</a>
+                    <a href="/dashboard">Go to Dashboard</a>
                   </Button>
                 </CardContent>
               </Card>

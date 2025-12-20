@@ -450,6 +450,51 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         throw error;
       }
 
+      // Sync with life_members table if it's a lifetime membership
+      if (membershipData.membership_type === 'lifetime' && membershipData.member_code) {
+        try {
+          // Fetch user details
+          const { data: userProfile } = await supabase
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', membershipData.user_id)
+            .single();
+
+          if (userProfile) {
+            // Check if already exists in life_members
+            const { data: existingLifeMember } = await supabase
+              .from('life_members')
+              .select('id')
+              .eq('life_member_no', membershipData.member_code)
+              .maybeSingle();
+
+            if (!existingLifeMember) {
+              const { error: lifeMemberError } = await supabase
+                .from('life_members')
+                .insert({
+                  name: userProfile.full_name || 'Member',
+                  email: userProfile.email,
+                  mobile: userProfile.phone,
+                  life_member_no: membershipData.member_code,
+                  date_of_enrollment: new Date().toISOString().split('T')[0],
+                  occupation: userProfile.designation,
+                  address: userProfile.institution, // Mapping institution to address/affiliation
+                  is_active: true
+                });
+
+              if (lifeMemberError) {
+                console.error('Error creating life member entry:', lifeMemberError);
+                toast.error('Membership added, but failed to sync to Life Members list');
+              } else {
+                toast.success('Synced to Life Members list');
+              }
+            }
+          }
+        } catch (syncError) {
+          console.error('Error syncing life member:', syncError);
+        }
+      }
+
       toast.success('Membership added successfully');
       await fetchTabSpecificData();
       await fetchStats();
