@@ -158,40 +158,30 @@ serve(async (req) => {
           .toISOString()
           .split('T')[0]
 
-    // Generate member code manually to avoid trigger ambiguity issue
+    // Generate member code manually - only check life_members table as source of truth
     let memberCode = membership.member_code
     if (!memberCode) {
-      // Get the highest existing member code number
-      const { data: maxLifeMember } = await supabaseClient
+      // Get the highest existing member code number from life_members only
+      const { data: allLifeMembers } = await supabaseClient
         .from('life_members')
         .select('life_member_no')
         .not('life_member_no', 'is', null)
         .like('life_member_no', 'LM-%')
-        .order('life_member_no', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      const { data: maxMembership } = await supabaseClient
-        .from('memberships')
-        .select('member_code')
-        .not('member_code', 'is', null)
-        .like('member_code', 'LM-%')
-        .order('member_code', { ascending: false })
-        .limit(1)
-        .maybeSingle()
 
       let maxNum = 0
-      if (maxLifeMember?.life_member_no) {
-        const num = parseInt(maxLifeMember.life_member_no.replace('LM-', ''), 10)
-        if (!isNaN(num)) maxNum = Math.max(maxNum, num)
-      }
-      if (maxMembership?.member_code) {
-        const num = parseInt(maxMembership.member_code.replace('LM-', ''), 10)
-        if (!isNaN(num)) maxNum = Math.max(maxNum, num)
+      if (allLifeMembers && allLifeMembers.length > 0) {
+        for (const member of allLifeMembers) {
+          if (member.life_member_no) {
+            const num = parseInt(member.life_member_no.replace('LM-', ''), 10)
+            if (!isNaN(num) && num > maxNum) {
+              maxNum = num
+            }
+          }
+        }
       }
 
       memberCode = `LM-${String(maxNum + 1).padStart(3, '0')}`
-      console.log('Generated member code:', memberCode)
+      console.log('Generated member code from life_members:', memberCode, '(max found:', maxNum, ')')
     }
 
     const { error: updateError } = await supabaseClient
