@@ -139,7 +139,14 @@ const MembershipApplication = () => {
         }
       }
 
-      // Update user role with application data
+      // Get current user role to preserve admin privileges
+      const { data: currentUserRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      // Update user role with application data - preserve admin role if exists
       const { error: roleError } = await supabase
         .from('user_roles')
         .update({
@@ -149,9 +156,8 @@ const MembershipApplication = () => {
           institution: applicationData.institution,
           designation: applicationData.designation,
           specialization: applicationData.specialization,
-          // Don't override role here loosely, if they are already admin/member it stays?
-          // But requirement says 'role: member'
-          role: 'member',
+          // Preserve admin role - only set to member if not already admin
+          role: currentUserRole?.role === 'admin' ? 'admin' : 'member',
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user?.id);
