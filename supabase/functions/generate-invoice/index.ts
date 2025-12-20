@@ -277,15 +277,14 @@ serve(async (req) => {
         invoiceUrl,
         invoiceHtml
       }),
-      }),
-  { headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' } }
     )
 
   } catch (error) {
-  console.error('Error generating invoice:', error)
-  return new Response(
-    JSON.stringify({ error: 'Failed to generate invoice' }),
-    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  )
-}
+    console.error('Error generating invoice:', error)
+    return new Response(
+      JSON.stringify({ error: 'Failed to generate invoice' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
 })
