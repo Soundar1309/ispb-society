@@ -554,6 +554,34 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     try {
       console.log('Deleting membership:', membershipId);
 
+      // First, get the membership to find the member_code
+      const { data: membership, error: fetchError } = await supabase
+        .from('memberships')
+        .select('member_code, membership_type')
+        .eq('id', membershipId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching membership:', fetchError);
+        throw fetchError;
+      }
+
+      // Delete from life_members if there's a member_code
+      if (membership?.member_code) {
+        const { error: lifeMemberError } = await supabase
+          .from('life_members')
+          .delete()
+          .eq('life_member_no', membership.member_code);
+
+        if (lifeMemberError) {
+          console.error('Error deleting life member entry:', lifeMemberError);
+          // Continue with membership deletion even if life_member deletion fails
+        } else {
+          console.log('Life member entry deleted:', membership.member_code);
+        }
+      }
+
+      // Delete the membership
       const { error } = await supabase
         .from('memberships')
         .delete()
@@ -564,7 +592,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         throw error;
       }
 
-      toast.success('Membership deleted successfully');
+      toast.success('Membership and related records deleted successfully');
       await fetchTabSpecificData();
       await fetchStats();
       return { success: true };
