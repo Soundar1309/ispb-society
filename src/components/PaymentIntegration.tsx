@@ -52,6 +52,8 @@ const PaymentIntegration = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [approvedMembership, setApprovedMembership] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -176,6 +178,7 @@ const PaymentIntegration = () => {
         description: `${approvedMembership.membership_type} Membership`,
         order_id: orderData.orderId,
         handler: async (response: RazorpayHandlerResponse) => {
+          setVerifying(true);
           try {
             const { error: verifyError, data: verifyData } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
@@ -189,16 +192,19 @@ const PaymentIntegration = () => {
 
             if (verifyError) throw verifyError;
             if (verifyData?.success) {
+              setPaymentSuccess(true);
               toast.success('Successfully enrolled the membership');
-              // Refresh membership status
-              fetchApprovedMembership();
-              // Redirect to dashboard
-              navigate('/dashboard');
+              // Short delay to show success state
+              setTimeout(() => {
+                navigate('/dashboard');
+              }, 2000);
             } else {
+              setVerifying(false);
               toast.error(verifyData?.error || 'Payment verification failed');
             }
           } catch (error) {
             console.error('Payment verification error:', error);
+            setVerifying(false);
             toast.error('Payment verification failed');
           }
         },
@@ -238,6 +244,34 @@ const PaymentIntegration = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+      </div>
+    );
+  }
+
+  // Payment verification/success overlay
+  if (verifying || paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto text-center p-8">
+          {paymentSuccess ? (
+            <>
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+              <p className="text-gray-600 mb-4">Your membership has been activated successfully.</p>
+              <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
+              <Loader2 className="h-5 w-5 animate-spin text-green-600 mx-auto mt-4" />
+            </>
+          ) : (
+            <>
+              <Loader2 className="h-16 w-16 animate-spin text-green-600 mx-auto mb-6" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifying Payment</h2>
+              <p className="text-gray-600">Please wait while we confirm your payment...</p>
+              <p className="text-sm text-gray-500 mt-4">This may take a few moments</p>
+            </>
+          )}
+        </Card>
       </div>
     );
   }
