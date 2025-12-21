@@ -7,16 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Hash } from 'lucide-react';
+import { Hash, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import PaymentIntegration from './PaymentIntegration';
 import MembershipCancellation from './MembershipCancellation';
+import NotFound from '@/pages/NotFound';
 
 const EnhancedMembership = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState<any[]>([]);
+  const [approvedApplication, setApprovedApplication] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [profileData, setProfileData] = useState({
     full_name: '',
     phone: '',
@@ -26,11 +29,44 @@ const EnhancedMembership = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchUserRole();
-      fetchMemberships();
+    if (!authLoading) {
+      if (user) {
+        checkAccessAndFetchData();
+      } else {
+        setIsPageLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
+
+  const checkAccessAndFetchData = async () => {
+    setIsPageLoading(true);
+    try {
+      await Promise.all([
+        fetchUserRole(),
+        fetchMemberships(),
+        fetchApprovedApplication()
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
+  const fetchApprovedApplication = async () => {
+    const { data } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('user_id', user?.id)
+      .eq('application_status', 'approved')
+      .eq('payment_status', 'pending')
+      .maybeSingle();
+
+    if (data) {
+      setApprovedApplication(data);
+    }
+    return data;
+  };
 
   const fetchUserRole = async () => {
     const { data, error } = await supabase
@@ -49,6 +85,7 @@ const EnhancedMembership = () => {
         specialization: data.specialization || ''
       });
     }
+    return data;
   };
 
   const fetchMemberships = async () => {
@@ -64,11 +101,12 @@ const EnhancedMembership = () => {
     if (data) {
       setMemberships(data);
     }
+    return data;
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const { error } = await supabase
       .from('user_roles')
       .update({
@@ -107,6 +145,14 @@ const EnhancedMembership = () => {
     }
   };
 
+  if (authLoading || isPageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -123,6 +169,14 @@ const EnhancedMembership = () => {
         </Card>
       </div>
     );
+  }
+
+  // Access Control Check
+  const hasActiveMembership = memberships.length > 0;
+  const hasApprovedApplication = !!approvedApplication;
+
+  if (!hasActiveMembership && !hasApprovedApplication) {
+    return <NotFound />;
   }
 
   return (
@@ -247,7 +301,7 @@ const EnhancedMembership = () => {
                             )}
                           </div>
                           <p className="text-sm text-gray-500">
-                            {membership.valid_from && membership.valid_until 
+                            {membership.valid_from && membership.valid_until
                               ? `${membership.valid_from} to ${membership.valid_until}`
                               : 'Pending activation'
                             }

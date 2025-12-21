@@ -27,6 +27,7 @@ const TermsOfService = lazy(() => import('@/components/TermsOfService'));
 const CookiePolicy = lazy(() => import('@/components/CookiePolicy'));
 const ProtectedRoute = lazy(() => import('@/components/ProtectedRoute'));
 const NotFound = lazy(() => import('./NotFound'));
+import Layout from '@/components/Layout';
 
 // Loading fallback component
 const PageLoader = () => (
@@ -39,56 +40,59 @@ const PageLoader = () => (
 const Index = () => {
   return (
     <Suspense fallback={<PageLoader />}>
+
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/genesis" element={<Genesis />} />
-        <Route path="/mandate-activities" element={<MandateActivities />} />
-        <Route path="/office-bearers" element={<OfficeBearers />} />
-        <Route path="/membership" element={<Membership />} />
-        <Route path="/enhanced-membership" element={<EnhancedMembershipPage />} />
-        <Route path="/membership-application" element={<MembershipApplication />} />
-        <Route path="/conference" element={<Conference />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/life-members" element={<LifeMembers />} />
-        <Route path="/publications" element={<Publications />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/member"
-          element={
-            <ProtectedRoute>
-              <MemberPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/payment"
-          element={
-            <ProtectedRoute>
-              <PaymentIntegration />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminPanel />
-            </ProtectedRoute>
-          }
-        />
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/genesis" element={<Genesis />} />
+          <Route path="/mandate-activities" element={<MandateActivities />} />
+          <Route path="/office-bearers" element={<OfficeBearers />} />
+          <Route path="/membership" element={<Membership />} />
+          <Route path="/enhanced-membership" element={<EnhancedMembershipPage />} />
+          <Route path="/membership-application" element={<MembershipApplication />} />
+          <Route path="/conference" element={<Conference />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/life-members" element={<LifeMembers />} />
+          <Route path="/publications" element={<Publications />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/member"
+            element={
+              <ProtectedRoute>
+                <MemberPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                <PaymentIntegration />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

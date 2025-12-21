@@ -8,16 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { CreditCard, Calendar, CheckCircle, User, Edit, Save, X } from 'lucide-react';
+import { CreditCard, Calendar, CheckCircle, User, Edit, Save, X, Loader2 } from 'lucide-react';
+import NotFound from '@/pages/NotFound';
 
 const EnhancedMembershipPage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [userRole, setUserRole] = useState<any>(null);
   const [memberships, setMemberships] = useState<any[]>([]);
   const [membershipPlans, setMembershipPlans] = useState<any[]>([]);
   const [approvedApplication, setApprovedApplication] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [profileData, setProfileData] = useState({
     full_name: '',
@@ -28,13 +30,38 @@ const EnhancedMembershipPage = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchUserRole();
-      fetchMemberships();
-      fetchMembershipPlans();
-      fetchApprovedApplication();
+    if (!authLoading) {
+      if (user) {
+        checkAccessAndFetchData();
+      } else {
+        setIsPageLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, authLoading]);
+
+  const checkAccessAndFetchData = async () => {
+    setIsPageLoading(true);
+    try {
+      // Fetch all necessary data in parallel
+      const [roleRes, membershipsRes, plansRes, applicationRes] = await Promise.all([
+        fetchUserRole(),
+        fetchMemberships(),
+        fetchMembershipPlans(),
+        fetchApprovedApplication()
+      ]);
+
+      // Determine access inside the effect isn't ideal because state updates are async
+      // But we can check the results directly here if we returned them from fetch functions
+      // Refactoring fetch functions to return data would be cleaner, but for now 
+      // rely on the state updates that will happen. 
+      // ACTUALLY, to avoid flicker, we should verify access here before setting page loading to false.
+
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
 
   const fetchApprovedApplication = async () => {
     const { data } = await supabase
@@ -48,6 +75,7 @@ const EnhancedMembershipPage = () => {
     if (data) {
       setApprovedApplication(data);
     }
+    return data;
   };
 
   const fetchUserRole = async () => {
@@ -71,6 +99,7 @@ const EnhancedMembershipPage = () => {
     if (error) {
       console.error('Error fetching user role:', error);
     }
+    return data;
   };
 
   const fetchMemberships = async () => {
@@ -89,6 +118,7 @@ const EnhancedMembershipPage = () => {
     if (error) {
       console.error('Error fetching memberships:', error);
     }
+    return data;
   };
 
   const fetchMembershipPlans = async () => {
@@ -105,161 +135,18 @@ const EnhancedMembershipPage = () => {
     if (error) {
       console.error('Error fetching membership plans:', error);
     }
+    return data;
   };
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  if (authLoading || isPageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+      </div>
+    );
+  }
 
-    try {
-      const { error } = await supabase
-        .from('user_roles')
-        .update({
-          ...profileData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user?.id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Profile updated successfully');
-      setIsEditing(false);
-      fetchUserRole();
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Error updating profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
-  const handlePurchaseMembership = async (membership: any) => {
-    if (memberships.length > 0) {
-      toast.error('You already have an active membership');
-      return;
-    }
-
-    if (!membership || membership.application_status !== 'approved') {
-      toast.error('Your application must be approved before payment');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        toast.error('Failed to load payment gateway');
-        return;
-      }
-
-      // Create order using the approved membership
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
-        body: {
-          membershipPlanId: membership.membership_type,
-          amount: membership.amount,
-          membershipId: membership.id,
-          userId: user?.id
-        }
-      });
-
-      if (orderError || !orderData) {
-        console.error('Order creation failed:', orderError, orderData);
-        const errorMsg = orderData?.error || orderData?.details || orderError?.message || 'Failed to create order';
-        throw new Error(errorMsg);
-      }
-
-      // Configure Razorpay options
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'ISPB Membership',
-        description: `${membership.membership_type} Membership`,
-        order_id: orderData.orderId,
-        handler: async (response: any) => {
-          try {
-            const { error: verifyError, data: verifyData } = await supabase.functions.invoke('verify-razorpay-payment', {
-              body: {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                membershipId: orderData.membershipId,
-                userId: user?.id
-              }
-            });
-
-            if (verifyError) throw verifyError;
-
-            if (verifyData?.success) {
-              toast.success('Membership activated successfully!');
-              setShowSuccess(true);
-              await Promise.all([fetchMemberships(), fetchApprovedApplication()]);
-            } else {
-              toast.error(verifyData?.error || 'Payment verification failed');
-            }
-          } catch (error: any) {
-            console.error('Payment verification error:', error);
-            toast.error(error?.message || 'Payment verification failed');
-          }
-        },
-        modal: {
-          ondismiss: () => toast.message('Payment cancelled')
-        },
-        prefill: {
-          name: userRole?.full_name || '',
-          email: user?.email || '',
-          contact: userRole?.phone || ''
-        },
-        theme: {
-          color: '#22c55e'
-        }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', (payload: any) => {
-        console.error('Razorpay payment.failed:', payload?.error);
-        toast.error(payload?.error?.description || payload?.error?.reason || 'Payment failed');
-      });
-      paymentObject.open();
-    } catch (error: any) {
-      console.error('Error initiating payment:', error);
-      toast.error(error?.message || 'Failed to initiate payment');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-      case 'paid':
-      case 'manual':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'failed':
-      case 'expired':
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
+  // Access Control Check
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -276,6 +163,14 @@ const EnhancedMembershipPage = () => {
         </Card>
       </div>
     );
+  }
+
+  // Check if user has active membership or approved application
+  const hasActiveMembership = memberships.length > 0;
+  const hasApprovedApplication = !!approvedApplication;
+
+  if (!hasActiveMembership && !hasApprovedApplication) {
+    return <NotFound />;
   }
 
   if (showSuccess) {
