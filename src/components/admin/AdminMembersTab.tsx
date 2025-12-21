@@ -313,9 +313,22 @@ const AdminMembersTab = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Membership</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete the membership for {memberToDelete?.full_name}? 
-              This action cannot be undone.
+            <DialogDescription asChild>
+              <div className="space-y-3">
+                <p>Are you sure you want to delete the membership for <strong>{memberToDelete?.full_name}</strong>?</p>
+                
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-2">
+                  <p className="text-sm font-medium text-destructive">The following records will be permanently deleted:</p>
+                  <ul className="text-sm space-y-1 ml-4 list-disc">
+                    <li>Membership record</li>
+                    {memberToDelete?.member_code && (
+                      <li>Life Member entry (<span className="font-mono">{memberToDelete.member_code}</span>)</li>
+                    )}
+                  </ul>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
+              </div>
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
@@ -323,7 +336,7 @@ const AdminMembersTab = ({
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} className="w-full sm:w-auto">
-              Delete
+              Delete All Records
             </Button>
           </div>
         </DialogContent>
