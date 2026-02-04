@@ -8,8 +8,48 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { User, CreditCard, Calendar, Edit, Save } from 'lucide-react';
+import { User, CreditCard, Calendar, Edit, Save, Loader2, CheckCircle } from 'lucide-react';
 import MembershipCancellation from './MembershipCancellation';
+
+type RazorpayHandlerResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayFailedPayload = {
+  error?: {
+    code?: string;
+    description?: string;
+    source?: string;
+    step?: string;
+    reason?: string;
+  };
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  order_id: string;
+  handler: (response: RazorpayHandlerResponse) => void;
+  prefill?: { name?: string; email?: string; contact?: string };
+  theme?: { color?: string };
+  modal?: { ondismiss?: () => void };
+};
+
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: 'payment.failed', handler: (response: RazorpayFailedPayload) => void) => void;
+};
+
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -27,17 +67,149 @@ const UserDashboard = () => {
     designation: '',
     specialization: ''
   });
+  const [paymentSettings, setPaymentSettings] = useState<{ is_enabled: boolean; is_test_mode: boolean } | null>(null);
+  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchUserData();
+      fetchPaymentSettings();
     }
   }, [user]);
 
+  const fetchPaymentSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_settings')
+        .select('is_enabled, is_test_mode')
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setPaymentSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching payment settings:', error);
+    }
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleMembershipPayment = async (application: any) => {
+    if (!user) {
+      toast.error('Please login to continue');
+      return;
+    }
+
+    if (paymentSettings && !paymentSettings.is_enabled) {
+      toast.error('Payment gateway is currently disabled. Please try again later.');
+      return;
+    }
+
+    setProcessingPaymentId(application.id);
+
+    try {
+      const res = await loadRazorpayScript();
+      if (!res) {
+        toast.error('Razorpay SDK failed to load');
+        setProcessingPaymentId(null);
+        return;
+      }
+
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
+        body: {
+          membershipPlanId: application.membership_type,
+          amount: application.amount,
+          membershipId: application.id,
+          userId: user.id
+        }
+      });
+
+      if (orderError || !orderData) {
+        console.error('Order creation failed:', orderError, orderData);
+        const errorMsg = orderData?.error || orderError?.message || 'Failed to create order';
+        throw new Error(errorMsg);
+      }
+
+      const options: RazorpayOptions = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: 'Indian Society of Plant Breeders',
+        description: `${application.membership_type} Membership`,
+        order_id: orderData.orderId,
+        handler: async (response: RazorpayHandlerResponse) => {
+          try {
+            const { error: verifyError, data: verifyData } = await supabase.functions.invoke('verify-razorpay-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                membershipId: orderData.membershipId,
+                userId: user.id
+              }
+            });
+
+            if (verifyData?.success) {
+              toast.success('Payment successful! Membership activated.');
+              fetchUserData(); // Refresh dashboard data
+            } else {
+              toast.error(verifyData?.error || 'Payment verification failed');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            toast.error('Payment verification failed');
+          } finally {
+            setProcessingPaymentId(null);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessingPaymentId(null);
+            toast.message('Payment cancelled');
+          }
+        },
+        prefill: {
+          name: userRole?.full_name || user.email || '',
+          email: user.email || '',
+          contact: userRole?.phone || '',
+        },
+        theme: {
+          color: '#16a34a'
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response: RazorpayFailedPayload) {
+        console.error('Razorpay payment.failed:', response?.error);
+        const reason = response?.error?.description || response?.error?.reason || 'Payment failed';
+        toast.error(reason);
+        setProcessingPaymentId(null);
+      });
+      rzp.open();
+    } catch (error) {
+      console.error('Payment error:', error);
+      const err = error as { name?: string; message?: string } | undefined;
+      const msg = err?.message || 'Payment initialization failed';
+      toast.error(msg);
+      setProcessingPaymentId(null);
+    }
+  };
+
   const fetchUserData = async () => {
     if (!user) return;
-
-    console.log('Fetching user data for:', user.id);
 
     // Fetch user role data (which now contains profile info)
     const { data: userRoleData, error: userRoleError } = await supabase
@@ -51,7 +223,6 @@ const UserDashboard = () => {
     }
 
     if (userRoleData) {
-      console.log('Fetched user role data:', userRoleData);
       setUserRole(userRoleData);
       setEditForm({
         full_name: userRoleData.full_name || '',
@@ -79,7 +250,7 @@ const UserDashboard = () => {
       .from('memberships')
       .select('*')
       .eq('user_id', user.id)
-      .eq('application_status', 'submitted')
+      .in('application_status', ['submitted', 'approved'])
       .order('created_at', { ascending: false });
 
     setApplications(applicationData || []);
@@ -101,16 +272,14 @@ const UserDashboard = () => {
     if (!user) return;
 
     setIsUpdating(true);
-    
+
     try {
-      console.log('Updating profile with data:', editForm);
-      
       // Update Supabase auth user metadata
       if (editForm.full_name !== user.user_metadata?.full_name) {
         const { error: authError } = await supabase.auth.updateUser({
           data: { full_name: editForm.full_name }
         });
-        
+
         if (authError) {
           console.error('Auth update error:', authError);
           toast.error('Error updating auth profile: ' + authError.message);
@@ -123,14 +292,14 @@ const UserDashboard = () => {
         const { error: emailError } = await supabase.auth.updateUser({
           email: editForm.email
         });
-        
+
         if (emailError) {
           console.error('Email update error:', emailError);
           toast.error('Error updating email: ' + emailError.message);
           return;
         }
       }
-      
+
       // First check if user_roles record exists
       const { data: existingRole } = await supabase
         .from('user_roles')
@@ -139,7 +308,7 @@ const UserDashboard = () => {
         .single();
 
       let updateResult;
-      
+
       if (existingRole) {
         // Update existing record
         updateResult = await supabase
@@ -172,19 +341,19 @@ const UserDashboard = () => {
         return;
       }
 
-      console.log('Profile updated successfully:', updateResult.data);
-      
+
+
       // Update local state immediately
       setUserRole(updateResult.data);
-      
+
       toast.success('Profile updated successfully');
       setIsEditing(false);
-      
+
       // Refresh data to ensure consistency
       setTimeout(() => {
         fetchUserData();
       }, 500);
-      
+
     } catch (error) {
       console.error('Profile update error:', error);
       toast.error('Error updating profile');
@@ -293,15 +462,15 @@ const UserDashboard = () => {
                 <div className="text-center md:text-right">
                   <p className="text-sm text-gray-600 mb-1">Member Since</p>
                   <p className="text-xl font-semibold text-gray-800">
-                    {new Date(memberships.find((m: any) => m.member_code)?.created_at).toLocaleDateString('en-IN', { 
-                      year: 'numeric', 
+                    {new Date(memberships.find((m: any) => m.member_code)?.created_at).toLocaleDateString('en-IN', {
+                      year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </p>
                   <p className="text-sm text-green-600 mt-2">
-                    Valid Until: {new Date(memberships.find((m: any) => m.member_code)?.valid_until).toLocaleDateString('en-IN', { 
-                      year: 'numeric', 
+                    Valid Until: {new Date(memberships.find((m: any) => m.member_code)?.valid_until).toLocaleDateString('en-IN', {
+                      year: 'numeric',
                       month: 'long'
                     })}
                   </p>
@@ -459,6 +628,28 @@ const UserDashboard = () => {
                             <div className="mt-2 p-2 bg-blue-50 rounded">
                               <p className="font-medium">Admin Notes:</p>
                               <p>{app.admin_review_notes}</p>
+                            </div>
+                          )}
+                          {app.application_status === 'approved' && app.payment_status === 'pending' && (
+                            <div className="mt-3">
+                              <Button
+                                size="sm"
+                                className="w-full bg-green-600 hover:bg-green-700"
+                                onClick={() => handleMembershipPayment(app)}
+                                disabled={processingPaymentId === app.id}
+                              >
+                                {processingPaymentId === app.id ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CreditCard className="w-4 h-4 mr-2" />
+                                    Complete Payment
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           )}
                         </div>

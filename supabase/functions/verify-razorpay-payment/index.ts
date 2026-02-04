@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Verifying payment...')
+
 
     // Try to get user from auth header first
     const authClient = createClient(
@@ -32,11 +32,12 @@ serve(async (req) => {
     if (user) {
       userId = user.id
       authedUserEmail = user.email
-      console.log('Authenticated via JWT:', userId)
+      userId = user.id
+      authedUserEmail = user.email
     }
 
     const requestBody = await req.json()
-    console.log('Payment verification request:', { ...requestBody, razorpay_signature: '***' })
+    const requestBody = await req.json()
 
     const {
       razorpay_order_id,
@@ -49,265 +50,255 @@ serve(async (req) => {
     // If no JWT auth, try to use userId from body
     if (!userId && bodyUserId) {
       userId = bodyUserId
-      console.log('Using userId from request body:', userId)
-    }
+      if (!userId && bodyUserId) {
+        userId = bodyUserId
+      }
 
-    if (!userId) {
-      console.error('Unauthorized: No user found')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - please login again' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+      if (!userId) {
+        console.error('Unauthorized: No user found')
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized - please login again' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    // Use service role for database operations
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Get payment settings to fetch the secret key
-    const { data: paymentSettings } = await supabaseClient
-      .from('payment_settings')
-      .select('razorpay_key_secret_encrypted')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted?.trim() || Deno.env.get('RAZORPAY_KEY_SECRET')?.trim()
-
-    if (!razorpayKeySecret) {
-      return new Response(
-        JSON.stringify({ error: 'Razorpay credentials not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Verify signature
-    const body = razorpay_order_id + "|" + razorpay_payment_id
-    const expectedSignature = await crypto.subtle
-      .importKey(
-        "raw",
-        new TextEncoder().encode(razorpayKeySecret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-      )
-      .then((key) => crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body)))
-      .then((signature) =>
-        Array.from(new Uint8Array(signature))
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('')
+      // Use service role for database operations
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       )
 
-    if (expectedSignature !== razorpay_signature) {
-      console.error('Invalid signature')
-      return new Response(
-        JSON.stringify({ error: 'Invalid signature' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    console.log('Signature verified successfully')
+      // Get payment settings to fetch the secret key
+      const { data: paymentSettings } = await supabaseClient
+        .from('payment_settings')
+        .select('razorpay_key_secret_encrypted')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
-    // Get membership details
-    const { data: membership, error: membershipFetchError } = await supabaseClient
-      .from('memberships')
-      .select('*')
-      .eq('id', membershipId)
-      .maybeSingle()
+      const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted?.trim() || Deno.env.get('RAZORPAY_KEY_SECRET')?.trim()
 
-    if (membershipFetchError || !membership) {
-      console.error('Error fetching membership:', membershipFetchError)
-      return new Response(
-        JSON.stringify({ error: 'Membership not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+      if (!razorpayKeySecret) {
+        return new Response(
+          JSON.stringify({ error: 'Razorpay credentials not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    console.log('Membership found:', membership.id)
+      // Verify signature
+      const body = razorpay_order_id + "|" + razorpay_payment_id
+      const expectedSignature = await crypto.subtle
+        .importKey(
+          "raw",
+          new TextEncoder().encode(razorpayKeySecret),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        )
+        .then((key) => crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body)))
+        .then((signature) =>
+          Array.from(new Uint8Array(signature))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+        )
 
-    // CRITICAL: Only process payment if application was approved
-    if (membership.application_status !== 'approved') {
-      console.error('Payment received but application not approved yet')
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Application must be approved by admin before payment can be processed',
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+      if (expectedSignature !== razorpay_signature) {
+        console.error('Invalid signature')
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    // Update membership with validity dates
-    console.log('Updating membership status to active')
-    const validFrom = new Date().toISOString().split('T')[0]
-    const validUntil =
-      membership.membership_type === 'lifetime'
-        ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0]
-        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0]
 
-    // Generate member code manually - only check life_members table as source of truth
-    let memberCode = membership.member_code
-    if (!memberCode) {
-      // Get the highest existing member code number from life_members only
-      const { data: allLifeMembers } = await supabaseClient
-        .from('life_members')
-        .select('life_member_no')
-        .not('life_member_no', 'is', null)
-        .like('life_member_no', 'LM-%')
 
-      let maxNum = 0
-      if (allLifeMembers && allLifeMembers.length > 0) {
-        for (const member of allLifeMembers) {
-          if (member.life_member_no) {
-            const num = parseInt(member.life_member_no.replace('LM-', ''), 10)
-            if (!isNaN(num) && num > maxNum) {
-              maxNum = num
+      // Get membership details
+      const { data: membership, error: membershipFetchError } = await supabaseClient
+        .from('memberships')
+        .select('*')
+        .eq('id', membershipId)
+        .maybeSingle()
+
+      if (membershipFetchError || !membership) {
+        console.error('Error fetching membership:', membershipFetchError)
+        return new Response(
+          JSON.stringify({ error: 'Membership not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+
+
+      // CRITICAL: Only process payment if application was approved
+      if (membership.application_status !== 'approved') {
+        console.error('Payment received but application not approved yet')
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Application must be approved by admin before payment can be processed',
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Update membership with validity dates
+      // Update membership with validity dates
+      const validFrom = new Date().toISOString().split('T')[0]
+      const validUntil =
+        membership.membership_type === 'lifetime'
+          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0]
+          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0]
+
+      // Generate member code manually - only check life_members table as source of truth
+      let memberCode = membership.member_code
+      if (!memberCode) {
+        // Get the highest existing member code number from life_members only
+        const { data: allLifeMembers } = await supabaseClient
+          .from('life_members')
+          .select('life_member_no')
+          .not('life_member_no', 'is', null)
+          .like('life_member_no', 'LM-%')
+
+        let maxNum = 0
+        if (allLifeMembers && allLifeMembers.length > 0) {
+          for (const member of allLifeMembers) {
+            if (member.life_member_no) {
+              const num = parseInt(member.life_member_no.replace('LM-', ''), 10)
+              if (!isNaN(num) && num > maxNum) {
+                maxNum = num
+              }
             }
           }
         }
+
+        memberCode = `LM-${String(maxNum + 1).padStart(3, '0')}`
       }
 
-      memberCode = `LM-${String(maxNum + 1).padStart(3, '0')}`
-      console.log('Generated member code from life_members:', memberCode, '(max found:', maxNum, ')')
-    }
+      const { error: updateError } = await supabaseClient
+        .from('memberships')
+        .update({
+          status: 'active',
+          payment_status: 'paid',
+          razorpay_payment_id: razorpay_payment_id,
+          valid_from: validFrom,
+          valid_until: validUntil,
+          member_code: memberCode,
+        })
+        .eq('id', membershipId)
 
-    const { error: updateError } = await supabaseClient
-      .from('memberships')
-      .update({
-        status: 'active',
-        payment_status: 'paid',
-        razorpay_payment_id: razorpay_payment_id,
-        valid_from: validFrom,
-        valid_until: validUntil,
-        member_code: memberCode,
-      })
-      .eq('id', membershipId)
+      if (updateError) {
+        console.error('Error updating membership:', updateError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to update membership', details: updateError }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-    if (updateError) {
-      console.error('Error updating membership:', updateError)
-      return new Response(
-        JSON.stringify({ error: 'Failed to update membership', details: updateError }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
 
-    console.log('Membership updated successfully')
 
-    // Use the generated member code
-    const updatedMembership = { member_code: memberCode, membership_type: membership.membership_type }
-    console.log('Membership updated with member code:', memberCode)
+      // Use the generated member code
+      const updatedMembership = { member_code: memberCode, membership_type: membership.membership_type }
 
-    // Update order (IMPORTANT: mark as 'paid' to match admin payments view)
-    console.log('Updating order status')
-    const { error: orderUpdateError } = await supabaseClient
-      .from('orders')
-      .update({
-        razorpay_payment_id: razorpay_payment_id,
-        status: 'paid',
+      // Update order (IMPORTANT: mark as 'paid' to match admin payments view)
+      const { error: orderUpdateError } = await supabaseClient
+        .from('orders')
+        .update({
+          razorpay_payment_id: razorpay_payment_id,
+          status: 'paid',
+          payment_method: 'razorpay',
+        })
+        .eq('razorpay_order_id', razorpay_order_id)
+
+      if (orderUpdateError) {
+        console.error('Error updating order:', orderUpdateError)
+      } else {
+      }
+
+      // Create payment tracking record
+      const { error: paymentTrackingError } = await supabaseClient.from('payment_tracking').insert({
+        membership_id: membershipId,
+        user_id: userId,
+        amount: membership.amount,
+        currency: 'INR',
         payment_method: 'razorpay',
+        razorpay_payment_id: razorpay_payment_id,
+        razorpay_order_id: razorpay_order_id,
+        payment_status: 'paid',
+        payment_date: new Date().toISOString(),
       })
-      .eq('razorpay_order_id', razorpay_order_id)
 
-    if (orderUpdateError) {
-      console.error('Error updating order:', orderUpdateError)
-    } else {
-      console.log('Order updated successfully')
-    }
+      if (paymentTrackingError) {
+        console.error('Error creating payment tracking:', paymentTrackingError)
+      } else {
+      }
 
-    // Create payment tracking record
-    console.log('Creating payment tracking record')
-    const { error: paymentTrackingError } = await supabaseClient.from('payment_tracking').insert({
-      membership_id: membershipId,
-      user_id: userId,
-      amount: membership.amount,
-      currency: 'INR',
-      payment_method: 'razorpay',
-      razorpay_payment_id: razorpay_payment_id,
-      razorpay_order_id: razorpay_order_id,
-      payment_status: 'paid',
-      payment_date: new Date().toISOString(),
-    })
-
-    if (paymentTrackingError) {
-      console.error('Error creating payment tracking:', paymentTrackingError)
-    } else {
-      console.log('Payment tracking created successfully')
-    }
-
-    // Get user details for email and life_members creation
-    const { data: userProfile } = await supabaseClient
-      .from('user_roles')
-      .select('full_name, email, phone, designation, institution')
-      .eq('user_id', userId)
-      .maybeSingle()
-
-    const userEmail = userProfile?.email || authedUserEmail || ''
-    const userName = userProfile?.full_name || 'Member'
-
-    // AUTO-CREATE LIFE_MEMBERS RECORD
-    // Only create if: member_code exists
-    if (updatedMembership?.member_code) {
-      console.log('Creating life_members record...')
-
-      // Check if life_member already exists
-      const { data: existingLifeMember } = await supabaseClient
-        .from('life_members')
-        .select('id')
-        .eq('life_member_no', updatedMembership.member_code)
+      // Get user details for email and life_members creation
+      const { data: userProfile } = await supabaseClient
+        .from('user_roles')
+        .select('full_name, email, phone, designation, institution')
+        .eq('user_id', userId)
         .maybeSingle()
 
-      if (!existingLifeMember) {
-        const { error: lifeMemberError } = await supabaseClient.from('life_members').insert({
-          name: userName,
-          email: userEmail || null,
-          mobile: userProfile?.phone || null,
-          life_member_no: updatedMembership.member_code,
-          date_of_enrollment: new Date().toISOString().split('T')[0],
-          occupation: userProfile?.designation || null,
-          address: userProfile?.institution || null,
-          is_active: true,
-        })
+      const userEmail = userProfile?.email || authedUserEmail || ''
+      const userName = userProfile?.full_name || 'Member'
 
-        if (lifeMemberError) {
-          console.error('Error creating life member:', lifeMemberError)
+      // AUTO-CREATE LIFE_MEMBERS RECORD
+      // Only create if: member_code exists
+      if (updatedMembership?.member_code) {
+
+        // Check if life_member already exists
+        const { data: existingLifeMember } = await supabaseClient
+          .from('life_members')
+          .select('id')
+          .eq('life_member_no', updatedMembership.member_code)
+          .maybeSingle()
+
+        if (!existingLifeMember) {
+          const { error: lifeMemberError } = await supabaseClient.from('life_members').insert({
+            name: userName,
+            email: userEmail || null,
+            mobile: userProfile?.phone || null,
+            life_member_no: updatedMembership.member_code,
+            date_of_enrollment: new Date().toISOString().split('T')[0],
+            occupation: userProfile?.designation || null,
+            address: userProfile?.institution || null,
+            is_active: true,
+          })
+
+          if (lifeMemberError) {
+            console.error('Error creating life member:', lifeMemberError)
+          } else {
+          }
         } else {
-          console.log('✅ Life member record created successfully')
         }
       } else {
-        console.log('Life member record already exists')
       }
-    } else {
-      console.log('Skipping life_members creation - member code not generated')
-    }
 
-    // Send welcome email with member code
-    if (updatedMembership?.member_code && userEmail) {
-      console.log('Sending welcome email to:', userEmail)
+      // Send welcome email with member code
+      if (updatedMembership?.member_code && userEmail) {
 
-      try {
-        const welcomeEmailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.headers.get('Authorization') || '',
-          },
-          body: JSON.stringify({
-            to: userEmail,
-            subject: '🎉 Welcome to ISPB - Your Membership is Active!',
-            html: `
+        try {
+          const welcomeEmailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': req.headers.get('Authorization') || '',
+            },
+            body: JSON.stringify({
+              to: userEmail,
+              subject: '🎉 Welcome to ISPB - Your Membership is Active!',
+              html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
                   <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Welcome to ISPB!</h1>
@@ -334,30 +325,28 @@ serve(async (req) => {
                 </div>
               </div>
             `,
-          }),
-        })
+            }),
+          })
 
-        const emailResult = await welcomeEmailResponse.json()
-        console.log('Welcome email sent:', emailResult)
-      } catch (emailError) {
-        console.error('Failed to send welcome email:', emailError)
+          const emailResult = await welcomeEmailResponse.json()
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError)
+        }
+      } else {
       }
-    } else {
-      console.log('Skipping welcome email - member code or email not available')
-    }
 
-    // Send notification email to admin
-    try {
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': req.headers.get('Authorization') || '',
-        },
-        body: JSON.stringify({
-          to: 'ispbtnau@gmail.com',
-          subject: 'New Membership Payment Received',
-          html: `
+      // Send notification email to admin
+      try {
+        await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-gmail`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.get('Authorization') || '',
+          },
+          body: JSON.stringify({
+            to: 'ispbtnau@gmail.com',
+            subject: 'New Membership Payment Received',
+            html: `
             <h2>New Payment Received</h2>
             <p>A new membership payment has been received.</p>
             <h3>Member Details:</h3>
@@ -374,39 +363,37 @@ serve(async (req) => {
               ${updatedMembership?.member_code ? `<li><strong>Member Code:</strong> ${updatedMembership.member_code}</li>` : ''}
             </ul>
           `,
-        }),
-      })
-    } catch (emailError) {
-      console.error('Failed to send admin email:', emailError)
-    }
+          }),
+        })
+      } catch (emailError) {
+        console.error('Failed to send admin email:', emailError)
+      }
 
-    // Generate invoice PDF
-    try {
-      console.log('Generating invoice...')
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-invoice`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          membershipId: membershipId,
-          userId: userId
-        }),
-      })
-      console.log('Invoice generation triggered')
-    } catch (invoiceError) {
-      console.error('Failed to generate invoice:', invoiceError)
-    }
+      // Generate invoice PDF
+      try {
+        await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-invoice`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            membershipId: membershipId,
+            userId: userId
+          }),
+        })
+      } catch (invoiceError) {
+        console.error('Failed to generate invoice:', invoiceError)
+      }
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Payment verified successfully' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (error) {
-    console.error('Error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-})
+      return new Response(
+        JSON.stringify({ success: true, message: 'Payment verified successfully' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (error) {
+      console.error('Error:', error)
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+  })

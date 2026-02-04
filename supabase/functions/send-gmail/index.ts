@@ -13,26 +13,23 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("send-gmail function invoked");
-  
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { to, subject, html }: EmailRequest = await req.json();
-    console.log("Sending email to:", to);
-    console.log("Subject:", subject);
 
     const smtpPassword = Deno.env.get("GMAIL_SMTP_PASSWORD");
-    
+
     if (!smtpPassword) {
       console.error("Gmail SMTP password not configured");
       throw new Error("Gmail SMTP password not configured");
     }
 
-    console.log("Creating nodemailer transporter...");
-    
+
+
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -43,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
 
-    console.log("Sending email via nodemailer...");
+
 
     const info = await transporter.sendMail({
       from: '"ISPB" <ispbtnau@gmail.com>',
@@ -51,10 +48,6 @@ const handler = async (req: Request): Promise<Response> => {
       subject: subject,
       html: html,
     });
-
-    console.log("Email sent successfully. Message ID:", info.messageId);
-    
-    console.log("Email sent successfully to:", to);
 
     return new Response(
       JSON.stringify({ success: true, message: "Email sent successfully" }),

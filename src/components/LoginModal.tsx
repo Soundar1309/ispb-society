@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 
 interface LoginModalProps {
@@ -11,6 +11,7 @@ interface LoginModalProps {
 const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [activeTab, setActiveTab] = useState<'member' | 'admin'>('member');
   const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
@@ -35,21 +36,19 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('member')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'member'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'member'
                   ? 'bg-white text-green-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               Member Login
             </button>
             <button
               onClick={() => setActiveTab('admin')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                activeTab === 'admin'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'admin'
                   ? 'bg-white text-green-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
-              }`}
+                }`}
             >
               Admin Access
             </button>
@@ -61,12 +60,12 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           {activeTab === 'member' ? (
             <div className="space-y-4">
               <p className="text-sm text-gray-600 mb-4">
-                {isSignUp 
+                {isSignUp
                   ? "Create your member account to access exclusive content and manage your membership."
                   : "Access your member dashboard to manage profile, view membership status, and renew membership."
                 }
               </p>
-              
+
               <form className="space-y-4">
                 {isSignUp && (
                   <>
@@ -104,7 +103,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     </div>
                   </>
                 )}
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email Address
@@ -115,7 +114,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                     placeholder="Enter your email"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Password
@@ -153,8 +152,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-green-600 hover:text-green-700 text-sm font-medium"
                 >
-                  {isSignUp 
-                    ? 'Already have an account? Login here' 
+                  {isSignUp
+                    ? 'Already have an account? Login here'
                     : "Don't have an account? Sign up here"
                   }
                 </button>
@@ -162,7 +161,14 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
               {!isSignUp && (
                 <div className="text-center">
-                  <button className="text-gray-600 hover:text-gray-800 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      navigate('/auth?view=forgot_password');
+                    }}
+                    className="text-gray-600 hover:text-gray-800 text-sm"
+                  >
                     Forgot your password?
                   </button>
                 </div>
@@ -173,9 +179,9 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
               <p className="text-sm text-gray-600 mb-4">
                 Admin access for managing life members, tracking payments, and exporting data.
               </p>
-              
+
               <div className="text-center">
-                <Link 
+                <Link
                   to="/admin-login"
                   onClick={onClose}
                   className="inline-block w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors text-center"

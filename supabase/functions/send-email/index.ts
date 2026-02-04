@@ -17,12 +17,12 @@ async function sendEmail(to: string, subject: string, html: string) {
       html,
     }),
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Resend API error: ${error}`);
   }
-  
+
   return response.json();
 }
 
@@ -49,8 +49,6 @@ const handler = async (req: Request): Promise<Response> => {
     const { to, subject, html, type }: EmailRequest = await req.json();
 
     const emailResponse = await sendEmail(to, subject, html);
-
-    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,

@@ -339,7 +339,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
       }
 
       if (activeTab === 'life-members') {
-        const { data } = await supabase.from('life_members').select('*').order('created_at', { ascending: false });
+        const { data } = await supabase.from('life_members').select('*').order('created_at', { ascending: true });
         setLifeMembers(data || []);
       }
 
@@ -383,7 +383,6 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   const updateUserRole = async (userId: string, newRole: string) => {
     try {
-      console.log('Updating user role:', { userId, newRole });
 
       const { error } = await supabase
         .from('user_roles')
@@ -404,7 +403,6 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   const addMembership = async (membershipData: any) => {
     try {
-      console.log('Adding membership:', membershipData);
 
       const { data: existingMemberships, error: checkError } = await supabase
         .from('memberships')
@@ -508,7 +506,6 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   const updateMembership = async (membershipId: string, membershipData: any) => {
     try {
-      console.log('Updating membership:', { membershipId, membershipData });
 
       // Check if member code already exists (excluding current membership)
       if (membershipData.member_code) {
@@ -552,7 +549,6 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   const deleteMembership = async (membershipId: string) => {
     try {
-      console.log('Deleting membership:', membershipId);
 
       // First, get the membership to find the member_code
       const { data: membership, error: fetchError } = await supabase
@@ -576,8 +572,6 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         if (lifeMemberError) {
           console.error('Error deleting life member entry:', lifeMemberError);
           // Continue with membership deletion even if life_member deletion fails
-        } else {
-          console.log('Life member entry deleted:', membership.member_code);
         }
       }
 

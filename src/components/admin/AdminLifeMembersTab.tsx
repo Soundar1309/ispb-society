@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Search, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import BulkUploadDialog from './BulkUploadDialog';
@@ -22,6 +22,7 @@ interface LifeMember {
   mobile: string;
   image_url: string;
   is_active: boolean;
+  created_at?: string;
 }
 
 interface AdminLifeMembersTabProps {
@@ -32,6 +33,7 @@ interface AdminLifeMembersTabProps {
 const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editingMember, setEditingMember] = useState<LifeMember | null>(null);
   const [formData, setFormData] = useState({
     life_member_no: '',
@@ -75,25 +77,25 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingMember) {
         const { error } = await supabase
           .from('life_members')
           .update(formData)
           .eq('id', editingMember.id);
-        
+
         if (error) throw error;
         toast.success('Life member updated successfully');
       } else {
         const { error } = await supabase
           .from('life_members')
           .insert(formData);
-        
+
         if (error) throw error;
         toast.success('Life member added successfully');
       }
-      
+
       setIsDialogOpen(false);
       resetForm();
       onRefresh();
@@ -105,13 +107,13 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this life member?')) return;
-    
+
     try {
       const { error } = await supabase
         .from('life_members')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success('Life member deleted successfully');
       onRefresh();
@@ -127,7 +129,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
         .from('life_members')
         .update({ is_active: !isActive })
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success(`Life member ${!isActive ? 'activated' : 'deactivated'} successfully`);
       onRefresh();
@@ -136,6 +138,69 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
       toast.error(error.message || 'Error updating life member');
     }
   };
+
+  const handleExport = () => {
+    try {
+      // Define CSV headers
+      const headers = ['LM Number', 'Name', 'Occupation', 'Address', 'Email', 'Mobile', 'Enrollment Date', 'Status'];
+
+      // Convert data to CSV rows
+      const rows = filteredMembers.map(member => [
+        member.life_member_no || '',
+        `"${member.name || ''}"`, // Wrap in quotes to handle commas
+        `"${member.occupation || ''}"`,
+        `"${member.address || ''}"`,
+        member.email || '',
+        member.mobile || '',
+        member.date_of_enrollment || '',
+        member.is_active ? 'Active' : 'Inactive'
+      ]);
+
+      // Combine headers and rows
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+
+      // Create download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'life_members_export.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Life members exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export life members');
+    }
+  };
+
+  const filteredMembers = lifeMembers
+    .filter(member =>
+      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.life_member_no && member.life_member_no.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => {
+      // Natural sort for LM numbers
+      const getNumber = (str: string | null) => {
+        if (!str) return Number.MAX_SAFE_INTEGER; // Put missing numbers at the end
+        const match = str.match(/(\d+)/); // Extract first sequence of digits
+        return match ? parseInt(match[0], 10) : Number.MAX_SAFE_INTEGER;
+      };
+
+      const numA = getNumber(a.life_member_no);
+      const numB = getNumber(b.life_member_no);
+
+      if (numA !== numB) {
+        return numA - numB;
+      }
+      return 0;
+    });
 
   return (
     <div className="space-y-6">
@@ -146,6 +211,19 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
             <Upload className="h-4 w-4 mr-2" />
             Bulk Upload
           </Button>
+          <Button variant="outline" onClick={handleExport} className="w-full sm:w-auto">
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search by name or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 w-full"
+            />
+          </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={resetForm} className="w-full sm:w-auto">
@@ -162,7 +240,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                   {editingMember ? 'Update life member details' : 'Add a new life member'}
                 </DialogDescription>
               </DialogHeader>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -174,7 +252,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       placeholder="LM-001"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="name">Name *</Label>
                     <Input
@@ -184,7 +262,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="occupation">Occupation *</Label>
                     <Input
@@ -194,7 +272,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="address">Address</Label>
                     <Input
@@ -203,7 +281,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="date_of_enrollment">Date of Enrollment</Label>
                     <Input
@@ -213,7 +291,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       onChange={(e) => setFormData({ ...formData, date_of_enrollment: e.target.value })}
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -223,7 +301,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="mobile">Mobile</Label>
                     <Input
@@ -232,7 +310,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                       onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                     />
                   </div>
-                  
+
                   <div className="sm:col-span-2">
                     <Label htmlFor="image_url">Image URL</Label>
                     <Input
@@ -243,7 +321,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
                     Cancel
@@ -265,7 +343,7 @@ const AdminLifeMembersTab = ({ lifeMembers, onRefresh }: AdminLifeMembersTabProp
       />
 
       <div className="grid gap-4">
-        {lifeMembers.map((member) => (
+        {filteredMembers.map((member) => (
           <Card key={member.id}>
             <CardHeader>
               <div className="flex flex-col lg:flex-row justify-between items-start gap-4">

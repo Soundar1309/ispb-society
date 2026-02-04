@@ -18,7 +18,6 @@ serve(async (req) => {
     )
 
     const { orderId, membershipId, userId } = await req.json()
-    console.log('Generating invoice for order:', orderId)
 
     if (!orderId && !membershipId) {
       return new Response(
@@ -267,8 +266,6 @@ serve(async (req) => {
         .update({ invoice_url: invoiceUrl })
         .eq('id', order.id)
     }
-
-    console.log('Invoice generated:', invoiceNumber)
 
     return new Response(
       JSON.stringify({

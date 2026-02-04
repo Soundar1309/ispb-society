@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -42,18 +42,58 @@ const LifeMembers = () => {
 
   const fetchLifeMembers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('life_members')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+      let allMembers: LifeMember[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        console.error('Error fetching life members:', error);
-        toast.error('Failed to load life members');
-      } else {
-        setLifeMembers(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('life_members')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) {
+          console.error('Error fetching life members:', error);
+          toast.error('Failed to load life members');
+          hasMore = false; // Stop fetching on error
+        } else {
+          if (data && data.length > 0) {
+            allMembers = [...allMembers, ...data];
+            // If we got fewer records than requested, we've reached the end
+            if (data.length < pageSize) {
+              hasMore = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
       }
+
+      // Sort members by Life Member Number (continuous order)
+      // Extract number from strings like "LM-001", "LM-105"
+      allMembers.sort((a, b) => {
+        const getNumber = (str: string | null) => {
+          if (!str) return Number.MAX_SAFE_INTEGER; // Put missing numbers at the end
+          const match = str.match(/(\d+)/); // Extract first sequence of digits
+          return match ? parseInt(match[0], 10) : Number.MAX_SAFE_INTEGER;
+        };
+
+        const numA = getNumber(a.life_member_no);
+        const numB = getNumber(b.life_member_no);
+
+        if (numA !== numB) {
+          return numA - numB;
+        }
+        // If both have no number (or same number), keep original order (which is created_at asc)
+        return 0;
+      });
+
+      setLifeMembers(allMembers);
     } catch (error) {
       console.error('Error:', error);
       toast.error('An unexpected error occurred');
@@ -96,7 +136,7 @@ const LifeMembers = () => {
               Honoring our distinguished life members and providing membership services for ISPB.
             </p>
           </div>
-          
+
           {/* Statistics skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[1, 2, 3, 4].map((i) => (
@@ -106,14 +146,14 @@ const LifeMembers = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Search skeleton */}
           <Card className="mb-6 sm:mb-8">
             <CardContent className="p-4 sm:p-6">
               <Skeleton className="h-10 w-full" />
             </CardContent>
           </Card>
-          
+
           {/* Members list skeleton */}
           <LoadingSkeleton variant="list" count={8} />
         </div>
@@ -171,7 +211,7 @@ const LifeMembers = () => {
           ) : (
             <div className="space-y-4">
               {currentMembers.map((member, index) => (
-                <Card 
+                <Card
                   key={member.id}
                   className="border-l-4 border-green-500 hover:shadow-md transition-all animate-fade-in"
                   style={{ animationDelay: `${index * 30}ms` }}
@@ -180,13 +220,13 @@ const LifeMembers = () => {
                     <div className="flex items-start gap-4">
                       {/* Profile Image */}
                       <div className="flex-shrink-0">
-                        <img 
-                          src={member.image_url || '/placeholder.svg'} 
+                        <img
+                          src={member.image_url || '/placeholder.svg'}
                           alt={member.name}
                           className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover border-2 border-gray-200"
                         />
                       </div>
-                      
+
                       {/* Member Details */}
                       <div className="flex-1 min-w-0">
                         {/* Name and Member Number Row - Top */}
@@ -200,13 +240,13 @@ const LifeMembers = () => {
                             </span>
                           )}
                         </div>
-                        
+
                         {/* Contact Info - Highlighted */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                           {member.email && (
                             <div className="flex items-center gap-2">
                               <span className="text-green-600 text-base">📧</span>
-                              <a 
+                              <a
                                 href={`mailto:${member.email}`}
                                 className="text-sm font-semibold text-blue-600 hover:underline truncate"
                               >
@@ -217,7 +257,7 @@ const LifeMembers = () => {
                           {member.mobile && (
                             <div className="flex items-center gap-2">
                               <span className="text-green-600 text-base">📱</span>
-                              <a 
+                              <a
                                 href={`tel:${member.mobile}`}
                                 className="text-sm font-semibold text-green-700 hover:underline"
                               >
@@ -226,7 +266,7 @@ const LifeMembers = () => {
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Additional Details */}
                         <div className="space-y-1 text-sm text-gray-600">
                           {member.occupation && (
@@ -263,20 +303,63 @@ const LifeMembers = () => {
             <Pagination>
               <PaginationContent className="flex-wrap gap-2">
                 <PaginationItem>
-                  <PaginationPrevious 
+                  <PaginationPrevious
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    className={`cursor-pointer text-sm sm:text-base ${
-                      currentPage === 1 ? 'pointer-events-none opacity-50' : ''
-                    }`}
+                    className={`cursor-pointer text-sm sm:text-base ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''
+                      }`}
                   />
                 </PaginationItem>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const page = i + 1;
-                  if (totalPages <= 5) {
+                {/* Dynamic Pagination Items */}
+                {(() => {
+                  const pages = [];
+                  const maxVisiblePages = 5;
+
+                  if (totalPages <= maxVisiblePages) {
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
+                  } else {
+                    // Always show 1
+                    pages.push(1);
+
+                    // Logic for ellipses and window
+                    if (currentPage > 3) {
+                      pages.push('ellipsis-start');
+                    }
+
+                    // Window around current
+                    const start = Math.max(2, currentPage - 1);
+                    const end = Math.min(totalPages - 1, currentPage + 1);
+
+                    for (let i = start; i <= end; i++) {
+                      if (i > 1 && i < totalPages) {
+                        pages.push(i);
+                      }
+                    }
+
+                    if (currentPage < totalPages - 2) {
+                      pages.push('ellipsis-end');
+                    }
+
+                    // Always show last
+                    if (totalPages > 1) {
+                      pages.push(totalPages);
+                    }
+                  }
+
+                  return pages.map((page, index) => {
+                    if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                      return (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+
                     return (
                       <PaginationItem key={page}>
                         <PaginationLink
-                          onClick={() => setCurrentPage(page)}
+                          onClick={() => setCurrentPage(page as number)}
                           isActive={currentPage === page}
                           className="cursor-pointer text-sm sm:text-base"
                         >
@@ -284,15 +367,13 @@ const LifeMembers = () => {
                         </PaginationLink>
                       </PaginationItem>
                     );
-                  }
-                  return null;
-                })}
+                  });
+                })()}
                 <PaginationItem>
-                  <PaginationNext 
+                  <PaginationNext
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    className={`cursor-pointer text-sm sm:text-base ${
-                      currentPage === totalPages ? 'pointer-events-none opacity-50' : ''
-                    }`}
+                    className={`cursor-pointer text-sm sm:text-base ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''
+                      }`}
                   />
                 </PaginationItem>
               </PaginationContent>

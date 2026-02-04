@@ -21,7 +21,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -43,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // Check if there's an active session before attempting to sign out
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (session) {
         const { error } = await supabase.auth.signOut();
         if (error) {
@@ -54,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
       }
-      
+
       // Clear local state regardless of API response
       setSession(null);
       setUser(null);

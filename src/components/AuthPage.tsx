@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,14 @@ const AuthPage = () => {
     confirmPassword: '',
     fullName: ''
   });
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (searchParams.get('view') === 'forgot_password') {
+      setIsForgotPassword(true);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,16 +37,16 @@ const AuthPage = () => {
     try {
       if (isForgotPassword) {
         // Get the official domain - you'll need to replace this with your actual domain
-        const officialDomain = window.location.hostname.includes('lovable.app') 
-          ? window.location.origin 
+        const officialDomain = window.location.hostname.includes('lovable.app')
+          ? window.location.origin
           : window.location.origin; // Replace with your actual domain when deployed
-        
+
         const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
           redirectTo: `${officialDomain}/auth?reset=true`
         });
 
         if (error) throw error;
-        toast.success('Password reset email sent! Check your inbox.'); 
+        toast.success('Password reset email sent! Check your inbox.');
         setIsForgotPassword(false);
         return;
       }
@@ -51,10 +58,10 @@ const AuthPage = () => {
         }
 
         // Get the official domain - you'll need to replace this with your actual domain
-        const officialDomain = window.location.hostname.includes('lovable.app') 
-          ? window.location.origin 
+        const officialDomain = window.location.hostname.includes('lovable.app')
+          ? window.location.origin
           : window.location.origin; // Replace with your actual domain when deployed
-        
+
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -80,7 +87,7 @@ const AuthPage = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      
+
       if (error.message.includes('Email not confirmed')) {
         toast.error('Please check your email and confirm your account before signing in.');
       } else if (error.message.includes('Invalid login credentials')) {
@@ -109,15 +116,15 @@ const AuthPage = () => {
               {isForgotPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
             </CardTitle>
             <CardDescription className="text-gray-600">
-              {isForgotPassword 
+              {isForgotPassword
                 ? 'Enter your email to receive a password reset link'
-                : isSignUp 
+                : isSignUp
                   ? 'Join ISPB to access exclusive content and resources'
                   : 'Sign in to your ISPB account'
               }
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && !isForgotPassword && (
@@ -133,7 +140,7 @@ const AuthPage = () => {
                   />
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -145,7 +152,7 @@ const AuthPage = () => {
                   required
                 />
               </div>
-              
+
               {!isForgotPassword && (
                 <>
                   <div className="space-y-2">
@@ -175,7 +182,7 @@ const AuthPage = () => {
                       </Button>
                     </div>
                   </div>
-                  
+
                   {isSignUp && (
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -192,7 +199,7 @@ const AuthPage = () => {
                   )}
                 </>
               )}
-              
+
               <Button
                 type="submit"
                 className="w-full bg-green-600 hover:bg-green-700"
@@ -215,7 +222,7 @@ const AuthPage = () => {
                 )}
               </Button>
             </form>
-            
+
             {!isForgotPassword && (
               <>
                 <div className="text-center">
@@ -228,9 +235,9 @@ const AuthPage = () => {
                     Forgot your password?
                   </Button>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-600">
                     {isSignUp ? 'Already have an account?' : "Don't have an account?"}
@@ -249,7 +256,7 @@ const AuthPage = () => {
                 </div>
               </>
             )}
-            
+
             {isForgotPassword && (
               <div className="text-center">
                 <Button
@@ -267,7 +274,7 @@ const AuthPage = () => {
             )}
           </CardContent>
         </Card>
-        
+
         <p className="text-center text-sm text-gray-500 mt-4">
           By continuing, you agree to ISPB's Terms of Service and Privacy Policy
         </p>

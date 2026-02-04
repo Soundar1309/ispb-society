@@ -14,7 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Request headers:', Object.fromEntries(req.headers))
 
     // Try to get user from auth header first
     const authClient = createClient(
@@ -29,7 +28,6 @@ serve(async (req) => {
     const { data: { user } } = await authClient.auth.getUser()
     if (user) {
       userId = user.id
-      console.log('Authenticated via JWT:', userId)
     }
 
     // Use service role for database operations
@@ -39,14 +37,12 @@ serve(async (req) => {
     )
 
     const requestBody = await req.json()
-    console.log('Request body:', requestBody)
 
     const { membershipPlanId, amount, membershipId: providedMembershipId, userId: bodyUserId } = requestBody
 
     // If no JWT auth, try to use userId from body (for SSR/proxy scenarios)
     if (!userId && bodyUserId) {
       userId = bodyUserId
-      console.log('Using userId from request body:', userId)
     }
 
     if (!userId) {
@@ -87,9 +83,6 @@ serve(async (req) => {
     const razorpayKeySecret = paymentSettings?.razorpay_key_secret_encrypted?.trim() || Deno.env.get('RAZORPAY_KEY_SECRET')?.trim()
     const isTestMode = paymentSettings?.is_test_mode ?? true
 
-    console.log('Payment mode:', isTestMode ? 'TEST' : 'LIVE')
-    console.log('Using Razorpay Key ID:', razorpayKeyId?.substring(0, 15) + '...')
-
     if (!razorpayKeyId || !razorpayKeySecret) {
       console.error('Razorpay credentials not configured')
       return new Response(
@@ -105,8 +98,6 @@ serve(async (req) => {
     } else if (!isTestMode && keyIsTest) {
       console.warn('Live mode enabled but using test key - proceeding anyway')
     }
-
-    console.log('Creating Razorpay order for user:', userId)
 
     // CRITICAL: Require approved application - do not allow direct payment
     let membershipId: string
@@ -154,7 +145,6 @@ serve(async (req) => {
 
       membershipId = membership.id
       existingOrderId = membership.razorpay_order_id
-      console.log('Using provided approved membership:', membershipId)
     } else {
       // Check if user has any approved application pending payment
       const { data: existingApp } = await supabaseClient
@@ -175,12 +165,10 @@ serve(async (req) => {
 
       membershipId = existingApp.id
       existingOrderId = existingApp.razorpay_order_id
-      console.log('Found existing approved application:', membershipId)
     }
 
     // PAYMENT RETRY: Check if there's an existing pending order to reuse
     if (existingOrderId) {
-      console.log('Checking existing order for reuse:', existingOrderId)
 
       // Verify order status with Razorpay
       try {
@@ -196,7 +184,6 @@ serve(async (req) => {
 
           // Reuse order if it's still created (not paid or expired)
           if (existingOrder.status === 'created') {
-            console.log('Reusing existing Razorpay order:', existingOrderId)
 
             return new Response(
               JSON.stringify({
@@ -210,7 +197,6 @@ serve(async (req) => {
               { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
           }
-          console.log('Existing order not reusable, status:', existingOrder.status)
         }
       } catch (orderCheckError) {
         console.error('Error checking existing order:', orderCheckError)
@@ -224,8 +210,6 @@ serve(async (req) => {
       currency: 'INR',
       receipt: `membership_${Date.now()}`,
     }
-
-    console.log('Creating Razorpay order:', razorpayOrder)
 
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
@@ -247,7 +231,6 @@ serve(async (req) => {
     }
 
     const order = await response.json()
-    console.log('Razorpay order created:', order.id)
 
     // Update membership with order ID
     const { error: updateError } = await supabaseClient
@@ -274,10 +257,9 @@ serve(async (req) => {
     if (orderError) {
       console.error('Error creating order:', orderError)
     } else {
-      console.log('Order created successfully')
     }
 
-    console.log('Returning success response')
+
     return new Response(
       JSON.stringify({
         orderId: order.id,
