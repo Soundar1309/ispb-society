@@ -187,7 +187,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                   disabled={!!editingPlan}
                 />
               </div>
-              {/* <div>
+              <div>
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
@@ -196,7 +196,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                   placeholder="e.g., Annual Membership"
                   required
                 />
-              </div> */}
+              </div>
               <div>
                 <Label htmlFor="price">Price (INR)</Label>
                 <Input
@@ -243,9 +243,9 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                 <Button type="submit" disabled={isLoading} className="flex-1">
                   {isLoading ? 'Saving...' : editingPlan ? 'Update' : 'Create'}
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                   className="flex-1"
                 >
@@ -271,7 +271,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
                 </Badge>
               </div>
               <CardDescription>
-                Type: {plan.plan_type} | 
+                Type: {plan.plan_type} |
                 {plan.duration_months > 0 ? ` ${plan.duration_months} months` : ' Lifetime'}
               </CardDescription>
             </CardHeader>
@@ -279,7 +279,7 @@ const AdminMembershipPlansTab = ({ plans, onRefresh }: AdminMembershipPlansTabPr
               <div className="text-2xl font-bold text-green-600">
                 ₹{plan.price}
               </div>
-              
+
               <div>
                 <h4 className="font-medium mb-2">Features:</h4>
                 <ul className="space-y-1">
