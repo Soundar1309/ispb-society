@@ -196,7 +196,7 @@ const ContactUs = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
                 </div>
-                <p className="text-gray-700">ISPBtnau@gmail.com</p>
+                <p className="text-gray-700">ispbtnau@gmail.com</p>
                 {/* <p className="text-sm text-gray-500 mt-1">We reply within 24 hours</p> */}
               </div>
 
@@ -227,16 +227,16 @@ const ContactUs = () => {
 
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.352320254036!2d76.9354212!3d11.012170599999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba8592754d00001%3A0x58af4a04bdda7a1f!2sTamil%20Nadu%20Agricultural%20University!5e0!3m2!1sen!2sin!4v1758179109398!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.346401071324!2d76.93401577504527!3d11.012615589150847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba858df5f53836d%3A0xd9c2f84aa79a7162!2sCentre%20for%20Plant%20Breeding%20and%20Genetics!5e0!3m2!1sen!2sin!4v1770665072314!5m2!1sen!2sin"
               width="100%"
-              height="400"
+              height="450"
               style={{ border: 0 }}
-              allowFullScreen={true}
+              allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Indian Agricultural Research Institute, Pusa Campus Location"
-              className="w-full h-96"
-            />
+              title="Tamil Nadu Agricultural University Location"
+              className="w-full h-[450px]"
+            ></iframe>
           </div>
         </div>
 
@@ -245,8 +245,8 @@ const ContactUs = () => {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Contacts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Membership', email: 'ISPBtnau@gmail.com', description: 'Applications and renewals', color: 'green' },
-              { title: 'General', email: 'ISPBtnau@gmail.com', description: 'General inquiries', color: 'purple' }
+              { title: 'Membership', email: 'ispbtnau@gmail.com', description: 'Applications and renewals', color: 'green' },
+              { title: 'General', email: 'ispbtnau@gmail.com', description: 'General inquiries', color: 'purple' }
             ].map((contact, index) => (
               <div key={index} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
                 <div className={`w-12 h-12 bg-${contact.color}-100 rounded-full flex items-center justify-center mb-4`}>

@@ -47,10 +47,10 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
-              Advancing plant breeding science for sustainable agriculture and food security 
+              Advancing plant breeding science for sustainable agriculture and food security
               through research, education, and collaboration.
             </p>
-            
+
             {/* Social Media */}
             <div className="flex space-x-4">
               <a href="#" className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-all duration-300 transform hover:scale-110">
@@ -110,7 +110,7 @@ const Footer = () => {
                 <MapPin className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-gray-300">
                   <p>Indian Society of Plant Breeders <br />Centre for Plant Breeding & Genetics <br />
-                  Tamil Nadu Agricultural University <br />Coimbatore, Tamil Nadu-641003, India.</p>
+                    Tamil Nadu Agricultural University <br />Coimbatore, Tamil Nadu-641003, India.</p>
                 </div>
               </div>
               {/* <div className="flex items-center space-x-3">
@@ -119,7 +119,7 @@ const Footer = () => {
               </div> */}
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <a href="mailto:ISPBtnau@gmail.com" className="text-sm text-gray-300 hover:text-green-400 transition-colors">ISPBtnau@gmail.com</a>
+                <a href="mailto:ispbtnau@gmail.com" className="text-sm text-gray-300 hover:text-green-400 transition-colors">ispbtnau@gmail.com</a>
               </div>
             </div>
           </div>
@@ -149,10 +149,10 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="flex flex-col items-center md:items-start space-y-2">
             <p className="text-gray-400 text-sm">
-              © {currentYear} ISPB. All rights reserved. | 
+              © {currentYear} ISPB. All rights reserved. |
               Developed by <a
-                href="https://www.codeficorp.com/" 
-                target="_blank" 
+                href="https://www.codeficorp.com/"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-green-400 hover:text-green-300 transition-colors"
               >

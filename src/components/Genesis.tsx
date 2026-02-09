@@ -16,11 +16,10 @@ const Genesis = () => {
           <div className="bg-gradient-to-r from-green-50 to-orange-50 rounded-xl p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">The Beginning</h2>
             <p className="text-gray-700 leading-relaxed text-justify">
-              The Indian Society of Plant Breeders (ISPB) was conceived in the late 1990s by a group of 
-              visionary plant breeders and geneticists who recognized the need for a dedicated platform 
-              to advance plant breeding science in India. The founding members were driven by the mission 
-              to create a forum for scientific exchange, research collaboration, and professional development 
-              in the field of plant breeding and genetics.
+              The plant breeders'  forum was inaugurated on February 26, 1995 and the forum was registered as per S. No. 191 of 1995 on 6.11.1995. A total of 110 breeders from Tamil Nadu Agricultural University, Sugarcane Breeding Institute, Central Institute for Cotton Research,  Institute of Forest Genetics and Tree Breeding and breeders from private companies and institutions and retired plant breeders joined the forum at the time of inauguration.
+            </p>
+            <p className="text-gray-700 pt-4 leading-relaxed text-justify">
+              To extend the services of the forum from state level to national level, the members felt the need of changing its nomenclature to Indian Society of Plant Breeders (ISPB). The ISPB is functioning well under the leadership of its office bearers of the past and present.
             </p>
           </div>
 
@@ -28,7 +27,7 @@ const Genesis = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Founding Vision</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                The society was established with the vision to promote excellence in plant breeding research, 
+                The society was established with the vision to promote excellence in plant breeding research,
                 education, and application. The founding members envisioned an organization that would:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
@@ -43,7 +42,7 @@ const Genesis = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Founding Members</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                The society was founded by eminent plant breeders and scientists from premier institutions 
+                The society was founded by eminent plant breeders and scientists from premier institutions
                 like:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -80,28 +79,28 @@ const Genesis = () => {
                 <div className="border-l-4 border-green-500 pl-6">
                   <h4 className="text-lg font-semibold text-gray-900">1998 - Foundation</h4>
                   <p className="text-gray-700">
-                    The Indian Society of Plant Breeders was officially established with the first 
+                    The Indian Society of Plant Breeders was officially established with the first
                     governing council comprising leading plant breeders from across the country.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
                   <h4 className="text-lg font-semibold text-gray-900">2000 - First Conference</h4>
                   <p className="text-gray-700">
-                    The inaugural conference was held in New Delhi, bringing together over 200 
+                    The inaugural conference was held in New Delhi, bringing together over 200
                     plant breeders, geneticists, and agricultural scientists.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
                   <h4 className="text-lg font-semibold text-gray-900">2005 - Publication Launch</h4>
                   <p className="text-gray-700">
-                    Launch of the society's first journal, providing a platform for publishing 
+                    Launch of the society's first journal, providing a platform for publishing
                     cutting-edge research in plant breeding and genetics.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
                   <h4 className="text-lg font-semibold text-gray-900">2010 - International Collaboration</h4>
                   <p className="text-gray-700">
-                    Establishment of partnerships with international plant breeding societies 
+                    Establishment of partnerships with international plant breeding societies
                     and research organizations to promote global knowledge exchange.
                   </p>
                 </div>
@@ -111,8 +110,8 @@ const Genesis = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Legacy and Impact</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Over the years, ISPB has grown to become a premier professional society in India, 
-                contributing significantly to the advancement of plant breeding science. The society 
+                Over the years, ISPB has grown to become a premier professional society in India,
+                contributing significantly to the advancement of plant breeding science. The society
                 has played a crucial role in:
               </p>
               <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">

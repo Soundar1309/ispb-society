@@ -116,9 +116,15 @@ const Publications = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Publications</h1>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mt-4 mb-4">Publications</h1>
+          {/* <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Explore our research publications and scientific contributions to plant breeding
+          </p> */}
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+            Official Publication - Electronic Journal of Plant Breeding
+          </p>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+            Published as quarterly journal since December 2009. The society also published the proceeding of the seminars conducted:
           </p>
         </div>
 
@@ -132,7 +138,7 @@ const Publications = () => {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by category" />
@@ -223,7 +229,7 @@ const Publications = () => {
                         <span><strong>Year:</strong> {publication.year}</span>
                       )}
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-2 justify-center sm:justify-end">
                       {publication.link && (
                         <Button
@@ -236,7 +242,7 @@ const Publications = () => {
                           Buy Now
                         </Button>
                       )}
-                      
+
                       {publication.pdf_file_url && (
                         <Button
                           variant="outline"

@@ -32,6 +32,190 @@ interface AdminConferencesTabProps {
   onRefresh: () => void;
 }
 
+interface ConferenceFormProps {
+  formData: {
+    title: string;
+    description: string;
+    venue: string;
+    date_from: string;
+    date_to: string;
+    fee: string;
+    link: string;
+    deadline: string;
+    registration_required: boolean;
+    attachment_url: string;
+    registration_form_url: string;
+  };
+  handleInputChange: (field: string, value: string | boolean) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+  isEditing: boolean;
+}
+
+const ConferenceForm = ({ formData, handleInputChange, handleSubmit, onCancel, isSubmitting, isEditing }: ConferenceFormProps) => (
+  <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto">
+    {/* Basic Information Section */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Basic Information</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Title *</label>
+          <Input
+            placeholder="e.g., 16th ISPB International Congress"
+            value={formData.title}
+            onChange={(e) => handleInputChange('title', e.target.value)}
+            required
+            className="w-full"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Description</label>
+          <Textarea
+            placeholder="Detailed description of the conference, its objectives, and key highlights..."
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            rows={4}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Venue</label>
+          <Input
+            placeholder="e.g., India International Centre, New Delhi"
+            value={formData.venue}
+            onChange={(e) => handleInputChange('venue', e.target.value)}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Website (Optional)</label>
+          <Input
+            type="url"
+            placeholder="https://conference.ispb.org.in"
+            value={formData.link}
+            onChange={(e) => handleInputChange('link', e.target.value)}
+            className="w-full"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Dates & Deadlines Section */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Dates & Deadlines</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Start Date</label>
+          <Input
+            type="date"
+            value={formData.date_from}
+            onChange={(e) => handleInputChange('date_from', e.target.value)}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Conference End Date</label>
+          <Input
+            type="date"
+            value={formData.date_to}
+            onChange={(e) => handleInputChange('date_to', e.target.value)}
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Deadline</label>
+          <Input
+            type="date"
+            value={formData.deadline}
+            onChange={(e) => handleInputChange('deadline', e.target.value)}
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500 mt-1">Last date for conference registration</p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Required</label>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              checked={formData.registration_required}
+              onCheckedChange={(checked) => handleInputChange('registration_required', checked === true)}
+            />
+            <span className="text-sm text-gray-600">Enable conference registration</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Check this if users need to register for the conference</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Registration & Attachments Section */}
+    <div>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Registration & Attachments</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Fee (₹)</label>
+          <Input
+            type="number"
+            placeholder="5000"
+            value={formData.fee}
+            onChange={(e) => handleInputChange('fee', e.target.value)}
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500 mt-1">Leave empty if the conference is free</p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Attachment URL</label>
+          <Input
+            type="url"
+            placeholder="https://example.com/brochure.pdf"
+            value={formData.attachment_url}
+            onChange={(e) => handleInputChange('attachment_url', e.target.value)}
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500 mt-1">Link to conference brochure or documents</p>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Form URL</label>
+          <Input
+            type="url"
+            placeholder="https://forms.example.com/conference-registration"
+            value={formData.registration_form_url}
+            onChange={(e) => handleInputChange('registration_form_url', e.target.value)}
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500 mt-1">External registration form URL (if not using built-in registration)</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onCancel}
+        className="w-full sm:w-auto"
+        disabled={isSubmitting}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Saving...' : isEditing ? 'Update Conference' : 'Add Conference'}
+      </Button>
+    </div>
+  </form>
+);
+
 const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingConference, setEditingConference] = useState<Conference | null>(null);
@@ -150,7 +334,10 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
     }
   };
 
-  const ConferenceForm = () => (
+
+
+  /* Internal component renamed to avoid conflict */
+  const ConferenceFormInternal = ({ formData, handleInputChange, handleSubmit, onCancel, isSubmitting, isEditing }: ConferenceFormProps) => (
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto">
       {/* Basic Information Section */}
       <div>
@@ -166,7 +353,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               className="w-full"
             />
           </div>
-          
+
           <div className="sm:col-span-2">
             <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Description</label>
             <Textarea
@@ -177,7 +364,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               className="w-full"
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Venue</label>
             <Input
@@ -187,7 +374,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               className="w-full"
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Conference Website (Optional)</label>
             <Input
@@ -214,7 +401,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               className="w-full"
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Conference End Date</label>
             <Input
@@ -224,7 +411,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
               className="w-full"
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Deadline</label>
             <Input
@@ -235,7 +422,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             />
             <p className="text-xs text-gray-500 mt-1">Last date for conference registration</p>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Required</label>
             <div className="flex items-center space-x-2">
@@ -249,7 +436,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
           </div>
         </div>
       </div>
-      
+
       {/* Registration & Attachments Section */}
       <div>
         <h3 className="text-lg font-semibold mb-4 text-gray-900 border-b pb-2">Registration & Attachments</h3>
@@ -265,7 +452,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             />
             <p className="text-xs text-gray-500 mt-1">Leave empty if the conference is free</p>
           </div>
-          
+
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Attachment URL</label>
             <Input
@@ -277,7 +464,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             />
             <p className="text-xs text-gray-500 mt-1">Link to conference brochure or documents</p>
           </div>
-          
+
           <div className="sm:col-span-2">
             <label className="text-sm font-medium text-gray-700 mb-2 block">Registration Form URL</label>
             <Input
@@ -291,30 +478,23 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
           </div>
         </div>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            if (editingConference) {
-              setEditingConference(null);
-            } else {
-              setIsAddDialogOpen(false);
-            }
-            resetForm();
-          }}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
           className="w-full sm:w-auto"
           disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button 
-          type="submit" 
-          className="w-full sm:w-auto bg-green-600 hover:bg-green-700" 
+        <Button
+          type="submit"
+          className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : editingConference ? 'Update Conference' : 'Add Conference'}
+          {isSubmitting ? 'Saving...' : isEditing ? 'Update Conference' : 'Add Conference'}
         </Button>
       </div>
     </form>
@@ -340,7 +520,17 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                 <DialogTitle className="text-xl">Add New Conference</DialogTitle>
                 <DialogDescription>Create a new ISPB conference or event with complete details</DialogDescription>
               </DialogHeader>
-              <ConferenceForm />
+              <ConferenceForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                onCancel={() => {
+                  setIsAddDialogOpen(false);
+                  resetForm();
+                }}
+                isSubmitting={isSubmitting}
+                isEditing={false}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -351,7 +541,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
             <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Conferences Found</h3>
             <p className="text-gray-500 mb-4">Start by adding your first ISPB conference or event</p>
-            <Button 
+            <Button
               onClick={() => setIsAddDialogOpen(true)}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -379,16 +569,16 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                         <div className="font-semibold text-gray-900">{conference.title}</div>
                         {conference.description && (
                           <div className="text-sm text-gray-600 line-clamp-2">
-                            {conference.description.length > 100 
+                            {conference.description.length > 100
                               ? `${conference.description.substring(0, 100)}...`
                               : conference.description
                             }
                           </div>
                         )}
                         {conference.link && (
-                          <a 
-                            href={conference.link} 
-                            target="_blank" 
+                          <a
+                            href={conference.link}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
                           >
@@ -398,7 +588,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                         )}
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="space-y-1">
                         {conference.venue && (
@@ -415,7 +605,7 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                         </div>
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="space-y-1 text-sm">
                         {conference.fee && (
@@ -438,9 +628,9 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                           </div>
                         )}
                         {conference.attachment_url && (
-                          <a 
-                            href={conference.attachment_url} 
-                            target="_blank" 
+                          <a
+                            href={conference.attachment_url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs"
                           >
@@ -450,16 +640,16 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                         )}
                       </div>
                     </TableCell>
-                    
+
                     <TableCell>
-                      <Badge 
+                      <Badge
                         variant={conference.is_active ? "default" : "secondary"}
                         className={conference.is_active ? "bg-green-100 text-green-800" : ""}
                       >
                         {conference.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    
+
                     <TableCell>
                       <div className="flex justify-center gap-1">
                         <Button
@@ -496,7 +686,17 @@ const AdminConferencesTab = ({ conferences, onRefresh }: AdminConferencesTabProp
                 <DialogTitle className="text-xl">Edit Conference</DialogTitle>
                 <DialogDescription>Update conference details and information</DialogDescription>
               </DialogHeader>
-              <ConferenceForm />
+              <ConferenceForm
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                onCancel={() => {
+                  setEditingConference(null);
+                  resetForm();
+                }}
+                isSubmitting={isSubmitting}
+                isEditing={true}
+              />
             </DialogContent>
           </Dialog>
         )}
