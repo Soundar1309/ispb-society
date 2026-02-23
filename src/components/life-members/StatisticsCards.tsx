@@ -36,7 +36,7 @@ const StatisticsCards = ({ lifeMembers }: StatisticsCardsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-4 sm:gap-6 mb-8 sm:mb-12">
       <Card className="text-center p-4 sm:p-6">
         <Users className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mx-auto mb-2" />
         <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">
@@ -46,10 +46,11 @@ const StatisticsCards = ({ lifeMembers }: StatisticsCardsProps) => {
       </Card>
       <Card className="text-center p-4 sm:p-6">
         <Award className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mx-auto mb-2" />
-        <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">25+</div>
+        <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">30</div>
         <div className="text-xs sm:text-sm text-gray-600">Years of Service</div>
       </Card>
-      <Card className="text-center p-4 sm:p-6">
+      {/* Uncomment to add more stat boxes — they will auto-fill the row equally */}
+      {/* <Card className="text-center p-4 sm:p-6">
         <Building className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mx-auto mb-2" />
         <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">
           {getUniqueAddresses().length}
@@ -62,7 +63,7 @@ const StatisticsCards = ({ lifeMembers }: StatisticsCardsProps) => {
           {getUniqueOccupations().length}
         </div>
         <div className="text-xs sm:text-sm text-gray-600">Occupations</div>
-      </Card>
+      </Card> */}
     </div>
   );
 };

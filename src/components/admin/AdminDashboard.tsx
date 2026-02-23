@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -24,26 +24,28 @@ import {
   FileText,
   Cog
 } from 'lucide-react';
-import AdminStats from './AdminStats';
-import AdminApplicationsTab from './AdminApplicationsTab';
-import AdminMembersTab from './AdminMembersTab';
-import AdminConferencesTab from './AdminConferencesTab';
-import AdminMessagesTab from './AdminMessagesTab';
-import AdminContentTab from './AdminContentTab';
-import AdminPaymentTab from './AdminPaymentTab';
-import AdminPaymentSettingsTab from './AdminPaymentSettingsTab';
-import AdminOrdersTab from './AdminOrdersTab';
-import AdminMembershipPlansTab from './AdminMembershipPlansTab';
-import AdminLifeMembersTab from './AdminLifeMembersTab';
-import AdminPublicationsTab from './AdminPublicationsTab';
-import AdminGalleryTab from './AdminGalleryTab';
-import AdminOfficeBearersTab from './AdminOfficeBearersTab';
-import UserManagement from './UserManagement';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazily-loaded tab components — each becomes its own JS chunk
+const AdminStats = lazy(() => import('./AdminStats'));
+const AdminApplicationsTab = lazy(() => import('./AdminApplicationsTab'));
+const AdminMembersTab = lazy(() => import('./AdminMembersTab'));
+const AdminConferencesTab = lazy(() => import('./AdminConferencesTab'));
+const AdminMessagesTab = lazy(() => import('./AdminMessagesTab'));
+const AdminContentTab = lazy(() => import('./AdminContentTab'));
+const AdminPaymentTab = lazy(() => import('./AdminPaymentTab'));
+const AdminPaymentSettingsTab = lazy(() => import('./AdminPaymentSettingsTab'));
+const AdminOrdersTab = lazy(() => import('./AdminOrdersTab'));
+const AdminMembershipPlansTab = lazy(() => import('./AdminMembershipPlansTab'));
+const AdminLifeMembersTab = lazy(() => import('./AdminLifeMembersTab'));
+const AdminPublicationsTab = lazy(() => import('./AdminPublicationsTab'));
+const AdminGalleryTab = lazy(() => import('./AdminGalleryTab'));
+const AdminOfficeBearersTab = lazy(() => import('./AdminOfficeBearersTab'));
+const UserManagement = lazy(() => import('./UserManagement'));
 
 interface AdminDashboardProps {
   loading?: boolean;
@@ -69,6 +71,19 @@ interface AdminDashboardProps {
   deleteMembership: (membershipId: string) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  sidebarCounts?: {
+    pendingApplications: number;
+    unreadMessages: number;
+    members: number;
+    lifeMembers: number;
+    membershipPlans: number;
+    conferences: number;
+    publications: number;
+    gallery: number;
+    officeBearers: number;
+    payments: number;
+    userRolesCount: number;
+  };
 }
 
 const AdminDashboard = ({
@@ -88,6 +103,19 @@ const AdminDashboard = ({
   galleryItems = [],
   officeBearers = [],
   applications = [],
+  sidebarCounts = {
+    pendingApplications: 0,
+    unreadMessages: 0,
+    members: 0,
+    lifeMembers: 0,
+    membershipPlans: 0,
+    conferences: 0,
+    publications: 0,
+    gallery: 0,
+    officeBearers: 0,
+    payments: 0,
+    userRolesCount: 0,
+  },
   refreshData,
   updateUserRole,
   addMembership,
@@ -120,28 +148,29 @@ const AdminDashboard = ({
           label: 'Applications',
           icon: FileText,
           description: 'Review membership applications',
-          count: applications?.length || 0
+          count: sidebarCounts.pendingApplications,
+          urgent: sidebarCounts.pendingApplications > 0
         },
         {
           id: 'members',
           label: 'Members',
           icon: Users,
           description: 'Manage member accounts',
-          count: users?.length || 0
+          count: sidebarCounts.members
         },
         {
           id: 'life-members',
           label: 'Life Members',
           icon: Crown,
           description: 'Lifetime membership holders',
-          count: lifeMembers?.length || 0
+          count: sidebarCounts.lifeMembers
         },
         {
           id: 'membership-plans',
           label: 'Membership Plans',
           icon: Settings,
           description: 'Manage membership plans',
-          count: membershipPlans?.length || 0
+          count: sidebarCounts.membershipPlans
         },
         {
           id: 'users',
@@ -159,28 +188,28 @@ const AdminDashboard = ({
           label: 'Conferences',
           icon: Calendar,
           description: 'Event management',
-          count: conferences?.length || 0
+          count: sidebarCounts.conferences
         },
         {
           id: 'publications',
           label: 'Publications',
           icon: BookOpen,
           description: 'Research publications',
-          count: publications?.length || 0
+          count: sidebarCounts.publications
         },
         {
           id: 'gallery',
           label: 'Gallery',
           icon: Image,
           description: 'Image gallery management',
-          count: galleryItems?.length || 0
+          count: sidebarCounts.gallery
         },
         {
           id: 'office-bearers',
           label: 'Office Bearers',
           icon: Award,
           description: 'Leadership team',
-          count: officeBearers?.length || 0
+          count: sidebarCounts.officeBearers
         },
         {
           id: 'content',
@@ -198,15 +227,15 @@ const AdminDashboard = ({
           label: 'Messages',
           icon: MessageSquare,
           description: 'Contact form submissions',
-          count: messages?.filter(m => m.status === 'unread')?.length || 0,
-          urgent: messages?.filter(m => m.status === 'unread')?.length > 0
+          count: sidebarCounts.unreadMessages,
+          urgent: sidebarCounts.unreadMessages > 0
         },
         {
           id: 'payments',
           label: 'Payments',
           icon: CreditCard,
           description: 'Payment tracking',
-          count: payments?.length || 0
+          count: sidebarCounts.payments
         },
         {
           id: 'payment-settings',
@@ -509,7 +538,9 @@ const AdminDashboard = ({
               </div>
             )}
 
-            {renderTabContent()}
+            <Suspense fallback={<LoadingSkeleton variant="table" count={5} />}>
+              {renderTabContent()}
+            </Suspense>
           </div>
         </main>
       </div>

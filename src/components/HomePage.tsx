@@ -36,28 +36,28 @@ const HomePage = () => {
       {/* Hero Section with Background Image */}
       <section className="relative min-h-screen flex items-center justify-center">
         {/* Background Image */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${Herobg})`
           }}
         />
-        
+
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/50" />
-        
+
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <div className="flex justify-center mb-6">
             <div className="w-24 h-24 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center shadow-2xl overflow-hidden">
-            <img src={Logo} alt="ISPB Logo" className="w-24 h-24 object-contain rounded-full shadow-2xl bg-white" />            </div>
+              <img src={Logo} alt="ISPB Logo" className="w-24 h-24 object-contain rounded-full shadow-2xl bg-white" />            </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
             Indian Society of
             <span className="block text-green-400">Plant Breeders</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto drop-shadow-md">
-            Advancing plant breeding science for sustainable agriculture and food security through research, 
+            Advancing plant breeding science for sustainable agriculture and food security through research,
             education, and collaboration among scientists, researchers, and professionals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -86,7 +86,7 @@ const HomePage = () => {
               Discover our initiatives, connect with fellow researchers, and contribute to the advancement of plant breeding science.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <Link
@@ -112,8 +112,8 @@ const HomePage = () => {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
               <p className="text-lg text-gray-600 mb-6">
-                The Indian Society of Plant Breeders is dedicated to promoting excellence in plant breeding 
-                research and education. We foster collaboration among scientists, support innovative research, 
+                The Indian Society of Plant Breeders is dedicated to promoting excellence in plant breeding
+                research and education. We foster collaboration among scientists, support innovative research,
                 and disseminate knowledge to advance agricultural sustainability.
               </p>
               <ul className="space-y-3">
@@ -136,25 +136,24 @@ const HomePage = () => {
               </ul>
             </div>
             <div className="bg-gradient-to-br from-green-100 to-orange-100 rounded-2xl p-6 sm:p-8">
-              <div className="text-center">
-                <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">500+</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Active Members</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">25+</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Years of Service</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">50+</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Conferences Held</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
-                    <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">200+</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Research Papers</div>
-                  </div>
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 [&>*:last-child:nth-child(odd)]:col-span-2">
+                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">900+</div>
+                  <div className="text-xs sm:text-sm text-gray-500 font-medium">Active Members</div>
                 </div>
+                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">30</div>
+                  <div className="text-xs sm:text-sm text-gray-500 font-medium">Years of Service</div>
+                </div>
+                <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">8</div>
+                  <div className="text-xs sm:text-sm text-gray-500 font-medium">Conferences Held</div>
+                </div>
+                {/* Uncomment to restore 4th box — grid will revert to 2×2 automatically */}
+                {/* <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-1">200+</div>
+                  <div className="text-xs sm:text-sm text-gray-500 font-medium">Research Papers</div>
+                </div> */}
               </div>
             </div>
           </div>

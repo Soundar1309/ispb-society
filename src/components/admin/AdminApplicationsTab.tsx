@@ -4,11 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye, Download, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Download, FileText, Trash2 } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -40,6 +50,27 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [reviewNotes, setReviewNotes] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Application | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('memberships')
+        .delete()
+        .eq('id', deleteTarget.id);
+      if (error) throw error;
+      toast.success('Application removed successfully');
+      setDeleteTarget(null);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete application');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -58,7 +89,6 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
     setIsProcessing(true);
 
     try {
-      // Update application status
       const { error: updateError } = await supabase
         .from('memberships')
         .update({
@@ -70,7 +100,6 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
 
       if (updateError) throw updateError;
 
-      // Send approval email with payment link
       try {
         await supabase.functions.invoke('send-gmail', {
           body: {
@@ -139,7 +168,6 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
 
       if (error) throw error;
 
-      // Send rejection email
       try {
         await supabase.functions.invoke('send-gmail', {
           body: {
@@ -180,248 +208,293 @@ const AdminApplicationsTab = ({ applications, onRefresh }: AdminApplicationsTabP
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Membership Applications</CardTitle>
-        <CardDescription>Review and approve membership applications</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Applicant</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {applications.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell>
-                  {new Date(app.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{app.user_roles?.full_name || 'Unknown'}</div>
-                    <div className="text-xs text-gray-500">{app.user_roles?.email}</div>
-                  </div>
-                </TableCell>
-                <TableCell className="capitalize">{app.membership_type}</TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadge(app.application_status)}>
-                    {app.application_status.replace('_', ' ')}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    variant={app.application_status === 'submitted' ? 'default' : 'outline'}
-                    onClick={() => {
-                      setSelectedApp(app);
-                      setIsReviewDialogOpen(true);
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    {app.application_status === 'submitted' ? 'Review' : 'View'}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-            {applications.length === 0 && (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Membership Applications</CardTitle>
+          <CardDescription>Review and approve membership applications</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500 py-8">
-                  No pending applications
-                </TableCell>
+                <TableHead>Date</TableHead>
+                <TableHead>Applicant</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {applications.map((app) => (
+                <TableRow key={app.id}>
+                  <TableCell>
+                    {new Date(app.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{app.user_roles?.full_name || 'Unknown'}</div>
+                      <div className="text-xs text-gray-500">{app.user_roles?.email}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="capitalize">{app.membership_type}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusBadge(app.application_status)}>
+                      {app.application_status.replace('_', ' ')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={app.application_status === 'submitted' ? 'default' : 'outline'}
+                        onClick={() => {
+                          setSelectedApp(app);
+                          setIsReviewDialogOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        {app.application_status === 'submitted' ? 'Review' : 'View'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setDeleteTarget(app)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {applications.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                    No pending applications
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
 
-        {/* Review Dialog */}
-        <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Review Application</DialogTitle>
-              <DialogDescription>Review and approve or reject this membership application</DialogDescription>
-            </DialogHeader>
+          {/* Review Dialog */}
+          <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+            <DialogContent className="w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+              <DialogHeader>
+                <DialogTitle>Review Application</DialogTitle>
+                <DialogDescription>Review and approve or reject this membership application</DialogDescription>
+              </DialogHeader>
 
-            {selectedApp && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Name</Label>
-                    <p>{selectedApp.user_roles?.full_name}</p>
+              {selectedApp && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Name</Label>
+                      <p>{selectedApp.user_roles?.full_name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Email</Label>
+                      <p>{selectedApp.user_roles?.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Phone</Label>
+                      <p>{selectedApp.user_roles?.phone}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Institution</Label>
+                      <p>{selectedApp.user_roles?.institution}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Designation</Label>
+                      <p>{selectedApp.user_roles?.designation}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Membership Type</Label>
+                      <p className="capitalize">{selectedApp.membership_type}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Amount</Label>
+                      <p>₹{selectedApp.amount}</p>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Email</Label>
-                    <p>{selectedApp.user_roles?.email}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                    <p>{selectedApp.user_roles?.phone}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Institution</Label>
-                    <p>{selectedApp.user_roles?.institution}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Designation</Label>
-                    <p>{selectedApp.user_roles?.designation}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Membership Type</Label>
-                    <p className="capitalize">{selectedApp.membership_type}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Amount</Label>
-                    <p>₹{selectedApp.amount}</p>
-                  </div>
-                </div>
 
-                {/* Uploaded Documents Section */}
-                {selectedApp.application_documents && Array.isArray(selectedApp.application_documents) && selectedApp.application_documents.length > 0 ? (
-                  <div className="border rounded-lg p-4 bg-muted/50">
-                    <Label className="text-sm font-medium mb-3 block">Uploaded Documents</Label>
-                    <div className="space-y-2">
-                      {selectedApp.application_documents.map((doc: any, index: number) => {
-                        // Handle both old format (string) and new format (object with path/url)
-                        const isObject = typeof doc === 'object' && doc !== null;
-                        const docName = isObject ? (doc.name || `Document ${index + 1}`) : String(doc);
-                        const docUrl = isObject ? doc.url : null;
-                        const docSize = isObject ? doc.size : null;
+                  {/* Uploaded Documents Section */}
+                  {selectedApp.application_documents && Array.isArray(selectedApp.application_documents) && selectedApp.application_documents.length > 0 ? (
+                    <div className="border rounded-lg p-4 bg-muted/50">
+                      <Label className="text-sm font-medium mb-3 block">Uploaded Documents</Label>
+                      <div className="space-y-2">
+                        {selectedApp.application_documents.map((doc: any, index: number) => {
+                          const isObject = typeof doc === 'object' && doc !== null;
+                          const docName = isObject ? (doc.name || `Document ${index + 1}`) : String(doc);
+                          const docUrl = isObject ? doc.url : null;
+                          const docSize = isObject ? doc.size : null;
 
-                        return (
-                          <div key={index} className="flex items-center justify-between p-3 bg-background rounded-md border">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-5 w-5 text-muted-foreground" />
-                              <div>
-                                <p className="text-sm font-medium">{docName || `Document ${index + 1}`}</p>
+                          return (
+                            <div key={index} className="flex items-center gap-3 p-3 bg-background rounded-md border">
+                              <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <p className="text-sm font-medium truncate max-w-[160px] sm:max-w-none">
+                                    {docName || `Document ${index + 1}`}
+                                  </p>
+                                  {isObject && doc.type && (
+                                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${doc.type === 'aadhar'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : doc.type === 'affiliation'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-gray-100 text-gray-600'
+                                      }`}>
+                                      {doc.type === 'aadhar' ? 'Aadhar Card' : doc.type === 'affiliation' ? 'Proof of Affiliation' : doc.type}
+                                    </span>
+                                  )}
+                                </div>
                                 {docSize && (
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-muted-foreground mt-0.5">
                                     {(docSize / 1024 / 1024).toFixed(2)} MB
                                   </p>
                                 )}
                               </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={async () => {
-                                  if (docUrl) {
-                                    window.open(docUrl, '_blank');
-                                  } else if (doc.path) {
-                                    try {
-                                      const bucket = doc.bucket || 'application-documents';
-                                      const { data, error } = await supabase.storage
-                                        .from(bucket)
-                                        .createSignedUrl(doc.path, 3600);
-
-                                      if (error) throw error;
-                                      if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-                                    } catch (err) {
-                                      toast.error('Failed to open document');
-                                      console.error(err);
+                              <div className="flex shrink-0 gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={async () => {
+                                    if (docUrl) {
+                                      window.open(docUrl, '_blank');
+                                    } else if (doc.path) {
+                                      try {
+                                        const bucket = doc.bucket || 'application-documents';
+                                        const { data, error } = await supabase.storage
+                                          .from(bucket)
+                                          .createSignedUrl(doc.path, 3600);
+                                        if (error) throw error;
+                                        if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                                      } catch (err) {
+                                        toast.error('Failed to open document');
+                                        console.error(err);
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                View
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={async () => {
-                                  let downloadUrl = docUrl;
-                                  if (!downloadUrl && doc.path) {
-                                    try {
-                                      const bucket = doc.bucket || 'application-documents';
-                                      const { data, error } = await supabase.storage
-                                        .from(bucket)
-                                        .createSignedUrl(doc.path, 3600);
-                                      if (error) throw error;
-                                      downloadUrl = data?.signedUrl;
-                                    } catch (err) {
-                                      console.error(err);
-                                      toast.error('Failed to generate download link');
-                                      return;
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={async () => {
+                                    let downloadUrl = docUrl;
+                                    if (!downloadUrl && doc.path) {
+                                      try {
+                                        const bucket = doc.bucket || 'application-documents';
+                                        const { data, error } = await supabase.storage
+                                          .from(bucket)
+                                          .createSignedUrl(doc.path, 3600);
+                                        if (error) throw error;
+                                        downloadUrl = data?.signedUrl;
+                                      } catch (err) {
+                                        console.error(err);
+                                        toast.error('Failed to generate download link');
+                                        return;
+                                      }
                                     }
-                                  }
-
-                                  if (downloadUrl) {
-                                    const link = document.createElement('a');
-                                    link.href = downloadUrl;
-                                    link.download = docName || 'document';
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                  }
-                                }}
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                Download
-                              </Button>
+                                    if (downloadUrl) {
+                                      const link = document.createElement('a');
+                                      link.href = downloadUrl;
+                                      link.download = docName || 'document';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                    }
+                                  }}
+                                >
+                                  <Download className="h-4 w-4 mr-1" />
+                                  Download
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="border rounded-lg p-4 bg-muted/50 text-center">
-                    <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="border rounded-lg p-4 bg-muted/50 text-center">
+                      <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No documents uploaded</p>
+                    </div>
+                  )}
 
-                <div>
-                  <Label htmlFor="reviewNotes">Admin Notes</Label>
-                  <Textarea
-                    id="reviewNotes"
-                    rows={4}
-                    value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
-                    placeholder="Add notes about the application review..."
-                  />
+                  <div>
+                    <Label htmlFor="reviewNotes">Admin Notes</Label>
+                    <Textarea
+                      id="reviewNotes"
+                      rows={4}
+                      value={reviewNotes}
+                      onChange={(e) => setReviewNotes(e.target.value)}
+                      placeholder="Add notes about the application review..."
+                    />
+                  </div>
+
+                  {selectedApp.admin_review_notes && (
+                    <div className="p-4 bg-muted rounded-lg">
+                      <Label className="text-sm font-medium mb-2 block">Previous Admin Notes</Label>
+                      <p className="text-sm text-muted-foreground">{selectedApp.admin_review_notes}</p>
+                    </div>
+                  )}
+
+                  {selectedApp.application_status === 'submitted' && (
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        onClick={handleApprove}
+                        disabled={isProcessing}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {isProcessing ? 'Processing...' : 'Approve & Send Payment Link'}
+                      </Button>
+                      <Button
+                        onClick={handleReject}
+                        disabled={isProcessing}
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        {isProcessing ? 'Processing...' : 'Reject'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
 
-                {selectedApp.admin_review_notes && (
-                  <div className="p-4 bg-muted rounded-lg">
-                    <Label className="text-sm font-medium mb-2 block">Previous Admin Notes</Label>
-                    <p className="text-sm text-muted-foreground">{selectedApp.admin_review_notes}</p>
-                  </div>
-                )}
-
-                {selectedApp.application_status === 'submitted' && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleApprove}
-                      disabled={isProcessing}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {isProcessing ? 'Processing...' : 'Approve & Send Payment Link'}
-                    </Button>
-                    <Button
-                      onClick={handleReject}
-                      disabled={isProcessing}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {isProcessing ? 'Processing...' : 'Reject'}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-    </Card>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the application from{' '}
+              <strong>{deleteTarget?.user_roles?.full_name || 'this applicant'}</strong>.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? 'Removing...' : 'Remove'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

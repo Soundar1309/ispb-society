@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { startOfMonth, subMonths } from 'date-fns';
@@ -89,6 +89,66 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
 
   // Track what has been fetched to avoid redundant calls or to cache if desired
   const [fetchedTabs, setFetchedTabs] = useState<Set<string>>(new Set());
+
+  // Lightweight counts just for sidebar badges — updated in realtime
+  const [sidebarCounts, setSidebarCounts] = useState({
+    pendingApplications: 0,
+    unreadMessages: 0,
+    members: 0,
+    lifeMembers: 0,
+    membershipPlans: 0,
+    conferences: 0,
+    publications: 0,
+    gallery: 0,
+    officeBearers: 0,
+    payments: 0,
+    userRolesCount: 0,
+  });
+
+  const fetchSidebarCounts = useCallback(async () => {
+    try {
+      const [
+        appsRes,
+        msgsRes,
+        membersRes,
+        lifeMembersRes,
+        plansRes,
+        conferencesRes,
+        publicationsRes,
+        galleryRes,
+        officeBearersRes,
+        paymentsRes,
+        userRolesRes,
+      ] = await Promise.all([
+        supabase.from('memberships').select('id', { count: 'exact', head: true }).eq('application_status', 'submitted'),
+        supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('status', 'unread'),
+        supabase.from('memberships').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('life_members').select('id', { count: 'exact', head: true }),
+        supabase.from('membership_plans').select('id', { count: 'exact', head: true }),
+        supabase.from('conferences').select('id', { count: 'exact', head: true }),
+        supabase.from('publications').select('id', { count: 'exact', head: true }),
+        supabase.from('gallery').select('id', { count: 'exact', head: true }),
+        supabase.from('office_bearers').select('id', { count: 'exact', head: true }),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'paid'),
+        supabase.from('user_roles').select('id', { count: 'exact', head: true }),
+      ]);
+      setSidebarCounts({
+        pendingApplications: appsRes.count ?? 0,
+        unreadMessages: msgsRes.count ?? 0,
+        members: membersRes.count ?? 0,
+        lifeMembers: lifeMembersRes.count ?? 0,
+        membershipPlans: plansRes.count ?? 0,
+        conferences: conferencesRes.count ?? 0,
+        publications: publicationsRes.count ?? 0,
+        gallery: galleryRes.count ?? 0,
+        officeBearers: officeBearersRes.count ?? 0,
+        payments: paymentsRes.count ?? 0,
+        userRolesCount: userRolesRes.count ?? 0,
+      });
+    } catch (err) {
+      console.error('Error fetching sidebar counts:', err);
+    }
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -376,9 +436,36 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     fetchTabSpecificData();
   }, [activeTab]);
 
+  // Fetch sidebar counts on mount
+  useEffect(() => {
+    fetchSidebarCounts();
+  }, [fetchSidebarCounts]);
+
+  // Realtime subscriptions to keep sidebar counts live
+  useEffect(() => {
+    const channel = supabase
+      .channel('sidebar-counts')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'memberships' },
+        () => { fetchSidebarCounts(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contact_messages' },
+        () => { fetchSidebarCounts(); }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchSidebarCounts]);
+
   const refreshData = () => {
     fetchStats();
     fetchTabSpecificData();
+    fetchSidebarCounts();
   };
 
   const updateUserRole = async (userId: string, newRole: string) => {
@@ -619,6 +706,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     publications,
     galleryItems,
     officeBearers,
+    sidebarCounts,
     refreshData,
     updateUserRole,
     addMembership,

@@ -67,11 +67,11 @@ const OfficeBearers = () => {
         </div>
 
         {/* Office Bearers Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 sm:gap-10">
           {officeBearers.map((bearer) => (
             <Card key={bearer.id} className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-4 sm:p-6">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 rounded-full overflow-hidden bg-gray-200">
+              <CardContent className="p-6 sm:p-8">
+                <div className="w-36 h-36 sm:w-48 sm:h-48 mx-auto mb-4 rounded-full overflow-hidden bg-gray-200">
                   {bearer.image_url ? (
                     <img
                       src={bearer.image_url}

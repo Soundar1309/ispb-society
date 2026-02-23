@@ -50,7 +50,8 @@ const MembershipApplication = () => {
     specialization: '',
     membership_type: '',
     remarks: '',
-    documents: [] as File[]
+    documents: [] as File[],
+    aadhar_card: null as File | null
   });
 
   useEffect(() => {
@@ -124,7 +125,12 @@ const MembershipApplication = () => {
     try {
       // Validate documents
       if (applicationData.documents.length === 0) {
-        toast.error('Please upload at least one document');
+        toast.error('Please upload your proof of affiliation');
+        setIsLoading(false);
+        return;
+      }
+      if (!applicationData.aadhar_card) {
+        toast.error('Please upload your Aadhar Card');
         setIsLoading(false);
         return;
       }
@@ -170,27 +176,52 @@ const MembershipApplication = () => {
 
       // Upload documents to storage
       const uploadedDocs = [];
+
+      // Upload affiliation proof files
       for (const file of applicationData.documents) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${user?.id}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-        const filePath = fileName; // Path inside the bucket
 
         const { error: uploadError } = await supabase.storage
           .from('application-documents')
-          .upload(filePath, file);
+          .upload(fileName, file);
 
         if (uploadError) {
           console.error('File upload error:', uploadError);
           throw new Error(`Failed to upload ${file.name}`);
         }
 
-        // For private buckets, we don't store a public URL.
-        // We store the path and generate signed URLs on demand.
         uploadedDocs.push({
           name: file.name,
-          url: null, // No public URL
+          type: 'affiliation',
+          url: null,
           size: file.size,
-          path: filePath,
+          path: fileName,
+          bucket: 'application-documents'
+        });
+      }
+
+      // Upload Aadhar card
+      if (applicationData.aadhar_card) {
+        const aadharFile = applicationData.aadhar_card;
+        const fileExt = aadharFile.name.split('.').pop();
+        const fileName = `${user?.id}/${Date.now()}_aadhar.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('application-documents')
+          .upload(fileName, aadharFile);
+
+        if (uploadError) {
+          console.error('Aadhar upload error:', uploadError);
+          throw new Error(`Failed to upload Aadhar Card`);
+        }
+
+        uploadedDocs.push({
+          name: aadharFile.name,
+          type: 'aadhar',
+          url: null,
+          size: aadharFile.size,
+          path: fileName,
           bucket: 'application-documents'
         });
       }
@@ -305,6 +336,20 @@ const MembershipApplication = () => {
       });
 
       setApplicationData({ ...applicationData, documents: validFiles });
+    }
+  };
+
+  const handleAadharUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`Invalid file type. Only PDF, JPG, and PNG are allowed.`);
+        return;
+      }
+
+      setApplicationData({ ...applicationData, aadhar_card: file });
     }
   };
 
@@ -654,55 +699,111 @@ const MembershipApplication = () => {
           <Card>
             <CardHeader>
               <CardTitle>Step 2: Upload Documents</CardTitle>
-              <CardDescription>Upload supporting documents (PDF, JPG, or PNG only)</CardDescription>
+              <CardDescription>Upload both required documents (PDF, JPG, or PNG only)</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">Required Documents:</p>
                     <ul className="list-disc list-inside space-y-1">
-                      <li>Institutional ID or proof of affiliation</li>
+                      <li>Proof of Affiliation</li>
+                      <li>Aadhar Card</li>
                     </ul>
                     <p className="mt-2 text-blue-600">Accepted formats: PDF, JPG, PNG</p>
                   </div>
                 </div>
               </div>
 
-              <label
-                htmlFor="documents"
-                className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors cursor-pointer w-full bg-gray-50/50 hover:bg-gray-50"
-              >
-                <div className="flex flex-col items-center justify-center">
-                  <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                  <div className="space-y-1">
-                    <p className="text-gray-600 font-medium">Click to upload documents</p>
-                    <p className="text-sm text-gray-500">PDF, JPG, or PNG files only</p>
+              {/* --- Proof of Affiliation Upload --- */}
+              <div className="space-y-2">
+                <p className="font-medium text-sm">
+                  1. Proof of Affiliation
+                  {applicationData.documents.length > 0 && (
+                    <span className="ml-2 text-green-600 text-xs">✓ Uploaded</span>
+                  )}
+                </p>
+                <label
+                  htmlFor="documents"
+                  className={`block border-2 border-dashed rounded-lg p-5 text-center transition-colors cursor-pointer w-full ${applicationData.documents.length > 0
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-gray-300 bg-gray-50/50 hover:border-green-400 hover:bg-gray-50'
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    {applicationData.documents.length > 0 ? (
+                      <>
+                        <FileText className="h-8 w-8 text-green-500 mb-2" />
+                        {applicationData.documents.map((file, index) => (
+                          <div key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="font-medium">{file.name}</span>
+                            <span className="text-xs text-gray-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                          </div>
+                        ))}
+                        <p className="text-xs text-green-600 mt-1">Click to change file</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <p className="text-gray-600 font-medium text-sm">Click to upload proof of affiliation</p>
+                        <p className="text-xs text-gray-500">PDF, JPG, or PNG</p>
+                      </>
+                    )}
                   </div>
-                </div>
-                <Input
-                  id="documents"
-                  type="file"
-                  multiple
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                />
-              </label>
+                  <Input
+                    id="documents"
+                    type="file"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+                </label>
+              </div>
 
-              {applicationData.documents.length > 0 && (
-                <div className="space-y-2">
-                  <p className="font-medium">Selected files:</p>
-                  {applicationData.documents.map((file, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm">{file.name}</span>
-                      <span className="text-xs text-gray-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* --- Aadhar Card Upload --- */}
+              <div className="space-y-2">
+                <p className="font-medium text-sm">
+                  2. Aadhar Card
+                  {applicationData.aadhar_card && (
+                    <span className="ml-2 text-green-600 text-xs">✓ Uploaded</span>
+                  )}
+                </p>
+                <label
+                  htmlFor="aadhar_card"
+                  className={`block border-2 border-dashed rounded-lg p-5 text-center transition-colors cursor-pointer w-full ${applicationData.aadhar_card
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-gray-300 bg-gray-50/50 hover:border-green-400 hover:bg-gray-50'
+                    }`}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    {applicationData.aadhar_card ? (
+                      <>
+                        <FileText className="h-8 w-8 text-green-500 mb-2" />
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <span className="font-medium">{applicationData.aadhar_card.name}</span>
+                          <span className="text-xs text-gray-400">({(applicationData.aadhar_card.size / 1024 / 1024).toFixed(2)} MB)</span>
+                        </div>
+                        <p className="text-xs text-green-600 mt-1">Click to change file</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <p className="text-gray-600 font-medium text-sm">Click to upload Aadhar Card</p>
+                        <p className="text-xs text-gray-500">PDF, JPG, or PNG</p>
+                      </>
+                    )}
+                  </div>
+                  <Input
+                    id="aadhar_card"
+                    type="file"
+                    onChange={handleAadharUpload}
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+                </label>
+              </div>
 
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setCurrentStep(1)} className="flex-1">
@@ -710,7 +811,7 @@ const MembershipApplication = () => {
                 </Button>
                 <Button
                   onClick={handleSubmitApplication}
-                  disabled={isLoading || applicationData.documents.length === 0}
+                  disabled={isLoading || applicationData.documents.length === 0 || !applicationData.aadhar_card}
                   className="flex-1"
                 >
                   {isLoading ? 'Submitting...' : 'Submit Application'}
