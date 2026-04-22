@@ -45,6 +45,7 @@ const AdminLifeMembersTab = lazy(() => import('./AdminLifeMembersTab'));
 const AdminPublicationsTab = lazy(() => import('./AdminPublicationsTab'));
 const AdminGalleryTab = lazy(() => import('./AdminGalleryTab'));
 const AdminOfficeBearersTab = lazy(() => import('./AdminOfficeBearersTab'));
+const AdminArticlesTab = lazy(() => import('./AdminArticlesTab'));
 const UserManagement = lazy(() => import('./UserManagement'));
 
 interface AdminDashboardProps {
@@ -64,6 +65,7 @@ interface AdminDashboardProps {
   galleryItems?: any[];
   officeBearers?: any[];
   applications?: any[];
+  articleSubmissions?: any[];
   refreshData: () => void;
   updateUserRole: (userId: string, newRole: string) => Promise<void>;
   addMembership: (membershipData: any) => void;
@@ -83,6 +85,7 @@ interface AdminDashboardProps {
     officeBearers: number;
     payments: number;
     userRolesCount: number;
+    articleSubmissions: number;
   };
 }
 
@@ -103,6 +106,7 @@ const AdminDashboard = ({
   galleryItems = [],
   officeBearers = [],
   applications = [],
+  articleSubmissions = [],
   sidebarCounts = {
     pendingApplications: 0,
     unreadMessages: 0,
@@ -115,6 +119,7 @@ const AdminDashboard = ({
     officeBearers: 0,
     payments: 0,
     userRolesCount: 0,
+    articleSubmissions: 0,
   },
   refreshData,
   updateUserRole,
@@ -242,6 +247,13 @@ const AdminDashboard = ({
           label: 'Payment Settings',
           icon: Cog,
           description: 'Razorpay configuration'
+        },
+        {
+          id: 'article-submissions',
+          label: 'Article Submissions',
+          icon: FileText,
+          description: 'Guest article entries',
+          count: sidebarCounts.articleSubmissions
         }
       ]
     }
@@ -463,6 +475,8 @@ const AdminDashboard = ({
         );
       case 'payment-settings':
         return <AdminPaymentSettingsTab />;
+      case 'article-submissions':
+        return <AdminArticlesTab articleSubmissions={articleSubmissions} />;
       default:
         return <AdminStats stats={stats} />;
     }

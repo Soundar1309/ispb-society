@@ -86,6 +86,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
   const [publications, setPublications] = useState([]);
   const [galleryItems, setGalleryItems] = useState([]);
   const [officeBearers, setOfficeBearers] = useState([]);
+  const [articleSubmissions, setArticleSubmissions] = useState([]);
 
   // Track what has been fetched to avoid redundant calls or to cache if desired
   const [fetchedTabs, setFetchedTabs] = useState<Set<string>>(new Set());
@@ -103,6 +104,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     officeBearers: 0,
     payments: 0,
     userRolesCount: 0,
+    articleSubmissions: 0,
   });
 
   const fetchSidebarCounts = useCallback(async () => {
@@ -119,6 +121,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         officeBearersRes,
         paymentsRes,
         userRolesRes,
+        articleRes,
       ] = await Promise.all([
         supabase.from('memberships').select('id', { count: 'exact', head: true }).eq('application_status', 'submitted'),
         supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('status', 'unread'),
@@ -131,6 +134,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         supabase.from('office_bearers').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'paid'),
         supabase.from('user_roles').select('id', { count: 'exact', head: true }),
+        supabase.from('article_submissions').select('id', { count: 'exact', head: true }).eq('payment_status', 'paid'),
       ]);
       setSidebarCounts({
         pendingApplications: appsRes.count ?? 0,
@@ -144,6 +148,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         officeBearers: officeBearersRes.count ?? 0,
         payments: paymentsRes.count ?? 0,
         userRolesCount: userRolesRes.count ?? 0,
+        articleSubmissions: articleRes.count ?? 0,
       });
     } catch (err) {
       console.error('Error fetching sidebar counts:', err);
@@ -418,6 +423,15 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
         setOfficeBearers(data || []);
       }
 
+      if (activeTab === 'article-submissions') {
+        const { data } = await supabase
+          .from('article_submissions')
+          .select('*')
+          .eq('payment_status', 'paid')
+          .order('created_at', { ascending: false });
+        setArticleSubmissions(data || []);
+      }
+
     } catch (error) {
       console.error(`Error fetching data for tab ${activeTab}:`, error);
       toast.error('Error loading data');
@@ -453,6 +467,11 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'contact_messages' },
+        () => { fetchSidebarCounts(); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'article_submissions' },
         () => { fetchSidebarCounts(); }
       )
       .subscribe();
@@ -706,6 +725,7 @@ export const useAdminData = (activeTab: string = 'dashboard') => {
     publications,
     galleryItems,
     officeBearers,
+    articleSubmissions,
     sidebarCounts,
     refreshData,
     updateUserRole,

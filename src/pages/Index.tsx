@@ -26,6 +26,7 @@ const PrivacyPolicy = lazy(() => import('@/components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/components/TermsOfService'));
 const CookiePolicy = lazy(() => import('@/components/CookiePolicy'));
 const ProtectedRoute = lazy(() => import('@/components/ProtectedRoute'));
+const ArticleSubmissionForm = lazy(() => import('@/components/ArticleSubmissionForm'));
 const NotFound = lazy(() => import('./NotFound'));
 import Layout from '@/components/Layout';
 
@@ -93,6 +94,7 @@ const Index = () => {
             }
           />
         </Route>
+        <Route path="/article-submission" element={<ArticleSubmissionForm />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

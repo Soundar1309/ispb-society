@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -44,6 +44,54 @@ export type Database = {
           title?: string | null
           updated_at?: string
           year?: number | null
+        }
+        Relationships: []
+      }
+      article_submissions: {
+        Row: {
+          amount: number
+          article_id: string
+          article_name: string
+          author_name: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          payment_status: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          article_id: string
+          article_name: string
+          author_name: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          payment_status?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          article_id?: string
+          article_name?: string
+          author_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          payment_status?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
