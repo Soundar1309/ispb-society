@@ -77,32 +77,40 @@ const Genesis = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Historical Milestones</h2>
               <div className="space-y-6">
                 <div className="border-l-4 border-green-500 pl-6">
-                  <h4 className="text-lg font-semibold text-gray-900">1998 - Foundation</h4>
-                  <p className="text-gray-700">
-                    The Indian Society of Plant Breeders was officially established with the first
-                    governing council comprising leading plant breeders from across the country.
-                  </p>
+                  <h4 className="text-lg font-semibold text-gray-900">1995 - Inception of the society</h4>
+                  <p className="text-gray-700">The society was inaugurated on February, 26 1995</p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
-                  <h4 className="text-lg font-semibold text-gray-900">2000 - First Conference</h4>
-                  <p className="text-gray-700">
-                    The inaugural conference was held in New Delhi, bringing together over 200
-                    plant breeders, geneticists, and agricultural scientists.
-                  </p>
+                  <h4 className="text-lg font-semibold text-gray-900">1998 - First National Seminar</h4>
+                  <p className="text-gray-700">Breeding Strategies for 21st Century, 1 - 3 July at TNAU Coimbatore</p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
-                  <h4 className="text-lg font-semibold text-gray-900">2005 - Publication Launch</h4>
-                  <p className="text-gray-700">
-                    Launch of the society's first journal, providing a platform for publishing
-                    cutting-edge research in plant breeding and genetics.
-                  </p>
+                  <h4 className="text-lg font-semibold text-gray-900">2006 - Second National Plant Breeding Congress</h4>
+                  <p className="text-gray-700">Plant Breeding in the post-genomics era-1-3, March at TNAU Coimbatore</p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-6">
-                  <h4 className="text-lg font-semibold text-gray-900">2010 - International Collaboration</h4>
-                  <p className="text-gray-700">
-                    Establishment of partnerships with international plant breeding societies
-                    and research organizations to promote global knowledge exchange.
-                  </p>
+                  <h4 className="text-lg font-semibold text-gray-900">2010 - Third National Congress</h4>
+                  <p className="text-gray-700">Plant Breeding and Genomics- 7- 9, July at TNAU Coimbatore</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-900">2014 - National Seminar</h4>
+                  <p className="text-gray-700">Challenges and innovative Approaches in Crop Improvement- 16-17, December at TNAU Coimbatore</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-900">2019 - National symposium</h4>
+                  <p className="text-gray-700">Potential crops for food and nutritional security- 14-15, December at TNAU Coimbatore</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-900">2021 - FCPPB conference</h4>
+                  <p className="text-gray-700">Future challenges and prospects in Plant Breeding- 6-7, October</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-900">2022 - National symposium</h4>
+                  <p className="text-gray-700">100 glorious years of cotton research and way forward- 18-19, October</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-6">
+                  <h4 className="text-lg font-semibold text-gray-900">2023 - International Millets Conference</h4>
+                  <p className="text-gray-700">International Millets Conference & Futuristic Food Expo (IMCFFE), 24-26, May</p>
                 </div>
               </div>
             </section>

@@ -59,7 +59,7 @@ const OfficeBearers = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mt-12 mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Office Bearers</h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Meet our distinguished office bearers who guide the Indian Society of Plant Breeders
@@ -69,31 +69,31 @@ const OfficeBearers = () => {
         {/* Office Bearers Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 sm:gap-10">
           {officeBearers.map((bearer) => (
-            <Card key={bearer.id} className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 sm:p-8">
-                <div className="w-36 h-36 sm:w-48 sm:h-48 mx-auto mb-4 rounded-full overflow-hidden bg-gray-200">
-                  {bearer.image_url ? (
-                    <img
-                      src={bearer.image_url}
-                      alt={bearer.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-gray-400 text-2xl sm:text-4xl font-bold">
-                        {bearer.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+            <Card key={bearer.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
+              <div className="aspect-[4/5] w-full overflow-hidden bg-gray-200 relative">
+                {bearer.image_url ? (
+                  <img
+                    src={bearer.image_url}
+                    alt={bearer.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <span className="text-gray-400 text-6xl font-bold">
+                      {bearer.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-6 text-center bg-white relative z-10">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
                   {bearer.name}
                 </h3>
-                <p className="text-green-600 font-medium mb-2 text-sm sm:text-base">
+                <p className="text-green-600 font-semibold mb-2 text-sm sm:text-base">
                   {bearer.designation}
                 </p>
                 {bearer.institution && (
-                  <p className="text-gray-600 text-xs sm:text-sm">
+                  <p className="text-gray-500 text-xs sm:text-sm line-clamp-2">
                     {bearer.institution}
                   </p>
                 )}

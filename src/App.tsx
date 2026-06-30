@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ const App = () => {
             v7_relativeSplatPath: true,
           }}
         >
+          <ScrollToTop />
           <AuthProvider>
             <TooltipProvider>
               <Index />
