@@ -32,11 +32,8 @@ serve(async (req) => {
     if (user) {
       userId = user.id
       authedUserEmail = user.email
-      userId = user.id
-      authedUserEmail = user.email
     }
 
-    const requestBody = await req.json()
     const requestBody = await req.json()
 
     const {
@@ -50,30 +47,28 @@ serve(async (req) => {
     // If no JWT auth, try to use userId from body
     if (!userId && bodyUserId) {
       userId = bodyUserId
-      if (!userId && bodyUserId) {
-        userId = bodyUserId
-      }
+    }
 
-      if (!userId) {
-        console.error('Unauthorized: No user found')
-        return new Response(
-          JSON.stringify({ error: 'Unauthorized - please login again' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-
-      // Use service role for database operations
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    if (!userId) {
+      console.error('Unauthorized: No user found')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - please login again' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    }
 
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
-        return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
+    // Use service role for database operations
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !membershipId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
       // Get payment settings to fetch the secret key
       const { data: paymentSettings } = await supabaseClient

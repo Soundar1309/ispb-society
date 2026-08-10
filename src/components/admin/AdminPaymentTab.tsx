@@ -1,11 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle, Trash2, FileText, Loader2, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Download, CreditCard, Search, RefreshCw, Filter, CheckCircle, Clock, XCircle, Trash2, FileText, Loader2, Eye, CheckCircle2, Upload, AlertTriangle } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +49,14 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
   const [membershipTypeFilter, setMembershipTypeFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // Manual mark-as-paid dialog state
+  const [proofDialogOpen, setProofDialogOpen] = useState(false);
+  const [proofPayment, setProofPayment] = useState<PaymentRecord | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofReason, setProofReason] = useState('');
+  const [proofUploading, setProofUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch payments with proper joins
   const fetchPayments = async () => {
@@ -282,6 +293,94 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
     setDateFilter('all');
   };
 
+  // Step 1: Open the proof dialog
+  const openProofDialog = (payment: PaymentRecord) => {
+    if (!payment.membership_id || !payment.user_id) {
+      toast.error('Cannot mark as paid: missing membership or user link.');
+      return;
+    }
+    setProofPayment(payment);
+    setProofFile(null);
+    setProofReason('');
+    setProofDialogOpen(true);
+  };
+
+  // Step 2: Submit - upload proof → save to DB → run all 11 steps
+  const handleMarkAsPaid = async () => {
+    if (!proofPayment) return;
+    if (!proofFile) {
+      toast.error('Please upload a payment proof (screenshot or PDF).');
+      return;
+    }
+    if (!proofReason.trim() || proofReason.trim().length < 10) {
+      toast.error('Please enter a reason (minimum 10 characters).');
+      return;
+    }
+
+    setProofUploading(true);
+    setProcessingId(proofPayment.id);
+
+    try {
+      // Upload proof file to payment-proofs bucket
+      const fileExt = proofFile.name.split('.').pop();
+      const filePath = `${proofPayment.user_id}/${proofPayment.id}_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(filePath, proofFile, { upsert: true });
+
+      if (uploadError) throw new Error('Failed to upload proof: ' + uploadError.message);
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('payment-proofs')
+        .getPublicUrl(filePath);
+
+      const proofUrl = urlData?.publicUrl || '';
+
+      // Save proof URL + reason to orders table (requires migration - non-blocking if columns missing)
+      try {
+        await supabase
+          .from('orders')
+          .update({
+            manual_payment_notes: proofReason.trim(),
+            manual_payment_proof_url: proofUrl,
+          } as any)
+          .eq('id', proofPayment.id);
+      } catch (colErr) {
+        console.warn('Could not save proof metadata to orders (columns may not exist yet):', colErr);
+      }
+
+      // Now run all 11 steps via edge function
+      const { data, error } = await supabase.functions.invoke('admin-mark-paid', {
+        body: {
+          orderId: proofPayment.id,
+          membershipId: proofPayment.membership_id,
+          userId: proofPayment.user_id,
+          proofUrl,
+          notes: proofReason.trim(),
+        },
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || error?.message || 'Unknown error from edge function');
+      }
+
+      setProofDialogOpen(false);
+      fetchPayments();
+      toast.success(
+        `✅ ${proofPayment.user_name || proofPayment.user_email} activated! Member Code: ${data.memberCode}. Welcome email sent.`
+      );
+    } catch (error: any) {
+      console.error('Error marking payment as paid:', error);
+      toast.error(`Failed: ${error.message}`);
+    } finally {
+      setProofUploading(false);
+      setProcessingId(null);
+    }
+  };
+
+
   const handleDeletePayment = async (paymentId: string) => {
     try {
       const { error } = await supabase
@@ -486,6 +585,7 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
   const hasActiveFilters = searchQuery || statusFilter !== 'all' || membershipTypeFilter !== 'all' || dateFilter !== 'all';
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
@@ -663,6 +763,10 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                       </div>
                     </TableCell>
                     <TableCell>
+                      <div className="font-medium text-sm">{payment.user_name || 'Unknown User'}</div>
+                      <div className="text-xs text-slate-500">{payment.user_email || 'N/A'}</div>
+                    </TableCell>
+                    <TableCell>
                       <div className="capitalize text-sm">{payment.membership_type}</div>
                       {payment.member_code && (
                         <div className="text-xs text-green-600 font-mono">{payment.member_code}</div>
@@ -689,6 +793,22 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {payment.status === 'pending' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={processingId === payment.id}
+                            onClick={() => openProofDialog(payment)}
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                            title="Mark as Paid (requires proof & reason)"
+                          >
+                            {processingId === payment.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
                         {payment.status === 'paid' && (
                           <>
                             <Button
@@ -758,7 +878,113 @@ const AdminPaymentTab = ({ onAddPayment, onUpdatePayment }: AdminPaymentTabProps
           </div>
         )}
       </CardContent>
-    </Card >
+    </Card>
+
+    {/* Manual Mark-as-Paid: Proof & Reason Dialog */}
+    <Dialog open={proofDialogOpen} onOpenChange={(open) => { if (!proofUploading) setProofDialogOpen(open); }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-green-700">
+            <CheckCircle2 className="h-5 w-5" />
+            Manual Payment Confirmation
+          </DialogTitle>
+          <DialogDescription className="text-left space-y-1">
+            {proofPayment && (
+              <div className="mt-2 p-3 bg-slate-50 rounded-lg border text-sm space-y-1">
+                <div><span className="text-slate-500">Member:</span> <strong>{proofPayment.user_name || proofPayment.user_email}</strong></div>
+                <div><span className="text-slate-500">Email:</span> {proofPayment.user_email}</div>
+                <div><span className="text-slate-500">Amount:</span> <strong>₹{proofPayment.amount?.toLocaleString()}</strong> — {proofPayment.membership_type}</div>
+              </div>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-5 py-2">
+          {/* Warning */}
+          <div className="flex gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>This action will permanently activate the membership and send a welcome email. Both proof and reason are required.</span>
+          </div>
+
+          {/* Proof upload */}
+          <div className="space-y-2">
+            <Label htmlFor="proof-upload" className="text-sm font-medium">
+              Payment Proof <span className="text-red-500">*</span>
+            </Label>
+            <div
+              className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                proofFile ? 'border-green-400 bg-green-50' : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50'
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                id="proof-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+              />
+              {proofFile ? (
+                <div className="flex items-center justify-center gap-2 text-green-700">
+                  <FileText className="h-5 w-5" />
+                  <div className="text-left">
+                    <p className="font-medium text-sm">{proofFile.name}</p>
+                    <p className="text-xs text-green-600">{(proofFile.size / 1024).toFixed(1)} KB — Click to change</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-slate-500 space-y-1">
+                  <Upload className="h-8 w-8 mx-auto text-slate-400" />
+                  <p className="text-sm font-medium">Click to upload payment proof</p>
+                  <p className="text-xs">Screenshot, PDF, or image (max 10MB)</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Reason */}
+          <div className="space-y-2">
+            <Label htmlFor="proof-reason" className="text-sm font-medium">
+              Reason for Manual Entry <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="proof-reason"
+              placeholder="e.g. Payment confirmed in Razorpay dashboard (ID: pay_xxxxx) but webhook did not trigger. Verified by admin on 10-Aug-2026."
+              value={proofReason}
+              onChange={(e) => setProofReason(e.target.value)}
+              rows={3}
+              className="resize-none text-sm"
+            />
+            <div className={`text-xs text-right ${proofReason.length < 10 ? 'text-red-400' : 'text-slate-400'}`}>
+              {proofReason.length} characters {proofReason.length < 10 ? `(need ${10 - proofReason.length} more)` : '✓'}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setProofDialogOpen(false)}
+            disabled={proofUploading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleMarkAsPaid}
+            disabled={proofUploading || !proofFile || proofReason.trim().length < 10}
+            className="bg-green-600 hover:bg-green-700 text-white min-w-[140px]"
+          >
+            {proofUploading ? (
+              <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
+            ) : (
+              <><CheckCircle2 className="h-4 w-4 mr-2" /> Confirm & Activate</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

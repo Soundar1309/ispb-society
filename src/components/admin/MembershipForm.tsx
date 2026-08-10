@@ -48,11 +48,19 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
 
   // Generate suggested member code format
   const generateSuggestedMemberCode = () => {
-    const currentDate = new Date();
-    const year = currentDate.getFullYear().toString().slice(-2);
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
     const randomNum = Math.floor(Math.random() * 999) + 1;
     return `LM-${randomNum.toString().padStart(3, '0')}`;
+  };
+
+  // Calculate valid_until based on membership type and valid_from
+  const calcValidUntil = (type: string, from: Date): Date => {
+    const d = new Date(from);
+    if (type === 'lifetime') {
+      d.setFullYear(d.getFullYear() + 100);
+    } else {
+      d.setFullYear(d.getFullYear() + 1);
+    }
+    return d;
   };
 
   return (
@@ -90,9 +98,12 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
 
             <div>
               <Label htmlFor="membership_type">Membership Type *</Label>
-              <Select 
-                value={formData.membership_type} 
-                onValueChange={(value) => setFormData({ ...formData, membership_type: value })}
+              <Select
+                value={formData.membership_type}
+                onValueChange={(value) => {
+                  const newValidUntil = calcValidUntil(value, formData.valid_from);
+                  setFormData({ ...formData, membership_type: value, valid_until: newValidUntil });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -104,6 +115,9 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
                   <SelectItem value="institutional">Institutional</SelectItem>
                 </SelectContent>
               </Select>
+              {formData.membership_type === 'lifetime' && (
+                <p className="text-xs text-green-600 mt-1">Valid Until will be set to 100 years from Valid From</p>
+              )}
             </div>
 
             <div>
@@ -117,8 +131,8 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
                   value={formData.member_code}
                   onChange={(e) => setFormData({ ...formData, member_code: e.target.value })}
                   placeholder="LM-001"
-                  pattern="^LM-[0-9]{3}$"
-                  title="Member code should be in format LM-XXX (e.g., LM-001)"
+                  pattern="^LM-[0-9]{3,}$"
+                  title="Member code should be in format LM-XXX or LM-XXXX (e.g., LM-001, LM-1048)"
                 />
                 <Button
                   type="button"
@@ -156,7 +170,8 @@ const MembershipForm = ({ initialData, availableUsers, onSubmit, onCancel, isEdi
                     selected={formData.valid_from}
                     onSelect={(date) => {
                       if (date) {
-                        setFormData({ ...formData, valid_from: date });
+                        const newValidUntil = calcValidUntil(formData.membership_type, date);
+                        setFormData({ ...formData, valid_from: date, valid_until: newValidUntil });
                         setValidFromOpen(false);
                       }
                     }}
