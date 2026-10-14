@@ -38,7 +38,7 @@ const AWARDS_DIR = cleanVal(process.env.AWARDS_DIR) || '/var/www/html/awards';
 const PUBLIC_BASE_URL = (cleanVal(process.env.PUBLIC_BASE_URL) || DEFAULT_PUBLIC_URL).replace(/\/$/, '');
 const SUPABASE_URL = (cleanVal(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) || DEFAULT_SUPABASE_URL).replace(/\/$/, '');
 
-// Prioritize service role key if set and not a placeholder, otherwise anon key or publishable key
+// Prioritize service role key if set and valid for this project, otherwise anon key or verified default
 const rawServiceKey = cleanVal(process.env.SUPABASE_SERVICE_ROLE_KEY);
 const rawAnonKey = cleanVal(
   process.env.SUPABASE_ANON_KEY ||
@@ -46,13 +46,24 @@ const rawAnonKey = cleanVal(
   process.env.SUPABASE_KEY
 );
 
-const isPlaceholder = (s) => !s || s.includes('your-') || s.includes('placeholder') || s.length < 20;
+function isValidSupabaseKeyForProject(key) {
+  if (!key || typeof key !== 'string') return false;
+  const parts = key.trim().split('.');
+  if (parts.length !== 3) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    return payload.ref === 'ktgirheyxeuyhmlrnhjl';
+  } catch {
+    return false;
+  }
+}
 
-const SUPABASE_KEY = !isPlaceholder(rawServiceKey)
-  ? rawServiceKey
-  : !isPlaceholder(rawAnonKey)
-  ? rawAnonKey
-  : DEFAULT_SUPABASE_KEY;
+let SUPABASE_KEY = DEFAULT_SUPABASE_KEY;
+if (isValidSupabaseKeyForProject(rawServiceKey)) {
+  SUPABASE_KEY = rawServiceKey;
+} else if (isValidSupabaseKeyForProject(rawAnonKey)) {
+  SUPABASE_KEY = rawAnonKey;
+}
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
@@ -144,10 +155,9 @@ app.use(
   })
 );
 
-// Health check endpoint
+// Health check endpoint (minimal, secure response without exposing internal config)
 app.get('/api/awards/health', (_req, res) => {
-  const tail = SUPABASE_KEY.length > 8 ? `...${SUPABASE_KEY.slice(-6)}` : 'INVALID';
-  res.json({ ok: true, service: 'awards-upload', keyLoaded: tail, timestamp: Date.now() });
+  res.json({ ok: true, timestamp: Date.now() });
 });
 
 // Static files route for /awards (allows local development and fallback serving)
@@ -220,7 +230,8 @@ async function requireAdmin(req, res, next) {
     if (response.status === 401 || response.status === 403) {
       const errJson = await response.json().catch(() => ({}));
       console.warn('Supabase rejected user JWT:', errJson);
-      return res.status(401).json({ error: 'Session is invalid or expired. Please sign in again.' });
+      const detail = errJson?.message || errJson?.msg || errJson?.error_description || 'Session is invalid or expired';
+      return res.status(401).json({ error: `${detail}. Please sign out and sign in again.` });
     }
 
     if (!response.ok) {
