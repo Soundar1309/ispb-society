@@ -1,0 +1,18 @@
+{
+  "name": "ispb-awards-upload",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny upload API that stores ISPB award photos in the 'awards' folder on the server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "multer": "^1.4.5-lts.1"
+  }
+}

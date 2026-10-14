@@ -9,6 +9,7 @@ const Footer = () => {
     about: [
       { name: 'Genesis', href: '/genesis' },
       { name: 'Office Bearers', href: '/office-bearers' },
+      { name: 'ISPB Awards', href: '/ispb-awards' },
       { name: 'Contact Us', href: '/contact' }
     ],
     resources: [

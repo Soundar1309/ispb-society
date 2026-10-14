@@ -45,6 +45,7 @@ const AdminLifeMembersTab = lazy(() => import('./AdminLifeMembersTab'));
 const AdminPublicationsTab = lazy(() => import('./AdminPublicationsTab'));
 const AdminGalleryTab = lazy(() => import('./AdminGalleryTab'));
 const AdminOfficeBearersTab = lazy(() => import('./AdminOfficeBearersTab'));
+const AdminAwardsTab = lazy(() => import('./AdminAwardsTab'));
 const AdminArticlesTab = lazy(() => import('./AdminArticlesTab'));
 const UserManagement = lazy(() => import('./UserManagement'));
 
@@ -215,6 +216,11 @@ const AdminDashboard = ({
           icon: Award,
           description: 'Leadership team',
           count: sidebarCounts.officeBearers
+        },
+        {
+          id: 'awards',
+          label: 'ISPB Awards',
+          icon: Award
         },
         {
           id: 'content',
@@ -434,6 +440,8 @@ const AdminDashboard = ({
             onRefresh={refreshData}
           />
         );
+      case 'awards':
+        return <AdminAwardsTab />;
       case 'office-bearers':
         return (
           <AdminOfficeBearersTab
@@ -557,6 +565,19 @@ const AdminDashboard = ({
             </Suspense>
           </div>
         </main>
+
+        {/* Fixed footer */}
+        <footer className="shrink-0 border-t bg-white px-4 py-3 text-center text-sm text-slate-500">
+          © {new Date().getFullYear()} ISPB. All rights reserved. | Developed by{' '}
+          <a
+            href="https://www.codeficorp.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-600 hover:text-green-700 transition-colors"
+          >
+            Codeficorp
+          </a>
+        </footer>
       </div>
     </div>
   );

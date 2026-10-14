@@ -8,6 +8,7 @@ const HomePage = lazy(() => import('@/components/HomePage'));
 const Genesis = lazy(() => import('@/components/Genesis'));
 const MandateActivities = lazy(() => import('@/components/MandateActivities'));
 const OfficeBearers = lazy(() => import('@/components/OfficeBearers'));
+const IspbAwards = lazy(() => import('@/components/IspbAwards'));
 const Membership = lazy(() => import('@/components/Membership'));
 const Conference = lazy(() => import('@/components/Conference'));
 const ContactUs = lazy(() => import('@/components/ContactUs'));
@@ -48,6 +49,7 @@ const Index = () => {
           <Route path="/genesis" element={<Genesis />} />
           <Route path="/mandate-activities" element={<MandateActivities />} />
           <Route path="/office-bearers" element={<OfficeBearers />} />
+          <Route path="/ispb-awards" element={<IspbAwards />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/enhanced-membership" element={<EnhancedMembershipPage />} />
           <Route path="/membership-application" element={<MembershipApplication />} />

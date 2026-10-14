@@ -37,6 +37,12 @@ const Navigation = () => {
             >
               Office Bearers
             </Link>
+            <Link
+              to="/ispb-awards"
+              className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200 font-medium"
+            >
+              ISPB Awards
+            </Link>
           </div>
         </div>
       </div>

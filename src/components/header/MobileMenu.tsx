@@ -20,6 +20,7 @@ const MobileMenu = ({ isMenuOpen, setIsMenuOpen, user, isAdmin, onSignOut, loadi
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Office Bearers', href: '/office-bearers' },
+    { name: 'ISPB Awards', href: '/ispb-awards' },
     { name: 'Genesis', href: '/genesis' },
     { name: 'Mandate & Activities', href: '/mandate-activities' },
     { name: 'Contact Us', href: '/contact' },
