@@ -69,7 +69,8 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((s) => cleanVal(s))
   .filter(Boolean);
-const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+// Support JPEG, PNG, WEBP and PDF
+const MAX_BYTES = 25 * 1024 * 1024; // 25MB for PDFs and images
 
 // Ensure awards directory exists
 fs.mkdirSync(AWARDS_DIR, { recursive: true });
@@ -79,7 +80,7 @@ function ensureHtaccessProtection(dir) {
   const htaccessPath = path.join(dir, '.htaccess');
   if (!fs.existsSync(htaccessPath)) {
     const rules = [
-      '# Hardened static image serving for awards uploads',
+      '# Hardened static image & PDF serving for awards uploads',
       'Options -Indexes -ExecCGI',
       '<FilesMatch "(?i)\\.(php|phtml|php3|php4|php5|php7|phps|cgi|pl|py|sh|bash|exe|asp|aspx)$">',
       '    Require all denied',
@@ -100,15 +101,27 @@ function ensureHtaccessProtection(dir) {
 ensureHtaccessProtection(AWARDS_DIR);
 
 /**
- * Validates file magic bytes to verify genuine image content.
+ * Validates file magic bytes to verify genuine image or PDF content.
  * Discards client-provided MIME types or extensions.
  */
-function detectImageFormat(buffer) {
-  if (!buffer || buffer.length < 12) return null;
+function detectFileFormat(buffer) {
+  if (!buffer || buffer.length < 4) return null;
+
+  // PDF: %PDF (25 50 44 46)
+  if (
+    buffer[0] === 0x25 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x44 &&
+    buffer[3] === 0x46
+  ) {
+    return { ext: '.pdf', mime: 'application/pdf', type: 'pdf' };
+  }
+
+  if (buffer.length < 12) return null;
 
   // JPEG: FF D8 FF
   if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-    return { ext: '.jpg', mime: 'image/jpeg' };
+    return { ext: '.jpg', mime: 'image/jpeg', type: 'image' };
   }
 
   // PNG: 89 50 4E 47 0D 0A 1A 0A
@@ -122,7 +135,7 @@ function detectImageFormat(buffer) {
     buffer[6] === 0x1a &&
     buffer[7] === 0x0a
   ) {
-    return { ext: '.png', mime: 'image/png' };
+    return { ext: '.png', mime: 'image/png', type: 'image' };
   }
 
   // WEBP: RIFF (52 49 46 46) ... WEBP (57 45 42 50) at index 8
@@ -136,7 +149,7 @@ function detectImageFormat(buffer) {
     buffer[10] === 0x42 &&
     buffer[11] === 0x50
   ) {
-    return { ext: '.webp', mime: 'image/webp' };
+    return { ext: '.webp', mime: 'image/webp', type: 'image' };
   }
 
   return null;
@@ -257,7 +270,7 @@ app.post('/api/awards/upload', uploadRateLimiter, requireAdmin, (req, res) => {
   upload.single('file')(req, res, async (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: 'File size must be 2MB or less' });
+        return res.status(400).json({ error: 'File size must be 25MB or less' });
       }
       return res.status(400).json({ error: err.message || 'Upload error' });
     }
@@ -266,21 +279,22 @@ app.post('/api/awards/upload', uploadRateLimiter, requireAdmin, (req, res) => {
     }
 
     // Verify true file format from binary magic bytes
-    const detected = detectImageFormat(req.file.buffer);
+    const detected = detectFileFormat(req.file.buffer);
     if (!detected) {
       return res.status(400).json({
-        error: 'Invalid file content: only genuine JPG, PNG or WEBP images are allowed',
+        error: 'Invalid file content: only genuine PDF, JPG, PNG or WEBP files are allowed',
       });
     }
 
     // Generate non-colliding, randomized filename using detected extension
     const randomHex = crypto.randomBytes(6).toString('hex');
-    const filename = `award-${Date.now()}-${randomHex}${detected.ext}`;
+    const prefix = detected.type === 'pdf' ? 'award-doc' : 'award';
+    const filename = `${prefix}-${Date.now()}-${randomHex}${detected.ext}`;
     const destinationPath = path.join(AWARDS_DIR, filename);
 
     try {
       await fs.promises.writeFile(destinationPath, req.file.buffer);
-      res.json({ url: `${PUBLIC_BASE_URL}/awards/${filename}` });
+      res.json({ url: `${PUBLIC_BASE_URL}/awards/${filename}`, fileType: detected.type });
     } catch (writeErr) {
       console.error('Failed to write uploaded file:', writeErr);
       res.status(500).json({ error: 'Failed to save uploaded file' });
@@ -292,15 +306,15 @@ app.delete('/api/awards/upload', uploadRateLimiter, requireAdmin, (req, res) => 
   const url = String(req.body?.url || '');
   const name = path.basename(url);
 
-  // Strict regex prevents directory traversal (../) and allows only standard award filenames
-  if (!/^award-\d+-[a-f0-9]+\.(jpg|png|webp)$/i.test(name)) {
+  // Strict regex prevents directory traversal (../) and allows only standard award filenames (images & pdfs)
+  if (!/^(award|award-doc)-\d+-[a-f0-9]+\.(jpg|png|webp|pdf)$/i.test(name)) {
     return res.status(400).json({ error: 'Invalid or unauthorized file name' });
   }
 
   const targetPath = path.join(AWARDS_DIR, name);
   fs.unlink(targetPath, (err) => {
     if (err && err.code !== 'ENOENT') {
-      console.error('Failed to delete award image:', err);
+      console.error('Failed to delete award file:', err);
       return res.status(500).json({ error: 'Delete failed' });
     }
     res.json({ ok: true });

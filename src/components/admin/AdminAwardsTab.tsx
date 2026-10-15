@@ -14,70 +14,50 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   Plus,
   Edit,
   Trash2,
   X,
   Trophy,
-  Building2,
-  MapPin,
   UploadCloud,
-  Eye,
-  EyeOff,
   Award as AwardIcon,
   Search,
+  FileText,
+  ExternalLink,
+  Calendar,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { IspbAward } from '@/components/IspbAwards';
 import AwardsPagination from '@/components/AwardsPagination';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const ADMIN_PAGE_SIZE = 10;
-
 const AWARDS_UPLOAD_URL = import.meta.env.VITE_AWARDS_UPLOAD_URL || '/api/awards/upload';
 
 const emptyForm = {
   award_year: new Date().getFullYear(),
-  award_number: '',
   award_name: '',
-  recipient_name: '',
-  affiliation: '',
-  location: '',
   description: '',
-  image_url: '',
-  display_order: 1,
-  is_active: true,
+  pdf_url: '',
 };
 
-const initials = (name: string) =>
-  name
-    .replace(/^(dr|prof|mr|mrs|ms)\.?\s+/i, '')
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p.charAt(0).toUpperCase())
-    .join('');
-
-const isSafeImageUrl = (url?: string | null): boolean => {
+const isManagedAwardFile = (url?: string | null): boolean => {
   if (!url) return false;
-  const trimmed = url.trim();
-  return (
-    trimmed.startsWith('https://') ||
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('/')
-  );
-};
-
-const isManagedAwardImage = (url?: string | null): boolean => {
-  if (!url) return false;
-  return /\/awards\/award-\d+-[a-f0-9]+\.(jpg|png|webp)$/i.test(url);
+  return /\/awards\/(award|award-doc)-\d+-[a-f0-9]+\.(jpg|png|webp|pdf)$/i.test(url);
 };
 
 const getFreshAccessToken = async (): Promise<string | null> => {
   const { data: sessionData } = await supabase.auth.getSession();
   let session = sessionData.session;
-  // If session is absent or expires in less than 60 seconds, refresh it
   if (!session || (session.expires_at && session.expires_at * 1000 - Date.now() < 60000)) {
     const { data: refreshed, error } = await supabase.auth.refreshSession();
     if (!error && refreshed.session) {
@@ -87,7 +67,7 @@ const getFreshAccessToken = async (): Promise<string | null> => {
   return session?.access_token || null;
 };
 
-const deleteUploadedImage = async (url: string) => {
+const deleteUploadedFile = async (url: string) => {
   try {
     const token = await getFreshAccessToken();
     if (!token) return;
@@ -100,7 +80,7 @@ const deleteUploadedImage = async (url: string) => {
       body: JSON.stringify({ url }),
     });
   } catch (err) {
-    console.warn('Could not delete image file:', err);
+    console.warn('Could not delete file from server:', err);
   }
 };
 
@@ -118,7 +98,7 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
   const [editing, setEditing] = useState<IspbAward | null>(null);
   const [deleting, setDeleting] = useState<IspbAward | null>(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState(emptyForm);
@@ -128,7 +108,7 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
       .from('ispb_awards')
       .select('*')
       .order('award_year', { ascending: false })
-      .order('display_order', { ascending: true });
+      .order('created_at', { ascending: false });
     if (error) {
       toast.error(error.message || 'Error loading awards');
     } else {
@@ -145,7 +125,7 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
     const q = search.trim().toLowerCase();
     if (!q) return awards;
     return awards.filter((a) =>
-      [a.recipient_name, a.award_name, a.award_number, a.location]
+      [a.award_name, a.description, String(a.award_year)]
         .some((field) => (field || '').toLowerCase().includes(q))
     );
   }, [awards, search]);
@@ -157,21 +137,14 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
     [filteredAwards, currentPage]
   );
 
-  // go back to the first page whenever the search changes
   useEffect(() => {
     setPage(1);
   }, [search]);
 
-  const years = useMemo(
-    () => Array.from(new Set(pagedAwards.map((a) => a.award_year))).sort((a, b) => b - a),
-    [pagedAwards]
-  );
-
   const openAdd = (year?: number) => {
     setEditing(null);
     const targetYear = year ?? new Date().getFullYear();
-    const inYear = awards.filter((a) => a.award_year === targetYear);
-    setFormData({ ...emptyForm, award_year: targetYear, display_order: inYear.length + 1 });
+    setFormData({ ...emptyForm, award_year: targetYear });
     setIsDialogOpen(true);
   };
 
@@ -179,35 +152,31 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
     setEditing(award);
     setFormData({
       award_year: award.award_year,
-      award_number: award.award_number || '',
       award_name: award.award_name || '',
-      recipient_name: award.recipient_name || '',
-      affiliation: award.affiliation || '',
-      location: award.location || '',
       description: award.description || '',
-      image_url: award.image_url || '',
-      display_order: award.display_order || 1,
-      is_active: award.is_active,
+      pdf_url: award.pdf_url || '',
     });
     setIsDialogOpen(true);
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target;
     const file = input.files?.[0];
     if (!file) return;
-    if (!['image/png', 'image/jpg', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      toast.error('Please upload a PNG, JPG, JPEG or WEBP image');
-      input.value = '';
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Image must be smaller than 2MB');
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      toast.error('Please upload a genuine PDF file');
       input.value = '';
       return;
     }
 
-    setUploading(true);
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('PDF file must be smaller than 25MB');
+      input.value = '';
+      return;
+    }
+
+    setUploadingPdf(true);
     try {
       const token = await getFreshAccessToken();
       if (!token) throw new Error('Authentication session expired. Please sign out and sign in again.');
@@ -225,46 +194,43 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
       try {
         json = JSON.parse(text);
       } catch {
-        // Response was not JSON (e.g. 404 HTML from Vite dev server or Apache fallback)
+        // Fallback for non-JSON response
       }
 
       if (!res.ok || !json.url) {
         const errorMsg =
           json.error ||
           (res.status === 404
-            ? 'Upload service not reachable (404). Ensure the upload server is running and Apache or Vite proxy is active.'
+            ? 'Upload service not reachable (404).'
             : res.status === 403
-            ? 'Permission denied (403). Only users with admin role can upload photos.'
-            : res.status === 401
-            ? 'Authentication session expired (401). Please sign out and sign in again.'
-            : res.status === 502 || res.status === 504
-            ? 'Upload API server is down or not responding (502/504).'
-            : `Upload failed (HTTP ${res.status || 'unknown'})`);
+              ? 'Permission denied (403). Only admins can upload files.'
+              : res.status === 401
+                ? 'Authentication expired (401). Please sign in again.'
+                : `Upload failed (HTTP ${res.status || 'unknown'})`);
         throw new Error(errorMsg);
       }
 
-      // If user replaces an image they uploaded in this modal session, clean up the prior file
-      if (formData.image_url && isManagedAwardImage(formData.image_url) && formData.image_url !== editing?.image_url) {
-        deleteUploadedImage(formData.image_url);
+      // If user replaces a PDF uploaded in this modal session, clean up prior file
+      if (formData.pdf_url && isManagedAwardFile(formData.pdf_url) && formData.pdf_url !== editing?.pdf_url) {
+        deleteUploadedFile(formData.pdf_url);
       }
 
-      setFormData((prev) => ({ ...prev, image_url: json.url }));
-      toast.success('Photo uploaded');
+      setFormData((prev) => ({ ...prev, pdf_url: json.url }));
+      toast.success('PDF document uploaded successfully');
     } catch (error: any) {
-      console.error('Award photo upload failed:', error);
-      toast.error(error.message || 'Photo upload failed');
+      console.error('Award PDF upload failed:', error);
+      toast.error(error.message || 'PDF upload failed');
     } finally {
-      setUploading(false);
+      setUploadingPdf(false);
       input.value = '';
     }
   };
 
-  const handleRemovePhoto = () => {
-    // If the image was uploaded in this session and hasn't been saved yet, clean it up from server
-    if (formData.image_url && isManagedAwardImage(formData.image_url) && formData.image_url !== editing?.image_url) {
-      deleteUploadedImage(formData.image_url);
+  const handleRemovePdf = () => {
+    if (formData.pdf_url && isManagedAwardFile(formData.pdf_url) && formData.pdf_url !== editing?.pdf_url) {
+      deleteUploadedFile(formData.pdf_url);
     }
-    setFormData((prev) => ({ ...prev, image_url: '' }));
+    setFormData((prev) => ({ ...prev, pdf_url: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -275,34 +241,30 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
       toast.error('Please enter a valid year (1900–2200)');
       return;
     }
-    if (!formData.award_number.trim() || !formData.award_name.trim() || !formData.recipient_name.trim()) {
-      toast.error('Award number, award name and recipient name are required');
+    if (!formData.award_name.trim()) {
+      toast.error('Award name is required');
       return;
     }
 
-    const rawImageUrl = formData.image_url.trim();
-    if (rawImageUrl) {
+    const rawPdfUrl = formData.pdf_url.trim();
+    if (rawPdfUrl) {
       const isSafe =
-        rawImageUrl.startsWith('https://') ||
-        rawImageUrl.startsWith('http://') ||
-        rawImageUrl.startsWith('/');
+        rawPdfUrl.startsWith('https://') ||
+        rawPdfUrl.startsWith('http://') ||
+        rawPdfUrl.startsWith('/');
       if (!isSafe) {
-        toast.error('Photo URL must start with https://, http://, or /');
+        toast.error('PDF URL must start with https://, http://, or /');
         return;
       }
     }
 
+    // Automatically set is_active = true on submission
     const payload = {
-      ...formData,
       award_year: year,
-      award_number: formData.award_number.trim(),
       award_name: formData.award_name.trim(),
-      recipient_name: formData.recipient_name.trim(),
-      affiliation: formData.affiliation.trim(),
-      location: formData.location.trim(),
-      description: formData.description.trim(),
-      image_url: rawImageUrl,
-      display_order: Number(formData.display_order) || 1,
+      description: formData.description.trim() || null,
+      pdf_url: rawPdfUrl || null,
+      is_active: true,
     };
 
     setSaving(true);
@@ -313,12 +275,12 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
         : await table.insert(payload);
       if (error) throw error;
 
-      // If an existing photo was replaced or cleared, remove the old file from server
-      if (editing?.image_url && isManagedAwardImage(editing.image_url) && editing.image_url !== rawImageUrl) {
-        deleteUploadedImage(editing.image_url);
+      // If an existing PDF was replaced or cleared, remove old file from server
+      if (editing?.pdf_url && isManagedAwardFile(editing.pdf_url) && editing.pdf_url !== rawPdfUrl) {
+        deleteUploadedFile(editing.pdf_url);
       }
 
-      toast.success(editing ? 'Award updated successfully' : 'Award added successfully');
+      toast.success(editing ? 'Award updated and published' : 'Award added and published');
       setIsDialogOpen(false);
       setEditing(null);
       await fetchAwards();
@@ -333,14 +295,13 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
 
   const confirmDelete = async () => {
     if (!deleting) return;
-    const oldImageUrl = deleting.image_url;
+    const oldPdfUrl = deleting.pdf_url;
     try {
       const { error } = await (supabase as any).from('ispb_awards').delete().eq('id', deleting.id);
       if (error) throw error;
 
-      // Clean up server-stored image if present
-      if (oldImageUrl && isManagedAwardImage(oldImageUrl)) {
-        deleteUploadedImage(oldImageUrl);
+      if (oldPdfUrl && isManagedAwardFile(oldPdfUrl)) {
+        deleteUploadedFile(oldPdfUrl);
       }
 
       toast.success('Award deleted successfully');
@@ -353,54 +314,34 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
     }
   };
 
-  const toggleActive = async (award: IspbAward) => {
-    const { error } = await (supabase as any)
-      .from('ispb_awards')
-      .update({ is_active: !award.is_active })
-      .eq('id', award.id);
-    if (error) {
-      toast.error(error.message || 'Error updating award');
-      return;
-    }
-    toast.success(`Award ${!award.is_active ? 'published' : 'hidden'}`);
-    fetchAwards();
-  };
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="rounded-2xl bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 p-6 text-white shadow-lg">
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center ring-1 ring-white/30">
-              <Trophy className="h-6 w-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">ISPB Awards</h2>
-              <p className="text-sm text-green-50/90">Manage year-wise awards and recipients</p>
-            </div>
-          </div>
-          <Button
-            id="add-award-btn"
-            onClick={() => openAdd()}
-            className="bg-white text-green-700 hover:bg-green-50 font-semibold shadow"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Award
-          </Button>
+    <div className="space-y-6">
+      {/* Header matching screenshot */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">ISPB Awards Management</h2>
+          <p className="text-sm text-gray-500 mt-1">Add, edit, and manage ISPB awards</p>
         </div>
+        <Button
+          id="add-award-btn"
+          onClick={() => openAdd()}
+          className="bg-[#0b1329] hover:bg-[#152243] text-white font-medium px-4 py-2 rounded-lg shadow-sm shrink-0"
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          Add Award
+        </Button>
       </div>
 
-      {/* Search */}
+      {/* Search Input */}
       {awards.length > 0 && (
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             id="awards-search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by recipient name, award, award number or location..."
-            className="pl-9 pr-9 bg-white"
+            placeholder="Search awards by name, year or description..."
+            className="pl-9 pr-9 bg-white border-gray-200 text-sm"
           />
           {search && (
             <button
@@ -415,21 +356,21 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
         </div>
       )}
 
-      {/* List */}
+      {/* Main Table */}
       {loading ? (
-        <div className="rounded-2xl bg-white ring-1 ring-gray-100 divide-y divide-gray-100">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 divide-y divide-gray-100">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-[72px] animate-pulse bg-gray-100/60" />
+            <div key={i} className="h-16 animate-pulse bg-gray-100/60 rounded my-2" />
           ))}
         </div>
-      ) : years.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl border-2 border-dashed border-gray-200 bg-white">
+      ) : filteredAwards.length === 0 ? (
+        <div className="text-center py-16 rounded-xl border border-dashed border-gray-200 bg-white">
           <AwardIcon className="h-10 w-10 mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500 mb-4">
-            {awards.length === 0 ? 'No awards yet.' : `No awards match "${search}".`}
+            {awards.length === 0 ? 'No awards created yet.' : `No awards match "${search}".`}
           </p>
           {awards.length === 0 ? (
-            <Button onClick={() => openAdd()}>
+            <Button onClick={() => openAdd()} className="bg-[#0b1329] hover:bg-[#152243] text-white">
               <Plus className="h-4 w-4 mr-2" /> Add the first award
             </Button>
           ) : (
@@ -439,129 +380,112 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
           )}
         </div>
       ) : (
-        years.map((year) => {
-          const yearAwards = pagedAwards.filter((a) => a.award_year === year);
-          return (
-            <section key={year} className="space-y-4">
-              <div className="flex items-center gap-3">
-                <h3 className="text-3xl font-extrabold bg-gradient-to-r from-green-700 to-emerald-500 bg-clip-text text-transparent">
-                  {year}
-                </h3>
-                <span className="text-xs font-semibold rounded-full bg-green-100 text-green-800 px-2.5 py-1">
-                  {yearAwards.length} {yearAwards.length === 1 ? 'recipient' : 'recipients'}
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-green-200 to-transparent" />
-              </div>
-
-              <div className="rounded-2xl bg-white ring-1 ring-gray-100 shadow-sm overflow-hidden divide-y divide-gray-100">
-                {yearAwards.map((award) => (
-                  <div
-                    key={award.id}
-                    className={`flex flex-col md:flex-row md:items-center gap-3 md:gap-4 px-4 py-3 hover:bg-green-50/40 transition-colors ${
-                      award.is_active ? '' : 'bg-gray-50/80'
-                    }`}
-                  >
-                    {/* Recipient */}
-                    <div className="flex items-center gap-3 md:w-[30%] min-w-0">
-                      {isSafeImageUrl(award.image_url) ? (
-                        <img
-                          src={award.image_url!}
-                          alt={award.recipient_name}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                          className={`h-12 w-12 rounded-full object-cover object-top ring-2 ring-green-100 shrink-0 ${
-                            award.is_active ? '' : 'grayscale opacity-70'
-                          }`}
-                        />
-                      ) : (
-                        <div className="h-12 w-12 rounded-full bg-green-50 ring-2 ring-green-100 flex items-center justify-center text-sm font-bold text-green-600 shrink-0">
-                          {initials(award.recipient_name)}
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{award.recipient_name}</p>
-                        {award.affiliation && (
-                          <p className="flex items-center gap-1 text-xs text-gray-500 truncate">
-                            <Building2 className="h-3 w-3 shrink-0" />
-                            <span className="truncate">{award.affiliation}</span>
+        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-gray-50/60">
+                <TableRow className="border-b border-gray-200 hover:bg-transparent">
+                  <TableHead className="w-[50%] min-w-[260px] text-xs font-semibold uppercase tracking-wider text-gray-500 py-3.5 px-6">
+                    Title
+                  </TableHead>
+                  <TableHead className="w-[15%] min-w-[100px] text-xs font-semibold uppercase tracking-wider text-gray-500 py-3.5 px-4">
+                    Year
+                  </TableHead>
+                  <TableHead className="w-[15%] min-w-[100px] text-xs font-semibold uppercase tracking-wider text-gray-500 py-3.5 px-4">
+                    Links
+                  </TableHead>
+                  <TableHead className="w-[20%] min-w-[120px] text-xs font-semibold uppercase tracking-wider text-gray-500 py-3.5 px-6 text-right">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pagedAwards.map((award) => (
+                  <TableRow key={award.id} className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                    {/* Title + Short Description */}
+                    <TableCell className="py-4 px-6 align-middle">
+                      <div className="flex flex-col gap-1 pr-2">
+                        <span className="font-semibold text-gray-900 leading-snug">
+                          {award.award_name}
+                        </span>
+                        {award.description && (
+                          <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                            {award.description}
                           </p>
                         )}
                       </div>
-                    </div>
+                    </TableCell>
 
-                    {/* Award */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                          No. {award.award_number}
-                        </span>
-                        <span className="text-sm font-semibold text-green-700">{award.award_name}</span>
-                      </div>
-                      {award.description && (
-                        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{award.description}</p>
+                    {/* Year */}
+                    <TableCell className="py-4 px-4 text-sm font-medium text-gray-700 align-middle">
+                      {award.award_year}
+                    </TableCell>
+
+                    {/* Links (PDF link with icon matching screenshot) */}
+                    <TableCell className="py-4 px-4 align-middle">
+                      {award.pdf_url ? (
+                        <a
+                          href={award.pdf_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-800 transition-colors"
+                        >
+                          <FileText className="h-4 w-4" />
+                          <span>PDF</span>
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
                       )}
-                    </div>
+                    </TableCell>
 
-                    {/* Location */}
-                    {award.location && (
-                      <p className="hidden lg:flex items-center gap-1 text-xs text-gray-500 lg:w-44 shrink-0">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{award.location}</span>
-                      </p>
-                    )}
-
-                    {/* Status + actions */}
-                    <div className="flex items-center justify-between md:justify-end gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => toggleActive(award)}
-                        className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1 transition-colors ${
-                          award.is_active
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                        }`}
-                        aria-label={award.is_active ? 'Hide award' : 'Publish award'}
-                      >
-                        {award.is_active ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                        {award.is_active ? 'Published' : 'Hidden'}
-                      </button>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(award)} aria-label="Edit award">
-                          <Edit className="h-4 w-4" />
+                    {/* Actions */}
+                    <TableCell className="py-4 px-6 align-middle text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEdit(award)}
+                          className="h-8 w-8 p-0 rounded-lg border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          title="Edit award"
+                          aria-label="Edit award"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
                         </Button>
                         <Button
-                          variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          variant="outline"
                           onClick={() => setDeleting(award)}
+                          className="h-8 w-8 p-0 rounded-lg border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200"
+                          title="Delete award"
                           aria-label="Delete award"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                    </div>
-                  </div>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            </section>
-          );
-        })
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Integrated Table Footer with Pagination */}
+          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50/40">
+            <AwardsPagination
+              page={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredAwards.length}
+              pageSize={ADMIN_PAGE_SIZE}
+              onPageChange={setPage}
+              className="mt-0"
+            />
+          </div>
+        </div>
       )}
 
-      {!loading && (
-        <AwardsPagination
-          page={currentPage}
-          totalPages={totalPages}
-          totalItems={filteredAwards.length}
-          pageSize={ADMIN_PAGE_SIZE}
-          onPageChange={setPage}
-        />
-      )}
-
-      {/* Add / Edit dialog */}
+      {/* Add / Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto p-0">
           <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-green-600 text-white flex items-center justify-center">
@@ -570,170 +494,126 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
               <div>
                 <DialogTitle>{editing ? 'Edit Award' : 'Add New Award'}</DialogTitle>
                 <DialogDescription>
-                  {editing ? 'Update award details' : 'Add an award for any past, current or future year'}
+                  Enter award details, short description, and attached PDF document
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-5">
-            <SectionTitle>Award details</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="award_year">Year *</Label>
-                <Input
-                  id="award_year"
-                  type="number"
-                  min={1900}
-                  max={2200}
-                  value={Number.isNaN(formData.award_year) ? '' : formData.award_year}
-                  onChange={(e) => setFormData({ ...formData, award_year: parseInt(e.target.value) })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="award_number">Award Number *</Label>
-                <Input
-                  id="award_number"
-                  placeholder="e.g. A-01"
-                  value={formData.award_number}
-                  onChange={(e) => setFormData({ ...formData, award_number: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="award_display_order">Display Order</Label>
-                <Input
-                  id="award_display_order"
-                  type="number"
-                  min={1}
-                  value={Number.isNaN(formData.display_order) ? '' : formData.display_order}
-                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
-                />
-              </div>
+            <SectionTitle>Award Details</SectionTitle>
+            <div>
+              <Label htmlFor="award_year">Year *</Label>
+              <Input
+                id="award_year"
+                type="number"
+                min={1900}
+                max={2200}
+                value={Number.isNaN(formData.award_year) ? '' : formData.award_year}
+                onChange={(e) => setFormData({ ...formData, award_year: parseInt(e.target.value) })}
+                required
+              />
             </div>
+
             <div>
               <Label htmlFor="award_name">Award Name *</Label>
               <Input
                 id="award_name"
-                placeholder="e.g. Young Scientist Award"
+                placeholder="e.g. ISPB Lifetime Achievement Award"
                 value={formData.award_name}
                 onChange={(e) => setFormData({ ...formData, award_name: e.target.value })}
                 required
               />
             </div>
 
-            <SectionTitle>Recipient</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-[9rem_1fr] gap-5">
-              {/* Photo */}
-              <div className="space-y-2">
-                <Label>Photo</Label>
-                <div className="relative h-36 w-36 mx-auto sm:mx-0">
-                  <label
-                    htmlFor="award_image_upload"
-                    className="h-full w-full rounded-xl border-2 border-dashed border-green-200 bg-green-50/50 hover:border-green-400 hover:bg-green-50 transition-colors flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden"
-                  >
-                    {formData.image_url ? (
-                      <img src={formData.image_url} alt="Preview" className="h-full w-full object-cover object-top" />
-                    ) : (
-                      <>
-                        <UploadCloud className="h-7 w-7 text-green-500 mb-1" />
-                        <span className="text-xs text-gray-500 px-2">{uploading ? 'Uploading...' : 'Click to upload'}</span>
-                      </>
-                    )}
-                  </label>
-                  {formData.image_url && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                      onClick={handleRemovePhoto}
-                      aria-label="Remove photo"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                  <input
-                    id="award_image_upload"
-                    type="file"
-                    accept="image/png,image/jpg,image/jpeg,image/webp"
-                    onChange={handleImageUpload}
-                    disabled={uploading}
-                    className="hidden"
-                  />
-                </div>
-                <p className="text-[11px] text-gray-400 text-center sm:text-left">PNG/JPG/WEBP · max 2MB</p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="recipient_name">Recipient Name *</Label>
-                  <Input
-                    id="recipient_name"
-                    value={formData.recipient_name}
-                    onChange={(e) => setFormData({ ...formData, recipient_name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="affiliation">Affiliation</Label>
-                  <Input
-                    id="affiliation"
-                    placeholder="Institution / organisation"
-                    value={formData.affiliation}
-                    onChange={(e) => setFormData({ ...formData, affiliation: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="City, State / Country"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="award_image_url">Or paste photo URL</Label>
-              <Input
-                id="award_image_url"
-                type="text"
-                placeholder="https://..."
-                value={formData.image_url.startsWith('data:') ? '' : formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              />
-            </div>
-
-            <SectionTitle>About</SectionTitle>
             <div>
               <Label htmlFor="award_description">Short Description</Label>
               <Textarea
                 id="award_description"
                 rows={3}
-                placeholder="Why was this award given?"
+                placeholder="Brief summary or description about the award, eligibility, or recipients..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
-            <div className="flex items-center justify-between rounded-xl border bg-gray-50 px-4 py-3">
-              <div>
-                <p className="text-sm font-medium">Published</p>
-                <p className="text-xs text-gray-500">Show this award on the public ISPB Awards page</p>
+
+            <SectionTitle>Award PDF Document</SectionTitle>
+            <div className="space-y-3">
+              {/* PDF file drop/upload */}
+              <div className="rounded-xl border-2 border-dashed border-green-200 bg-green-50/40 p-4 text-center">
+                {formData.pdf_url ? (
+                  <div className="flex items-center justify-between bg-white rounded-lg p-3 border border-green-200 shadow-sm">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-lg bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 text-left">
+                        <p className="text-xs font-semibold text-gray-800 truncate">
+                          {formData.pdf_url.split('/').pop()}
+                        </p>
+                        <a
+                          href={formData.pdf_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-green-700 hover:underline inline-flex items-center gap-1"
+                        >
+                          Preview PDF <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                      onClick={handleRemovePdf}
+                      aria-label="Remove PDF"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="award_pdf_upload"
+                    className="flex flex-col items-center justify-center cursor-pointer py-2 hover:opacity-90 transition-opacity"
+                  >
+                    <UploadCloud className="h-8 w-8 text-green-600 mb-1" />
+                    <span className="text-sm font-semibold text-green-800">
+                      {uploadingPdf ? 'Uploading PDF...' : 'Click to upload Award PDF'}
+                    </span>
+                    <span className="text-xs text-gray-500 mt-0.5">PDF documents up to 25MB</span>
+                  </label>
+                )}
+                <input
+                  id="award_pdf_upload"
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  onChange={handlePdfUpload}
+                  disabled={uploadingPdf}
+                  className="hidden"
+                />
               </div>
-              <Switch
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
+
+              <div>
+                <Label htmlFor="award_pdf_url" className="text-xs text-gray-500">
+                  Or paste PDF URL directly
+                </Label>
+                <Input
+                  id="award_pdf_url"
+                  type="text"
+                  placeholder="https://..."
+                  value={formData.pdf_url}
+                  onChange={(e) => setFormData({ ...formData, pdf_url: e.target.value })}
+                  className="text-xs"
+                />
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t">
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving || uploading} className="bg-green-600 hover:bg-green-700">
+              <Button type="submit" disabled={saving || uploadingPdf} className="bg-green-600 hover:bg-green-700">
                 {saving ? 'Saving...' : editing ? 'Update Award' : 'Add Award'}
               </Button>
             </div>
@@ -741,13 +621,13 @@ const AdminAwardsTab = ({ onRefresh }: { onRefresh?: () => void }) => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Alert */}
       <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this award?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{deleting?.award_name}" awarded to {deleting?.recipient_name} ({deleting?.award_year}) will be
-              permanently removed. This cannot be undone.
+              "{deleting?.award_name}" ({deleting?.award_year}) will be permanently removed. Any associated PDF file on the server will also be deleted. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

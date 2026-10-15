@@ -6,6 +6,7 @@ interface AwardsPaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  className?: string;
 }
 
 // Page numbers with ellipsis, e.g. 1 … 4 5 6 … 12
@@ -21,7 +22,14 @@ const getPages = (page: number, total: number): (number | '…')[] => {
   return pages;
 };
 
-const AwardsPagination = ({ page, totalPages, totalItems, pageSize, onPageChange }: AwardsPaginationProps) => {
+const AwardsPagination = ({
+  page,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+  className,
+}: AwardsPaginationProps) => {
   if (totalPages <= 1) return null;
 
   const from = (page - 1) * pageSize + 1;
@@ -31,7 +39,7 @@ const AwardsPagination = ({ page, totalPages, totalItems, pageSize, onPageChange
 
   return (
     <nav
-      className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-8"
+      className={`flex flex-col sm:flex-row items-center justify-between gap-3 ${className !== undefined ? className : 'mt-8'}`}
       aria-label="Awards pagination"
     >
       <p className="text-sm text-gray-500">

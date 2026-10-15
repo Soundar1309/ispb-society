@@ -1,22 +1,22 @@
-# ISPB Awards – Image Upload API (AWS EC2 + Nginx)
+# ISPB Awards – File & PDF Upload API (AWS EC2 + Nginx)
 
-Award recipient photos are stored in the **`awards`** folder on the EC2 server (`/var/www/html/awards`) and served directly by Nginx at `https://YOUR-DOMAIN/awards/<file>`. The database (`ispb_awards.image_url`) stores only that URL.
+Award PDF documents and files are stored in the **`awards`** folder on the EC2 server (`/var/www/html/awards`) and served directly by Nginx at `https://YOUR-DOMAIN/awards/<file>`. The database (`ispb_awards.pdf_url`) stores only that URL.
 
 ```
 Admin panel ──(POST /api/awards/upload + Supabase JWT)──► Nginx ──proxy──► Node API :3001
                                                                              │ validates magic bytes & saves file
-Visitors ◄──────────── https://YOUR-DOMAIN/awards/award-xxxx.jpg ◄── Nginx ◄─┘ /var/www/html/awards
+Visitors ◄──────────── https://YOUR-DOMAIN/awards/award-doc-xxxx.pdf ◄── Nginx ◄─┘ /var/www/html/awards
 ```
 
 ### Security Features:
 - **Authentication & RBAC**: Only authenticated Supabase users with the `admin` role in `user_roles` can upload or delete.
-- **Magic-Byte Binary Inspection**: Verifies actual binary headers of uploaded images (JPEG, PNG, WEBP). Spoofed client file extensions or forged MIME types are rejected.
+- **Magic-Byte Binary Inspection**: Verifies actual binary headers of uploaded files (PDF, JPEG, PNG, WEBP). Spoofed client file extensions or forged MIME types are rejected.
 - **Randomized File Names**: File names are generated using `crypto.randomBytes` + timestamp. Original client file names are completely discarded.
-- **Memory Buffer Processing**: Uploaded files are inspected in-memory and strictly validated before touching the disk.
+- **Memory Buffer Processing**: Uploaded files are inspected in-memory and strictly validated before touching the disk (supports up to 25MB for PDFs).
 - **Directory Execution Prevention**: Nginx location block denies execution of any scripts (`.php`, `.cgi`, `.py`, `.sh`, etc.) in `/awards/`.
 - **Rate Limiting**: Rate limited to prevent denial-of-service / disk flooding attacks.
-- **Path Traversal Shield**: The delete endpoint enforces strict regex validation on the file basename (`award-\d+-[a-f0-9]+\.(jpg|png|webp)`).
-- **Auto-Cleanup**: The admin panel automatically deletes old/replaced image files from the server when awards are deleted or photos replaced.
+- **Path Traversal Shield**: The delete endpoint enforces strict regex validation on the file basename (`(award|award-doc)-\d+-[a-f0-9]+\.(jpg|png|webp|pdf)`).
+- **Auto-Cleanup**: The admin panel automatically deletes old/replaced files from the server when awards are deleted or PDFs replaced.
 - **Internal Only**: The API binds strictly to `127.0.0.1:3001`. Never expose port 3001 in your EC2 security group.
 
 ---
